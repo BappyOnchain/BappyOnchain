@@ -1,5 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="google-site-verification" content="SYTdBY6-XBh2GO3aR8m2VzLK6QMvbcelpeQ3SwGGJqU" />
-<title>ALEX MORGAN — Creative Director</title>
+<title>GreenRoot Capital — Agricultural Investment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Outfit:wght@200;300;400;500;600&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --olive:#2d3d1f;
+  --olive2:#3b4f28;
+  --olive3:#4e6535;
+  --olive4:#6b8a4e;
+  --cream:#f4ede0;
+  --cream2:#e8dcc8;
+  --gold:#c9a84c;
+  --gold2:#e8c96a;
+  --pink:#f2c4c4;
+  --sage:#b8d4a8;
+  --lav:#cec4e8;
+  --white:#fff;
+  --dark:#111;
+}
+html{scroll-behavior:smooth;overflow-x:hidden;}
+body{
+  background:#0d150a;
+  font-family:'Outfit',sans-serif;
+  color:var(--cream);
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* ─── CUSTOM CURSOR ─────────────────────────── */
+#cursor{
+  position:fixed;width:10px;height:10px;
+  background:var(--gold);border-radius:50%;
+  pointer-events:none;z-index:99999;
+  transform:translate(-50%,-50%);
+  transition:transform .08s,width .2s,height .2s,background .2s;
+  mix-blend-mode:difference;
+}
+#cursor-ring{
+  position:fixed;width:36px;height:36px;
+  border:1.5px solid rgba(201,168,76,.5);
+  border-radius:50%;pointer-events:none;z-index:99998;
+  transform:translate(-50%,-50%);
+  transition:transform .18s cubic-bezier(.25,.46,.45,.94),width .3s,height .3s,opacity .3s;
+}
+body:hover #cursor-ring{opacity:1;}
+
+/* ─── PRELOADER ─────────────────────────────── */
+#preloader{
+  position:fixed;inset:0;background:#0d150a;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;
+  transition:opacity .8s,visibility .8s;
+}
+#preloader.done{opacity:0;visibility:hidden;}
+.pre-logo{
+  font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:300;
+  color:var(--cream);letter-spacing:.15em;
+  animation:preLogoIn .8s ease both;
+}
+.pre-bar-wrap{width:220px;height:1px;background:rgba(255,255,255,.1);}
+.pre-bar{height:100%;background:var(--gold);width:0;transition:width 1.8s cubic-bezier(.4,0,.2,1);}
+.pre-pct{
+  font-size:.75rem;letter-spacing:.2em;color:rgba(255,255,255,.4);
+  font-weight:300;
+}
+
+/* ─── NOISE OVERLAY ─────────────────────────── */
+#noise{
+  position:fixed;inset:0;pointer-events:none;z-index:998;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ─── NAV ───────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:990;
+  padding:1.6rem 4rem;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:background .4s,padding .4s,backdrop-filter .4s;
+}
+nav.scrolled{
+  background:rgba(13,21,10,.85);
+  backdrop-filter:blur(20px);
+  padding:1rem 4rem;
+  border-bottom:1px solid rgba(201,168,76,.12);
+}
+.nav-logo{
+  font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;
+  letter-spacing:.08em;color:var(--cream);text-decoration:none;
+  display:flex;align-items:center;gap:.6rem;
+}
+.nav-logo-mark{
+  width:28px;height:28px;
+  background:linear-gradient(135deg,var(--olive3),var(--gold));
+  border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;
+}
+.nav-center{display:flex;gap:2.5rem;list-style:none;}
+.nav-center a{
+  color:rgba(244,237,224,.55);font-size:.82rem;font-weight:400;
+  text-decoration:none;letter-spacing:.08em;text-transform:uppercase;
+  transition:color .2s;position:relative;
+}
+.nav-center a::after{
+  content:'';position:absolute;bottom:-3px;left:0;right:0;height:1px;
+  background:var(--gold);transform:scaleX(0);transition:transform .25s;
+}
+.nav-center a:hover{color:var(--cream);}
+.nav-center a:hover::after{transform:scaleX(1);}
+.nav-cta{
+  background:var(--gold);color:#0d150a;
+  border:none;padding:.65rem 1.6rem;border-radius:999px;
+  font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  cursor:none;font-family:'Outfit',sans-serif;
+  transition:background .2s,transform .15s,box-shadow .2s;
+  box-shadow:0 4px 20px rgba(201,168,76,.3);
+}
+.nav-cta:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:0 6px 28px rgba(201,168,76,.45);}
+
+/* ─── HERO ──────────────────────────────────── */
+#hero{
+  position:relative;height:100vh;min-height:700px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.hero-video-bg{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(180deg, rgba(13,21,10,.55) 0%, rgba(13,21,10,.2) 40%, rgba(13,21,10,.8) 100%);
+  z-index:1;
+}
+.hero-img-bg{
+  position:absolute;inset:0;
+  background-image:url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1800&q=80');
+  background-size:cover;background-position:center;
+  transform:scale(1.08);
+  transition:transform 8s ease;
+  animation:heroZoom 12s ease-in-out infinite alternate;
+}
+@keyframes heroZoom{
+  from{transform:scale(1.0);}
+  to{transform:scale(1.08);}
+}
+.hero-particles{
+  position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;
+}
+.particle{
+  position:absolute;
+  width:2px;height:2px;
+  background:rgba(201,168,76,.6);
+  border-radius:50%;
+  animation:particleFly linear infinite;
+}
+.hero-content{
+  position:relative;z-index:5;
+  text-align:center;
+  padding:0 2rem;
+  max-width:1000px;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:.6rem;
+  background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);
+  border-radius:999px;padding:.45rem 1.2rem;
+  font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gold2);margin-bottom:2rem;
+  animation:fadeUp .8s .2s both;
+}
+.tag-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--gold);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.5);}}
+.hero-h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3.5rem,8vw,7rem);
+  font-weight:300;line-height:1.05;
+  letter-spacing:-.01em;
+  color:var(--cream);
+  animation:fadeUp .9s .35s both;
+}
+.hero-h1 em{
+  font-style:italic;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-h1 .line-thin{font-weight:200;display:block;}
+.hero-sub{
+  margin-top:1.8rem;
+  font-size:1.05rem;font-weight:300;
+  color:rgba(244,237,224,.65);
+  line-height:1.7;max-width:560px;margin-left:auto;margin-right:auto;
+  animation:fadeUp .9s .5s both;
+}
+.hero-actions{
+  margin-top:2.8rem;
+  display:flex;align-items:center;justify-content:center;gap:1.2rem;
+  animation:fadeUp .9s .65s both;
+}
+.btn-gold{
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#0d150a;border:none;
+  padding:.9rem 2.4rem;border-radius:999px;
+  font-size:.85rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  cursor:none;font-family:'Outfit',sans-serif;
+  box-shadow:0 8px 32px rgba(201,168,76,.4);
+  transition:transform .2s,box-shadow .2s;
+  display:inline-flex;align-items:center;gap:.6rem;
+}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(201,168,76,.55);}
+.btn-outline{
+  background:transparent;
+  border:1px solid rgba(244,237,224,.25);
+  color:var(--cream);padding:.9rem 2rem;border-radius:999px;
+  font-size:.85rem;font-weight:400;letter-spacing:.04em;
+  cursor:none;font-family:'Outfit',sans-serif;
+  transition:border-color .2s,background .2s;
+  display:inline-flex;align-items:center;gap:.5rem;
+}
+.btn-outline:hover{border-color:rgba(244,237,224,.6);background:rgba(244,237,224,.06);}
+
+/* scroll indicator */
+.scroll-hint{
+  position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+  z-index:5;display:flex;flex-direction:column;align-items:center;gap:.6rem;
+  animation:fadeUp .9s .9s both;
+}
+.scroll-line{
+  width:1px;height:50px;background:rgba(244,237,224,.2);
+  position:relative;overflow:hidden;
+}
+.scroll-line::after{
+  content:'';position:absolute;top:-100%;left:0;right:0;
+  height:100%;background:var(--gold);
+  animation:scrollDrop 1.6s ease-in-out infinite;
+}
+@keyframes scrollDrop{
+  from{top:-100%;}to{top:200%;}
+}
+.scroll-lbl{
+  font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(244,237,224,.35);font-weight:300;
+}
+
+/* ─── STATS MARQUEE ─────────────────────────── */
+.marquee-wrap{
+  background:var(--gold);
+  padding:.8rem 0;overflow:hidden;position:relative;z-index:10;
+}
+.marquee-track{
+  display:flex;gap:0;white-space:nowrap;
+  animation:marquee 20s linear infinite;
+}
+.marquee-track:hover{animation-play-state:paused;}
+.marquee-item{
+  display:inline-flex;align-items:center;gap:.6rem;
+  padding:0 2rem;
+  font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:#0d150a;
+  border-right:1px solid rgba(13,21,10,.15);
+}
+.marquee-item span{font-size:1.1rem;}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* ─── ABOUT / FEATURE SECTION ───────────────── */
+#about{
+  padding:8rem 4rem;
+  max-width:1300px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;
+}
+.about-left .section-tag{
+  font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);font-weight:500;
+  display:flex;align-items:center;gap:.6rem;margin-bottom:1.5rem;
+}
+.section-tag::before{
+  content:'';display:inline-block;
+  width:24px;height:1px;background:var(--gold);
+}
+.about-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.4rem,4vw,3.8rem);
+  font-weight:300;line-height:1.12;
+  color:var(--cream);letter-spacing:-.01em;
+}
+.about-h2 em{font-style:italic;color:var(--gold2);}
+.about-p{
+  margin-top:1.5rem;font-size:.95rem;line-height:1.8;
+  color:rgba(244,237,224,.6);font-weight:300;
+}
+.about-metrics{
+  margin-top:2.8rem;
+  display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;
+}
+.metric{
+  border:1px solid rgba(201,168,76,.15);
+  border-radius:12px;padding:1.4rem;
+  background:rgba(201,168,76,.04);
+  transition:border-color .2s,background .2s;
+}
+.metric:hover{
+  border-color:rgba(201,168,76,.35);
+  background:rgba(201,168,76,.08);
+}
+.metric-val{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.4rem;font-weight:600;
+  color:var(--gold2);line-height:1;
+}
+.metric-lbl{
+  margin-top:.4rem;font-size:.78rem;color:rgba(244,237,224,.45);
+  font-weight:300;letter-spacing:.04em;
+}
+.about-right{position:relative;}
+.about-img-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  grid-template-rows:auto auto;gap:1rem;
+}
+.aimg{
+  border-radius:16px;overflow:hidden;
+  position:relative;
+}
+.aimg img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .5s cubic-bezier(.25,.46,.45,.94);
+}
+.aimg:hover img{transform:scale(1.06);}
+.aimg:nth-child(1){grid-row:1/3;height:380px;}
+.aimg:nth-child(2){height:180px;}
+.aimg:nth-child(3){height:188px;}
+.aimg-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 50%,rgba(13,21,10,.7));
+  pointer-events:none;
+}
+.about-badge{
+  position:absolute;
+  bottom:-1.5rem;left:-1.5rem;
+  background:var(--olive2);
+  border:1px solid rgba(201,168,76,.2);
+  border-radius:16px;padding:1.2rem 1.6rem;
+  display:flex;flex-direction:column;gap:.3rem;
+  box-shadow:0 20px 50px rgba(0,0,0,.4);
+  z-index:5;
+  backdrop-filter:blur(10px);
+}
+.badge-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2rem;font-weight:600;color:var(--gold2);line-height:1;
+}
+.badge-txt{font-size:.72rem;color:rgba(244,237,224,.5);font-weight:300;}
+
+/* ─── FEATURE CARDS (pink/green/lav) ────────── */
+#features{
+  padding:6rem 4rem;
+  background:linear-gradient(180deg,#0d150a 0%,#111d0c 50%,#0d150a 100%);
+  position:relative;overflow:hidden;
+}
+#features::before{
+  content:'';position:absolute;
+  top:0;left:50%;transform:translateX(-50%);
+  width:800px;height:800px;border-radius:50%;
+  background:radial-gradient(circle,rgba(78,101,53,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.features-header{
+  text-align:center;max-width:600px;
+  margin:0 auto 4rem;
+}
+.features-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.2rem,4vw,3.4rem);
+  font-weight:300;color:var(--cream);line-height:1.15;
+}
+.features-h2 em{font-style:italic;color:var(--gold2);}
+.features-sub{
+  margin-top:1rem;font-size:.9rem;
+  color:rgba(244,237,224,.5);font-weight:300;line-height:1.7;
+}
+.cards-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1.5rem;max-width:1200px;margin:0 auto;
+}
+.fcard{
+  border-radius:24px;padding:2.4rem 2rem;
+  position:relative;overflow:hidden;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s;
+  cursor:none;
+}
+.fcard:hover{transform:translateY(-8px) scale(1.01);}
+.fcard.pink{
+  background:linear-gradient(145deg,#f5d0d0,#f0c0c0);
+  box-shadow:0 12px 40px rgba(240,192,192,.2);
+}
+.fcard.pink:hover{box-shadow:0 24px 60px rgba(240,192,192,.35);}
+.fcard.green{
+  background:linear-gradient(145deg,#c4ddb8,#b0cc9e);
+  box-shadow:0 12px 40px rgba(176,204,158,.2);
+}
+.fcard.green:hover{box-shadow:0 24px 60px rgba(176,204,158,.35);}
+.fcard.lav{
+  background:linear-gradient(145deg,#d8ceee,#c8bce0);
+  box-shadow:0 12px 40px rgba(200,188,224,.2);
+}
+.fcard.lav:hover{box-shadow:0 24px 60px rgba(200,188,224,.35);}
+
+.fcard::after{
+  content:'';position:absolute;
+  bottom:-40px;right:-40px;
+  width:130px;height:130px;border-radius:50%;opacity:.25;
+}
+.fcard.pink::after{background:#e8a0a0;}
+.fcard.green::after{background:#88b878;}
+.fcard.lav::after{background:#b0a0d8;}
+
+.fcard-icon{
+  font-size:2.8rem;line-height:1;display:block;margin-bottom:1.2rem;
+}
+.fcard-num{
+  font-size:.7rem;font-weight:600;letter-spacing:.15em;
+  text-transform:uppercase;color:rgba(30,40,20,.4);
+  margin-bottom:.6rem;display:block;
+}
+.fcard-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.6rem;font-weight:600;
+  color:#1a2510;line-height:1.2;margin-bottom:.8rem;
+}
+.fcard-body{
+  font-size:.85rem;line-height:1.7;
+  color:rgba(26,37,16,.6);font-weight:400;
+}
+.fcard-link{
+  display:inline-flex;align-items:center;gap:.4rem;
+  margin-top:1.5rem;font-size:.78rem;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;
+  color:#1a2510;text-decoration:none;
+  border-bottom:1px solid rgba(26,37,16,.2);
+  padding-bottom:2px;transition:gap .2s,border-color .2s;
+}
+.fcard-link:hover{gap:.7rem;border-color:rgba(26,37,16,.5);}
+.arrow-icon{transition:transform .2s;}
+.fcard-link:hover .arrow-icon{transform:translateX(3px);}
+
+/* ─── PARALLAX IMAGE SECTION ────────────────── */
+#parallax-section{
+  position:relative;height:600px;overflow:hidden;
+}
+.parallax-bg{
+  position:absolute;inset:-20%;
+  background-image:url('https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1800&q=80');
+  background-size:cover;background-position:center;
+  will-change:transform;
+}
+.parallax-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(13,21,10,.85) 0%,rgba(13,21,10,.4) 60%,rgba(13,21,10,.7) 100%);
+  z-index:2;
+}
+.parallax-content{
+  position:relative;z-index:5;
+  height:100%;display:flex;align-items:center;
+  padding:0 8rem;
+}
+.parallax-text{max-width:550px;}
+.parallax-text h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.4rem,5vw,4rem);
+  font-weight:300;line-height:1.1;
+  color:var(--cream);
+}
+.parallax-text h2 em{font-style:italic;color:var(--gold2);}
+.parallax-text p{
+  margin-top:1.5rem;font-size:.95rem;
+  color:rgba(244,237,224,.65);line-height:1.75;font-weight:300;
+}
+.parallax-cta{
+  margin-top:2.2rem;
+}
+
+/* ─── INVESTMENT TIERS ──────────────────────── */
+#tiers{
+  padding:8rem 4rem;
+  max-width:1300px;margin:0 auto;
+}
+.tiers-header{text-align:center;margin-bottom:4rem;}
+.tiers-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.2rem,4vw,3.4rem);
+  font-weight:300;color:var(--cream);line-height:1.15;
+}
+.tiers-h2 em{font-style:italic;color:var(--gold2);}
+.tiers-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;
+}
+.tier{
+  border-radius:20px;overflow:hidden;position:relative;
+  transition:transform .3s;cursor:none;
+}
+.tier:hover{transform:translateY(-6px);}
+.tier-img{height:220px;position:relative;overflow:hidden;}
+.tier-img img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform .5s;
+}
+.tier:hover .tier-img img{transform:scale(1.06);}
+.tier-img-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 0%,rgba(13,21,10,.8) 100%);
+}
+.tier-body{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-top:none;
+  padding:2rem;
+  backdrop-filter:blur(10px);
+}
+.tier.featured .tier-body{
+  background:rgba(201,168,76,.08);
+  border-color:rgba(201,168,76,.25);
+}
+.tier-tag{
+  font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem;
+}
+.tier-tag::before{content:'';width:12px;height:1px;background:var(--gold);}
+.tier-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.6rem;font-weight:600;color:var(--cream);
+}
+.tier-price{
+  margin-top:.6rem;
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.2rem;font-weight:700;color:var(--gold2);
+  display:flex;align-items:flex-start;gap:.2rem;line-height:1;
+}
+.tier-price small{font-size:1rem;margin-top:.2rem;font-weight:400;}
+.tier-price sub{font-size:.85rem;color:rgba(232,201,106,.6);align-self:flex-end;font-family:'Outfit',sans-serif;font-weight:300;}
+.tier-features{
+  margin-top:1.2rem;display:flex;flex-direction:column;gap:.5rem;
+}
+.tier-feat{
+  font-size:.82rem;color:rgba(244,237,224,.6);
+  display:flex;align-items:center;gap:.6rem;font-weight:300;
+}
+.tier-feat::before{
+  content:'✦';font-size:.5rem;color:var(--gold);flex-shrink:0;
+}
+.tier-btn{
+  margin-top:1.6rem;width:100%;
+  background:transparent;
+  border:1px solid rgba(201,168,76,.3);
+  color:var(--gold);
+  padding:.75rem;border-radius:10px;
+  font-size:.8rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
+  cursor:none;font-family:'Outfit',sans-serif;
+  transition:background .2s,border-color .2s;
+}
+.tier-btn:hover{background:rgba(201,168,76,.12);border-color:var(--gold);}
+.tier.featured .tier-btn{
+  background:var(--gold);color:#0d150a;border-color:var(--gold);
+}
+.tier.featured .tier-btn:hover{background:var(--gold2);border-color:var(--gold2);}
+
+/* ─── TESTIMONIALS ──────────────────────────── */
+#testimonials{
+  padding:8rem 4rem;
+  background:#080f06;
+  position:relative;overflow:hidden;
+}
+#testimonials::before{
+  content:'';position:absolute;
+  top:-200px;right:-200px;width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,.06) 0%,transparent 70%);
+}
+.test-header{text-align:center;margin-bottom:4rem;}
+.test-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,4vw,3rem);
+  font-weight:300;color:var(--cream);
+}
+.test-h2 em{font-style:italic;color:var(--gold2);}
+.test-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1.5rem;max-width:1200px;margin:0 auto;
+}
+.test-card{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:20px;padding:2rem;
+  transition:border-color .2s,background .2s;
+}
+.test-card:hover{
+  border-color:rgba(201,168,76,.2);
+  background:rgba(201,168,76,.04);
+}
+.test-quote{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.15rem;font-weight:300;font-style:italic;
+  color:rgba(244,237,224,.8);line-height:1.65;
+  margin-bottom:1.5rem;
+}
+.test-quote::before{
+  content:'"';font-size:3rem;font-weight:700;
+  color:var(--gold);line-height:.5;display:block;margin-bottom:.5rem;
+}
+.test-author{display:flex;align-items:center;gap:.8rem;}
+.test-avatar{
+  width:42px;height:42px;border-radius:50%;object-fit:cover;
+  border:1px solid rgba(201,168,76,.2);
+}
+.test-name{font-size:.85rem;font-weight:500;color:var(--cream);}
+.test-role{font-size:.72rem;color:rgba(244,237,224,.4);font-weight:300;margin-top:.1rem;}
+.test-stars{color:var(--gold);font-size:.75rem;letter-spacing:.1em;margin-bottom:1rem;}
+
+/* ─── PHOTO GALLERY STRIP ───────────────────── */
+#gallery{
+  padding:4rem 0;
+  overflow:hidden;
+}
+.gallery-track{
+  display:flex;gap:1rem;
+  animation:galleryScroll 30s linear infinite;
+  width:max-content;
+}
+.gallery-track:hover{animation-play-state:paused;}
+.gimg{
+  width:280px;height:200px;border-radius:16px;overflow:hidden;flex-shrink:0;
+  position:relative;
+}
+.gimg img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform .4s;
+}
+.gimg:hover img{transform:scale(1.08);}
+.gimg-label{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(180deg,transparent,rgba(13,21,10,.8));
+  padding:.8rem;
+  font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(244,237,224,.7);font-weight:400;
+}
+@keyframes galleryScroll{
+  from{transform:translateX(0);}
+  to{transform:translateX(-50%);}
+}
+
+/* ─── CTA SECTION ───────────────────────────── */
+#cta{
+  padding:8rem 4rem;
+  position:relative;overflow:hidden;
+  text-align:center;
+}
+.cta-bg{
+  position:absolute;inset:0;
+  background-image:url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1800&q=80');
+  background-size:cover;background-position:center 30%;
+  opacity:.18;
+}
+.cta-overlay{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,rgba(13,21,10,.2) 0%,rgba(13,21,10,.95) 100%);
+}
+.cta-content{position:relative;z-index:5;max-width:700px;margin:0 auto;}
+.cta-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.8rem,6vw,5rem);
+  font-weight:300;color:var(--cream);line-height:1.1;
+}
+.cta-h2 em{font-style:italic;color:var(--gold2);}
+.cta-p{
+  margin-top:1.5rem;font-size:1rem;
+  color:rgba(244,237,224,.6);font-weight:300;line-height:1.7;
+}
+.cta-actions{
+  margin-top:2.5rem;
+  display:flex;align-items:center;justify-content:center;gap:1rem;
+}
+.cta-input{
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:999px;
+  padding:.85rem 1.6rem;
+  color:var(--cream);font-size:.88rem;font-family:'Outfit',sans-serif;
+  width:280px;outline:none;
+  transition:border-color .2s,background .2s;
+}
+.cta-input::placeholder{color:rgba(244,237,224,.35);}
+.cta-input:focus{border-color:rgba(201,168,76,.5);background:rgba(255,255,255,.1);}
+
+/* ─── FOOTER ────────────────────────────────── */
+footer{
+  background:#060c04;
+  border-top:1px solid rgba(255,255,255,.06);
+  padding:4rem 4rem 2rem;
+}
+.footer-top{
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;
+  margin-bottom:3rem;
+}
+.footer-brand{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:var(--cream);margin-bottom:.8rem;}
+.footer-desc{font-size:.82rem;color:rgba(244,237,224,.35);line-height:1.7;font-weight:300;max-width:260px;}
+.footer-col-h{
+  font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:1rem;
+}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:.6rem;}
+.footer-links a{
+  font-size:.82rem;color:rgba(244,237,224,.4);text-decoration:none;
+  font-weight:300;transition:color .2s;
+}
+.footer-links a:hover{color:var(--cream);}
+.footer-bottom{
+  border-top:1px solid rgba(255,255,255,.05);
+  padding-top:1.5rem;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.footer-copy{font-size:.75rem;color:rgba(244,237,224,.25);font-weight:300;}
+.footer-cert{
+  display:flex;gap:1rem;align-items:center;
+}
+.cert-badge{
+  background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.15);
+  border-radius:6px;padding:.3rem .7rem;
+  font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(201,168,76,.7);font-weight:500;
+}
+
+/* ─── SCROLL ANIMATIONS ─────────────────────── */
+.reveal{
+  opacity:0;transform:translateY(36px);
+  transition:opacity .9s cubic-bezier(.25,.46,.45,.94),transform .9s cubic-bezier(.25,.46,.45,.94);
+}
+.reveal.in{opacity:1;transform:translateY(0);}
+.reveal-left{
+  opacity:0;transform:translateX(-40px);
+  transition:opacity .9s cubic-bezier(.25,.46,.45,.94),transform .9s cubic-bezier(.25,.46,.45,.94);
+}
+.reveal-left.in{opacity:1;transform:translateX(0);}
+.reveal-right{
+  opacity:0;transform:translateX(40px);
+  transition:opacity .9s cubic-bezier(.25,.46,.45,.94),transform .9s cubic-bezier(.25,.46,.45,.94);
+}
+.reveal-right.in{opacity:1;transform:translateX(0);}
+.delay-1{transition-delay:.12s!important;}
+.delay-2{transition-delay:.24s!important;}
+.delay-3{transition-delay:.36s!important;}
+.delay-4{transition-delay:.48s!important;}
+.delay-5{transition-delay:.6s!important;}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(24px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes preLogoIn{
+  from{opacity:0;letter-spacing:.3em;}
+  to{opacity:1;letter-spacing:.15em;}
+}
+
+/* ─── HAMBURGER & MOBILE MENU ───────────────── */
+.hamburger{
+  display:none;
+  flex-direction:column;justify-content:center;align-items:center;
+  gap:5px;background:transparent;border:none;cursor:pointer;
+  padding:.4rem;z-index:1000;
+}
+.hamburger span{
+  display:block;width:22px;height:2px;
+  background:var(--cream);border-radius:2px;
+  transition:transform .3s,opacity .3s;
+}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.hamburger.open span:nth-child(2){opacity:0;}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+.mobile-menu{
+  display:none;
+  position:fixed;inset:0;top:0;z-index:980;
+  background:rgba(10,18,7,.97);
+  backdrop-filter:blur(20px);
+  flex-direction:column;justify-content:center;align-items:center;
+  padding:2rem 2rem 3rem;
+  opacity:0;transition:opacity .3s;
+}
+.mobile-menu.show{opacity:1;}
+.mobile-links{list-style:none;text-align:center;margin-bottom:1rem;}
+.mobile-links li{padding:1rem 0;border-bottom:1px solid rgba(255,255,255,.07);}
+.mobile-links li:last-child{border-bottom:none;}
+.mobile-links a{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2rem;font-weight:300;color:var(--cream);
+  text-decoration:none;letter-spacing:.04em;
+  transition:color .2s;
+}
+.mobile-links a:hover{color:var(--gold2);}
+
+@media(max-width:768px){
+  .hamburger{display:flex;}
+  #navCta{display:none;}
+  .mobile-menu{display:flex;}
+}
+
+/* ─── MISC SVG DIVIDER ──────────────────────── */
+.svg-divider{display:block;width:100%;overflow:hidden;line-height:0;}
+.svg-divider svg{display:block;}
+
+/* ─── FLOATING LEAF ─────────────────────────── */
+.leaf-float{
+  position:absolute;opacity:.12;pointer-events:none;
+}
+
+/* ─── RESPONSIVE ────────────────────────────── */
+
+/* Tablet */
+@media(max-width:1024px){
+  nav{padding:1.2rem 2.5rem;}
+  nav.scrolled{padding:.9rem 2.5rem;}
+  #about{padding:6rem 2.5rem;gap:4rem;}
+  #features{padding:5rem 2.5rem;}
+  .cards-grid{grid-template-columns:1fr 1fr;}
+  #tiers{padding:5rem 2.5rem;}
+  .tiers-grid{grid-template-columns:1fr 1fr;}
+  #testimonials{padding:5rem 2.5rem;}
+  .test-grid{grid-template-columns:1fr 1fr;}
+  footer{padding:3.5rem 2.5rem 2rem;}
+  .footer-top{grid-template-columns:1fr 1fr;gap:2.5rem;}
+}
+
+/* Mobile */
+@media(max-width:768px){
+  /* hide cursor on touch */
+  #cursor,#cursor-ring{display:none;}
+  body{cursor:auto;}
+  button{cursor:pointer;}
+
+  /* nav */
+  nav{padding:1rem 1.25rem;}
+  nav.scrolled{padding:.8rem 1.25rem;}
+  .nav-center{display:none;}
+  .nav-cta{padding:.5rem 1.1rem;font-size:.75rem;}
+
+  /* hero */
+  #hero{min-height:100svh;padding:0 1.25rem;}
+  .hero-content{padding:0;width:100%;}
+  .hero-tag{font-size:.65rem;padding:.4rem .9rem;margin-bottom:1.4rem;}
+  .hero-h1{font-size:clamp(2.6rem,11vw,4rem);letter-spacing:-.02em;}
+  .hero-sub{font-size:.88rem;margin-top:1.2rem;padding:0 .25rem;}
+  .hero-actions{flex-direction:column;gap:.75rem;margin-top:2rem;}
+  .btn-gold,.btn-outline{width:100%;max-width:300px;justify-content:center;padding:.85rem 1.5rem;}
+  .leaf-float{display:none;}
+
+  /* about */
+  #about{
+    grid-template-columns:1fr;
+    padding:4rem 1.25rem;
+    gap:2.5rem;
+  }
+  .about-img-grid{display:none;}
+  .about-right{display:none;}
+  .about-metrics{grid-template-columns:1fr 1fr;gap:1rem;}
+  .metric{padding:1rem;}
+  .metric-val{font-size:2rem;}
+  .about-badge{display:none;}
+
+  /* features */
+  #features{padding:4rem 1.25rem;}
+  .features-header{margin-bottom:2.5rem;}
+  .features-h2{font-size:clamp(1.9rem,7vw,2.6rem);}
+  .cards-grid{grid-template-columns:1fr;gap:1rem;}
+  .fcard{padding:2rem 1.5rem;}
+  .fcard-title{font-size:1.4rem;}
+
+  /* parallax */
+  #parallax-section{height:auto;min-height:400px;}
+  .parallax-content{padding:4rem 1.25rem;align-items:flex-start;}
+  .parallax-text{max-width:100%;}
+  .parallax-text h2{font-size:clamp(2rem,8vw,3rem);}
+  .parallax-text p{font-size:.88rem;}
+
+  /* tiers */
+  #tiers{padding:4rem 1.25rem;}
+  .tiers-h2{font-size:clamp(1.9rem,7vw,2.6rem);}
+  .tiers-grid{grid-template-columns:1fr;gap:1.25rem;}
+  .tier-img{height:180px;}
+
+  /* testimonials */
+  #testimonials{padding:4rem 1.25rem;}
+  .test-h2{font-size:clamp(1.9rem,7vw,2.6rem);}
+  .test-grid{grid-template-columns:1fr;gap:1rem;}
+  .test-card{padding:1.5rem;}
+
+  /* gallery */
+  #gallery{padding:2.5rem 0;}
+  .gimg{width:220px;height:160px;}
+
+  /* cta */
+  #cta{padding:5rem 1.25rem;}
+  .cta-h2{font-size:clamp(2.2rem,9vw,3.5rem);}
+  .cta-p{font-size:.88rem;}
+  .cta-actions{flex-direction:column;align-items:stretch;gap:.75rem;}
+  .cta-input{width:100%;max-width:100%;}
+  .cta-actions .btn-gold{width:100%;justify-content:center;}
+
+  /* footer */
+  footer{padding:3rem 1.25rem 1.5rem;}
+  .footer-top{grid-template-columns:1fr;gap:2rem;}
+  .footer-desc{max-width:100%;}
+  .footer-bottom{flex-direction:column;gap:1rem;text-align:center;}
+  .footer-cert{justify-content:center;flex-wrap:wrap;}
+
+  /* marquee */
+  .marquee-item{padding:0 1.2rem;font-size:.72rem;}
+
+  /* section tags */
+  .section-tag{font-size:.65rem;}
+
+  /* wave dividers */
+  .svg-divider{display:none;}
+}
+
+/* Small phones */
+@media(max-width:390px){
+  .hero-h1{font-size:2.5rem;}
+  .about-metrics{grid-template-columns:1fr;}
+  .metric-val{font-size:1.8rem;}
+  nav .nav-logo{font-size:1.1rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div id="noise"></div>
+
+<!-- PRELOADER -->
+<div id="preloader">
+  <div class="pre-logo">GREENROOT</div>
+  <div class="pre-bar-wrap"><div class="pre-bar" id="preBar"></div></div>
+  <div class="pre-pct" id="prePct">0%</div>
+</div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark">🌿</div>
+    GreenRoot Capital
+  </a>
+  <ul class="nav-center">
+    <li><a href="#about">About</a></li>
+    <li><a href="#features">Why Us</a></li>
+    <li><a href="#tiers">Invest</a></li>
+    <li><a href="#testimonials">Stories</a></li>
+  </ul>
+  <button class="nav-cta" id="navCta">Get Started →</button>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <ul class="mobile-links">
+    <li><a href="#about" onclick="closeMobile()">About</a></li>
+    <li><a href="#features" onclick="closeMobile()">Why Us</a></li>
+    <li><a href="#tiers" onclick="closeMobile()">Invest</a></li>
+    <li><a href="#testimonials" onclick="closeMobile()">Stories</a></li>
+  </ul>
+  <button class="btn-gold" style="width:100%;justify-content:center;margin-top:2rem;" onclick="closeMobile()">Get Started →</button>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-img-bg"></div>
+  <div class="hero-video-bg"></div>
+  <div class="hero-particles" id="particles"></div>
+
+  <!-- SVG floating leaves -->
+  <svg class="leaf-float" style="top:15%;left:8%;width:80px;animation:leafFloat1 7s ease-in-out infinite;" viewBox="0 0 80 100" fill="none">
+    <path d="M40 5 C10 20 0 60 40 95 C80 60 70 20 40 5Z" fill="rgba(107,138,78,.6)" stroke="rgba(201,168,76,.3)" stroke-width="1"/>
+    <path d="M40 5 L40 95" stroke="rgba(201,168,76,.25)" stroke-width="1"/>
+  </svg>
+  <svg class="leaf-float" style="top:60%;right:6%;width:60px;animation:leafFloat2 9s ease-in-out infinite;" viewBox="0 0 80 100" fill="none">
+    <path d="M40 5 C10 20 0 60 40 95 C80 60 70 20 40 5Z" fill="rgba(107,138,78,.4)" stroke="rgba(201,168,76,.2)" stroke-width="1"/>
+  </svg>
+
+  <div class="hero-content">
+    <div class="hero-tag">
+      <span class="tag-dot"></span>
+      Regulated Agricultural Investment
+    </div>
+    <h1 class="hero-h1">
+      <span class="line-thin">Invest in the</span>
+      <em>Living Earth</em>
+    </h1>
+    <p class="hero-sub">
+      GreenRoot Capital connects accredited investors with premium farmland portfolios — delivering stable 9–14% annual returns while regenerating soil, water, and biodiversity.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-gold">
+        <span>Start Investing</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <button class="btn-outline">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14v-5l4 2.5-4 2.5zm0-9v2l4-2-4-2v2z"/></svg>
+        Watch Film
+      </button>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    <span class="scroll-lbl">Scroll</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item"><span>🌾</span> 12,400+ Hectares Managed</div>
+    <div class="marquee-item"><span>📈</span> 11.2% Avg. Annual Return</div>
+    <div class="marquee-item"><span>🐝</span> 340+ Active Investors</div>
+    <div class="marquee-item"><span>🌱</span> Carbon Verified Portfolios</div>
+    <div class="marquee-item"><span>💷</span> £2.8M Capital Deployed</div>
+    <div class="marquee-item"><span>🏆</span> Best Agri-Fund 2024 — FinAwards</div>
+    <div class="marquee-item"><span>🌍</span> Net Zero by 2030</div>
+    <!-- duplicate for seamless loop -->
+    <div class="marquee-item"><span>🌾</span> 12,400+ Hectares Managed</div>
+    <div class="marquee-item"><span>📈</span> 11.2% Avg. Annual Return</div>
+    <div class="marquee-item"><span>🐝</span> 340+ Active Investors</div>
+    <div class="marquee-item"><span>🌱</span> Carbon Verified Portfolios</div>
+    <div class="marquee-item"><span>💷</span> £2.8M Capital Deployed</div>
+    <div class="marquee-item"><span>🏆</span> Best Agri-Fund 2024 — FinAwards</div>
+    <div class="marquee-item"><span>🌍</span> Net Zero by 2030</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-left reveal-left">
+    <div class="section-tag">Our Mission</div>
+    <h2 class="about-h2">
+      Agriculture as a<br><em>premium asset class</em>
+    </h2>
+    <p class="about-p">
+      We've built proprietary systems that identify, acquire, and manage high-yield farmland across the UK and EU. Each plot is soil-tested, weather-modelled, and independently audited — giving investors complete visibility into where their money grows.
+    </p>
+    <div class="about-metrics">
+      <div class="metric reveal delay-1">
+        <div class="metric-val">9–14%</div>
+        <div class="metric-lbl">Annual Target Return</div>
+      </div>
+      <div class="metric reveal delay-2">
+        <div class="metric-val">£500</div>
+        <div class="metric-lbl">Minimum Investment</div>
+      </div>
+      <div class="metric reveal delay-3">
+        <div class="metric-val">FCA</div>
+        <div class="metric-lbl">Fully Regulated</div>
+      </div>
+      <div class="metric reveal delay-4">
+        <div class="metric-val">100%</div>
+        <div class="metric-lbl">Harvest Transparency</div>
+      </div>
+    </div>
+  </div>
+  <div class="about-right reveal-right">
+    <div class="about-img-grid">
+      <div class="aimg">
+        <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&q=80" alt="Farmland">
+        <div class="aimg-overlay"></div>
+      </div>
+      <div class="aimg">
+        <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80" alt="Seeds">
+        <div class="aimg-overlay"></div>
+      </div>
+      <div class="aimg">
+        <img src="https://images.unsplash.com/photo-1560493676-04071c5f467b?w=600&q=80" alt="Farm aerial">
+        <div class="aimg-overlay"></div>
+      </div>
+    </div>
+    <div class="about-badge">
+      <div class="badge-num">94%</div>
+      <div class="badge-txt">Investor satisfaction score</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURE CARDS -->
+<section id="features">
+  <div class="features-header reveal">
+    <div class="section-tag" style="justify-content:center;">Key Benefits</div>
+    <h2 class="features-h2">Three pillars of<br><em>sustainable return</em></h2>
+    <p class="features-sub">Our investment thesis rests on complementary income streams that reinforce each other through every season.</p>
+  </div>
+  <div class="cards-grid">
+    <div class="fcard pink reveal delay-1">
+      <span class="fcard-icon">🌸</span>
+      <span class="fcard-num">01</span>
+      <div class="fcard-title">Pollinator-Linked Income</div>
+      <p class="fcard-body">Our bee partnership programme generates premium honey yields and crop co-pollination bonuses — a measurable, nature-positive secondary income on top of harvest revenue.</p>
+      <a href="#" class="fcard-link">Explore <span class="arrow-icon">→</span></a>
+    </div>
+    <div class="fcard green reveal delay-2">
+      <span class="fcard-icon">🌱</span>
+      <span class="fcard-num">02</span>
+      <div class="fcard-title">Soil Carbon Credits</div>
+      <p class="fcard-body">Verified by Gold Standard, each plot generates tradeable carbon credits as soil health improves year-on-year — creating a third income stream independent of weather cycles.</p>
+      <a href="#" class="fcard-link">Explore <span class="arrow-icon">→</span></a>
+    </div>
+    <div class="fcard lav reveal delay-3">
+      <span class="fcard-icon">📊</span>
+      <span class="fcard-num">03</span>
+      <div class="fcard-title">Real-Time Harvest Data</div>
+      <p class="fcard-body">Weekly IoT sensor updates, satellite NDVI mapping, and live weather correlations give you unprecedented visibility into the health and projected yield of your portfolio.</p>
+      <a href="#" class="fcard-link">Explore <span class="arrow-icon">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- SVG WAVE DIVIDER -->
+<div class="svg-divider" style="background:#0d150a;">
+  <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 0L60 10C120 20 240 40 360 46.7C480 53 600 47 720 36.7C840 27 960 13 1080 6.7C1200 0 1320 0 1380 0H1440V60H0V0Z" fill="#0d150a"/>
+  </svg>
+</div>
+
+<!-- PARALLAX -->
+<section id="parallax-section">
+  <div class="parallax-bg" id="parallaxBg"></div>
+  <div class="parallax-overlay"></div>
+  <div class="parallax-content">
+    <div class="parallax-text reveal-left">
+      <div class="section-tag">Our Approach</div>
+      <h2>Land that works<br>as hard as <em>you do</em></h2>
+      <p>We don't just buy farmland — we actively manage it using regenerative agriculture, precision irrigation, and integrated pest management. The result is land that appreciates while it produces.</p>
+      <div class="parallax-cta">
+        <button class="btn-gold">View Our Farms</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SVG WAVE -->
+<div class="svg-divider" style="background:#080f06;">
+  <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 60L60 50C120 40 240 20 360 13.3C480 7 600 13 720 23.3C840 33 960 47 1080 53.3C1200 60 1320 60 1380 60H1440V0H0V60Z" fill="#080f06"/>
+  </svg>
+</div>
+
+<!-- TIERS -->
+<section id="tiers">
+  <div class="tiers-header reveal">
+    <div class="section-tag" style="justify-content:center;">Investment Tiers</div>
+    <h2 class="tiers-h2">Choose your <em>portfolio</em></h2>
+  </div>
+  <div class="tiers-grid">
+    <div class="tier reveal delay-1">
+      <div class="tier-img">
+        <img src="https://images.unsplash.com/photo-1500076656116-558758c991c1?w=600&q=80" alt="Seed tier">
+        <div class="tier-img-overlay"></div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-tag">Entry</div>
+        <div class="tier-name">Seed</div>
+        <div class="tier-price"><small>£</small>500<sub>/min</sub></div>
+        <div class="tier-features">
+          <div class="tier-feat">9–10% target annual return</div>
+          <div class="tier-feat">Access to 1 farm portfolio</div>
+          <div class="tier-feat">Quarterly reports</div>
+          <div class="tier-feat">Carbon credit share</div>
+        </div>
+        <button class="tier-btn">Start with Seed</button>
+      </div>
+    </div>
+    <div class="tier featured reveal delay-2">
+      <div class="tier-img">
+        <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600&q=80" alt="Harvest tier">
+        <div class="tier-img-overlay"></div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-tag">★ Most Popular</div>
+        <div class="tier-name">Harvest</div>
+        <div class="tier-price"><small>£</small>5,000<sub>/min</sub></div>
+        <div class="tier-features">
+          <div class="tier-feat">11–13% target annual return</div>
+          <div class="tier-feat">3 diversified farm portfolios</div>
+          <div class="tier-feat">Monthly dashboard access</div>
+          <div class="tier-feat">Pollinator income + carbon</div>
+          <div class="tier-feat">Dedicated account manager</div>
+        </div>
+        <button class="tier-btn">Start with Harvest</button>
+      </div>
+    </div>
+    <div class="tier reveal delay-3">
+      <div class="tier-img">
+        <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600&q=80" alt="Estate tier">
+        <div class="tier-img-overlay"></div>
+      </div>
+      <div class="tier-body">
+        <div class="tier-tag">Premium</div>
+        <div class="tier-name">Estate</div>
+        <div class="tier-price"><small>£</small>25,000<sub>/min</sub></div>
+        <div class="tier-features">
+          <div class="tier-feat">13–14% target annual return</div>
+          <div class="tier-feat">Full portfolio access</div>
+          <div class="tier-feat">Real-time IoT live data</div>
+          <div class="tier-feat">Farm visit privileges</div>
+          <div class="tier-feat">Priority exit liquidity</div>
+        </div>
+        <button class="tier-btn">Start with Estate</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="test-header reveal">
+    <div class="section-tag" style="justify-content:center;">Investor Stories</div>
+    <h2 class="test-h2">Trusted by <em>hundreds</em></h2>
+  </div>
+  <div class="test-grid">
+    <div class="test-card reveal delay-1">
+      <div class="test-stars">★★★★★</div>
+      <div class="test-quote">My Harvest portfolio returned 12.4% last year. The quarterly farm updates make you feel genuinely connected to the land — it's unlike any other investment I've made.</div>
+      <div class="test-author">
+        <img class="test-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="James">
+        <div>
+          <div class="test-name">James Thornton</div>
+          <div class="test-role">Portfolio Manager, London</div>
+        </div>
+      </div>
+    </div>
+    <div class="test-card reveal delay-2">
+      <div class="test-stars">★★★★★</div>
+      <div class="test-quote">The carbon credit element was the surprise — it added nearly 2% on top of my base harvest return. Incredibly transparent reporting and a team that genuinely cares.</div>
+      <div class="test-author">
+        <img class="test-avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80" alt="Sarah">
+        <div>
+          <div class="test-name">Sarah Mitchell</div>
+          <div class="test-role">Architect & Angel Investor</div>
+        </div>
+      </div>
+    </div>
+    <div class="test-card reveal delay-3">
+      <div class="test-stars">★★★★★</div>
+      <div class="test-quote">I visited one of the GreenRoot farms in Shropshire. Seeing my investment literally growing in the ground is something no stock chart will ever give you. Phenomenal.</div>
+      <div class="test-author">
+        <img class="test-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80" alt="David">
+        <div>
+          <div class="test-name">David Okafor</div>
+          <div class="test-role">Tech Entrepreneur, Manchester</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY STRIP -->
+<section id="gallery">
+  <div class="gallery-track">
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&q=75" alt=""><div class="gimg-label">Wheat Fields</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=75" alt=""><div class="gimg-label">Spring Bloom</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=75" alt=""><div class="gimg-label">Rolling Farmland</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1560493676-04071c5f467b?w=400&q=75" alt=""><div class="gimg-label">Aerial View</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&q=75" alt=""><div class="gimg-label">Lavender Estate</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1500076656116-558758c991c1?w=400&q=75" alt=""><div class="gimg-label">Organic Crops</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&q=75" alt=""><div class="gimg-label">Harvest Season</div></div>
+    <!-- duplicate -->
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&q=75" alt=""><div class="gimg-label">Wheat Fields</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=75" alt=""><div class="gimg-label">Spring Bloom</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=75" alt=""><div class="gimg-label">Rolling Farmland</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1560493676-04071c5f467b?w=400&q=75" alt=""><div class="gimg-label">Aerial View</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&q=75" alt=""><div class="gimg-label">Lavender Estate</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1500076656116-558758c991c1?w=400&q=75" alt=""><div class="gimg-label">Organic Crops</div></div>
+    <div class="gimg"><img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&q=75" alt=""><div class="gimg-label">Harvest Season</div></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-bg"></div>
+  <div class="cta-overlay"></div>
+  <div class="cta-content reveal">
+    <div class="section-tag" style="justify-content:center;">Get Started Today</div>
+    <h2 class="cta-h2">Your land awaits.<br><em>Grow with us.</em></h2>
+    <p class="cta-p">Join 340+ investors already earning returns from the most ancient and reliable asset class on earth. No farmland experience needed.</p>
+    <div class="cta-actions">
+      <input class="cta-input" type="email" placeholder="Your email address">
+      <button class="btn-gold">Get Early Access →</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand">🌿 GreenRoot Capital</div>
+      <p class="footer-desc">Regenerative agricultural investment for the modern investor. FCA regulated. Carbon verified. Harvest guaranteed.</p>
+    </div>
+    <div>
+      <div class="footer-col-h">Invest</div>
+      <ul class="footer-links">
+        <li><a href="#">Seed Portfolio</a></li>
+        <li><a href="#">Harvest Portfolio</a></li>
+        <li><a href="#">Estate Portfolio</a></li>
+        <li><a href="#">Carbon Credits</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-h">Company</div>
+      <ul class="footer-links">
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Our Farms</a></li>
+        <li><a href="#">Impact Report</a></li>
+        <li><a href="#">Press</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-h">Legal</div>
+      <ul class="footer-links">
+        <li><a href="#">Prospectus</a></li>
+        <li><a href="#">Risk Warning</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 GreenRoot Capital Ltd. All rights reserved. FCA Authorised · Reg. 987654</div>
+    <div class="footer-cert">
+      <span class="cert-badge">FCA Regulated</span>
+      <span class="cert-badge">Carbon Verified</span>
+      <span class="cert-badge">ISO 14001</span>
+    </div>
+  </div>
+</footer>
+
+<!-- LEAF FLOAT KEYFRAMES (injected) -->
+<style>
+@keyframes leafFloat1{0%,100%{transform:translate(0,0) rotate(0deg);}33%{transform:translate(10px,-20px) rotate(8deg);}66%{transform:translate(-8px,-10px) rotate(-5deg);}}
+@keyframes leafFloat2{0%,100%{transform:translate(0,0) rotate(0deg);}50%{transform:translate(-15px,-25px) rotate(-10deg);}}
+</style>
+
+<script>
+/* ── PRELOADER ── */
+(function(){
+  const bar=document.getElementById('preBar');
+  const pct=document.getElementById('prePct');
+  const pre=document.getElementById('preloader');
+  let p=0;
+  const iv=setInterval(()=>{
+    p+=Math.random()*18;
+    if(p>=100){p=100;clearInterval(iv);
+      bar.style.width='100%';pct.textContent='100%';
+      setTimeout(()=>pre.classList.add('done'),400);
+    }else{bar.style.width=p+'%';pct.textContent=Math.floor(p)+'%';}
+  },120);
+})();
+
+/* ── CURSOR — desktop only ── */
+(function(){
+  if('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
+  const c=document.getElementById('cursor');
+  const r=document.getElementById('cursor-ring');
+  if(c) c.style.display='block';
+  if(r) r.style.display='block';
+  let mx=0,my=0,rx=0,ry=0;
+  window.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+  function loop(){
+    c.style.left=mx+'px';c.style.top=my+'px';
+    rx+=(mx-rx)*.12;ry+=(my-ry)*.12;
+    r.style.left=rx+'px';r.style.top=ry+'px';
+    requestAnimationFrame(loop);
+  }loop();
+  document.querySelectorAll('button,a,.fcard,.tier,.metric').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{c.style.width='18px';c.style.height='18px';r.style.width='54px';r.style.height='54px';});
+    el.addEventListener('mouseleave',()=>{c.style.width='10px';c.style.height='10px';r.style.width='36px';r.style.height='36px';});
+  });
+})();
+
+/* ── NAV SCROLL ── */
+(function(){
+  const nav=document.getElementById('mainNav');
+  window.addEventListener('scroll',()=>{
+    nav.classList.toggle('scrolled',window.scrollY>60);
+  });
+})();
+
+/* ── PARTICLES ── */
+(function(){
+  const container=document.getElementById('particles');
+  for(let i=0;i<28;i++){
+    const p=document.createElement('div');
+    p.classList.add('particle');
+    const size=Math.random()*3+1;
+    p.style.cssText=`
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      animation-duration:${6+Math.random()*12}s;
+      animation-delay:${Math.random()*8}s;
+      opacity:${0.3+Math.random()*0.5};
+    `;
+    p.style.animation=`particleFly ${6+Math.random()*12}s linear ${Math.random()*8}s infinite`;
+    container.appendChild(p);
+  }
+  const style=document.createElement('style');
+  style.textContent=`@keyframes particleFly{0%{transform:translateY(0) translateX(0);}25%{transform:translateY(-80px) translateX(${20-Math.random()*40}px);}50%{transform:translateY(-160px) translateX(${20-Math.random()*40}px);}100%{transform:translateY(-320px) translateX(${20-Math.random()*40}px);opacity:0;}}`;
+  document.head.appendChild(style);
+})();
+
+/* ── PARALLAX ── */
+(function(){
+  const bg=document.getElementById('parallaxBg');
+  if(!bg)return;
+  window.addEventListener('scroll',()=>{
+    const section=document.getElementById('parallax-section');
+    const rect=section.getBoundingClientRect();
+    const progress=1-(rect.bottom/(window.innerHeight+rect.height));
+    bg.style.transform=`translateY(${progress*60}px)`;
+  },{passive:true});
+})();
+
+/* ── SCROLL REVEAL ── */
+(function(){
+  const els=document.querySelectorAll('.reveal,.reveal-left,.reveal-right');
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting)e.target.classList.add('in');
+    });
+  },{threshold:.12});
+  els.forEach(el=>io.observe(el));
+})();
+
+/* ── NUMBER COUNTER ANIMATION ── */
+(function(){
+  const metrics=document.querySelectorAll('.metric-val');
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting&&!e.target.dataset.counted){
+        e.target.dataset.counted='1';
+        const txt=e.target.textContent;
+        const num=parseFloat(txt.replace(/[^0-9.]/g,''));
+        const prefix=txt.match(/^[^0-9]*/)[0];
+        const suffix=txt.match(/[^0-9.%£]*$/)[0];
+        if(isNaN(num))return;
+        let start=0,dur=1200,step=16;
+        const iv=setInterval(()=>{
+          start+=step;
+          const t=Math.min(start/dur,1);
+          const ease=t<.5?2*t*t:(1-Math.pow(-2*t+2,2)/2);
+          e.target.textContent=prefix+Math.round(ease*num)+(txt.includes('%')?'%':'')+(txt.includes('£')&&!prefix?'':'');
+          if(t>=1){e.target.textContent=txt;clearInterval(iv);}
+        },16);
+      }
+    });
+  },{threshold:.5});
+  metrics.forEach(m=>io.observe(m));
+})();
+/* ── HAMBURGER ── */
+function closeMobile(){
+  document.getElementById('mobileMenu').classList.remove('show');
+  document.getElementById('hamburger').classList.remove('open');
+  document.body.style.overflow='';
+}
+(function(){
+  const btn=document.getElementById('hamburger');
+  const menu=document.getElementById('mobileMenu');
+  if(!btn||!menu)return;
+  btn.addEventListener('click',()=>{
+    const open=menu.classList.toggle('show');
+    btn.classList.toggle('open',open);
+    document.body.style.overflow=open?'hidden':'';
+  });
+})();
+</script>
+</body>
+</html>
