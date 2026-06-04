@@ -363,7 +363,7 @@ footer{position:relative;z-index:1;margin-top:52px;padding:20px 16px 32px;border
 // CONFIG
 // ════════════════════════════════════════════
 const CONTRACT  = '0xD448c463821f2CBf1A1e2b4B3A68Ecf7CD728Cd4';
-const CHAIN_ID  = '0x4CFBA2'; // 5042002
+const CHAIN_ID  = '0x4cef52'; // 5042002
 const RPC       = 'https://rpc.testnet.arc.network';
 const EXPLORER  = 'https://testnet.arcscan.app';
 const CHAIN_NAME = 'Arc Network Testnet';
@@ -528,17 +528,7 @@ async function renderSharePage(tokenId) {
       </div>
     </div>
   </div>
-  <div class="sec" style="padding-bottom:0;">
-    <div class="sec-h" style="font-size:22px;">এই NFT <span>Share</span> করো</div>
-    <div class="share-box">
-      <div class="share-lbl">Share Link</div>
-      <div class="share-link-row">
-        <input class="share-link-input" id="shareLinkInShare" value="${location.origin+location.pathname}?view=${tokenId}" readonly>
-        <button class="btn-copy" onclick="copyShareLink(${tokenId})">Copy</button>
-      </div>
-      <div class="share-desc">এই link যেকাউকে দিলে তারা নিজেদের wallet এ এই NFT mint করতে পারবে।</div>
-    </div>
-  </div>`;
+`;
 
   // load NFT data from chain
   try {
@@ -887,20 +877,35 @@ async function connectW(name) {
   document.getElementById('connName').textContent = name + ' connecting...';
 
   try {
+    // Step 1: Wallet popup — accounts request
+    const accs = await window.ethereum.request({ method:'eth_requestAccounts' });
+
+    // Step 2: Chain switch (only switch, never force-add — user already has Arc)
     try {
-      await window.ethereum.request({ method:'wallet_switchEthereumChain', params:[{chainId:CHAIN_ID}] });
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: CHAIN_ID }]
+      });
     } catch(e) {
-      if (e.code===4902||e.code===-32603) {
-        await window.ethereum.request({ method:'wallet_addEthereumChain', params:[{
-          chainId: CHAIN_ID, chainName: CHAIN_NAME,
-          nativeCurrency:{name:'USDC',symbol:'USDC',decimals:18},
-          rpcUrls:[RPC], blockExplorerUrls:[EXPLORER]
-        }]});
-      } else throw e;
+      // 4902 = chain not in wallet — তখনই add করো
+      if (e.code === 4902) {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: CHAIN_ID,
+            chainName: CHAIN_NAME,
+            nativeCurrency: { name:'USDC', symbol:'USDC', decimals:18 },
+            rpcUrls: ['https://rpc.testnet.arc.network', 'https://arc-testnet.drpc.org'],
+            blockExplorerUrls: [EXPLORER]
+          }]
+        });
+      } else if (e.code !== 4001) {
+        throw e; // unexpected error
+      }
+      // 4001 = user cancelled switch — proceed anyway
     }
 
     provider = new ethers.BrowserProvider(window.ethereum);
-    const accs = await provider.send('eth_requestAccounts',[]);
     signer = await provider.getSigner();
     ctr = new ethers.Contract(CONTRACT, ABI, signer);
     walletAddr = accs[0];
