@@ -3,1861 +3,957 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glass Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>ArcDomains — Web3 Domain Registration</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Cabinet+Grotesk:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --arc: #00E5FF;
+    --arc2: #7B61FF;
+    --gold: #FFD166;
+    --bg: #050A14;
+    --bg2: #0A1428;
+    --bg3: #0F1E3A;
+    --card: rgba(15,30,58,0.85);
+    --border: rgba(0,229,255,0.13);
+    --text: #E8F4FF;
+    --muted: #6B8FAF;
+    --success: #00FFB2;
+    --error: #FF4D6D;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'Cabinet Grotesk', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
 
   body {
-    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
     min-height: 100vh;
-    background: linear-gradient(135deg, #4facfe 0%, #43e97b 35%, #fa709a 65%, #f9a825 100%);
-    background-size: 400% 400%;
-    animation: gradientShift 12s ease infinite;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    overflow-x: hidden;
   }
 
-  @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+  /* ===== BACKGROUND ===== */
+  .bg-mesh {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 20%, rgba(0,229,255,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 90% 80%, rgba(123,97,255,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(0,229,255,0.03) 0%, transparent 70%);
+  }
+  .grid-overlay {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .noise {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   }
 
-  /* LOGIN PAGE */
-  #loginPage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-    width: 100%;
-    min-height: 100vh;
-    justify-content: center;
-  }
-
-  .login-logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: white;
-    font-size: 26px;
-    font-weight: 700;
-  }
-
-  .login-logo-icon {
-    width: 44px; height: 44px;
-    background: rgba(255,255,255,0.25);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(10px);
-    border: 1.5px solid rgba(255,255,255,0.4);
-    font-size: 20px;
-  }
-
-  .glass-card {
-    background: rgba(255,255,255,0.15);
+  /* ===== NAV ===== */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 40px;
+    background: rgba(5,10,20,0.7);
     backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1.5px solid rgba(255,255,255,0.35);
-    border-radius: 24px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.3);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-head); font-weight: 800; font-size: 22px;
+    color: var(--text); text-decoration: none; letter-spacing: -0.5px;
+  }
+  .nav-logo img { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; }
+  .nav-logo span { color: var(--arc); }
+  .nav-links { display: flex; align-items: center; gap: 32px; }
+  .nav-links a {
+    color: var(--muted); font-size: 14px; font-weight: 500;
+    text-decoration: none; transition: color 0.2s; letter-spacing: 0.3px;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  /* ===== CONNECT WALLET BUTTON ===== */
+  .btn-connect {
+    display: flex; align-items: center; gap: 8px;
+    background: transparent;
+    border: 1px solid var(--arc);
+    color: var(--arc);
+    padding: 9px 20px; border-radius: 10px;
+    font-family: var(--font-body); font-weight: 600; font-size: 14px;
+    cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden;
+  }
+  .btn-connect::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--arc); opacity: 0; transition: opacity 0.25s;
+  }
+  .btn-connect:hover::before { opacity: 0.1; }
+  .btn-connect:hover { box-shadow: 0 0 20px rgba(0,229,255,0.3); }
+  .btn-connect .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--arc); box-shadow: 0 0 6px var(--arc);
+    animation: pulse-dot 2s infinite;
+  }
+  .btn-connect.connected { border-color: var(--success); color: var(--success); }
+  .btn-connect.connected .dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
   }
 
-  .login-card {
-    padding: 40px 44px;
-    width: 420px;
-  }
-
-  .login-card h2 {
-    color: white;
-    font-size: 28px;
-    font-weight: 700;
+  /* ===== HERO ===== */
+  .hero {
+    position: relative; z-index: 1;
+    padding: 160px 40px 80px;
     text-align: center;
-    margin-bottom: 32px;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    max-width: 900px; margin: 0 auto;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2);
+    color: var(--arc); font-size: 12px; font-family: var(--font-mono);
+    padding: 5px 14px; border-radius: 100px; margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-badge::before { content: '◆'; font-size: 8px; }
+  .hero h1 {
+    font-family: var(--font-head); font-weight: 800; font-size: clamp(42px,6vw,80px);
+    line-height: 1.05; letter-spacing: -2px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .hero h1 .accent { color: var(--arc); }
+  .hero p {
+    margin-top: 20px; color: var(--muted); font-size: 18px; line-height: 1.6;
+    max-width: 560px; margin-left: auto; margin-right: auto;
+    animation: fadeUp 0.6s 0.2s ease both;
   }
 
-  .glass-input-wrap {
-    position: relative;
-    margin-bottom: 18px;
+  /* ===== SEARCH BOX ===== */
+  .search-wrap {
+    position: relative; z-index: 1;
+    max-width: 680px; margin: 48px auto 0;
+    animation: fadeUp 0.6s 0.3s ease both;
   }
-
-  .glass-input-wrap .icon {
-    position: absolute;
-    left: 16px; top: 50%;
-    transform: translateY(-50%);
-    color: rgba(255,255,255,0.8);
-    font-size: 16px;
-  }
-
-  .glass-input-wrap .eye-icon {
-    position: absolute;
-    right: 16px; top: 50%;
-    transform: translateY(-50%);
-    color: rgba(255,255,255,0.7);
-    cursor: pointer;
-    font-size: 16px;
-  }
-
-  .glass-input {
-    width: 100%;
-    padding: 14px 44px;
-    background: rgba(255,255,255,0.18);
-    border: 1.5px solid rgba(255,255,255,0.4);
-    border-radius: 50px;
-    color: white;
-    font-size: 15px;
-    font-family: 'Nunito', sans-serif;
-    outline: none;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s;
-  }
-
-  .glass-input::placeholder { color: rgba(255,255,255,0.65); }
-  .glass-input:focus {
-    background: rgba(255,255,255,0.25);
-    border-color: rgba(255,255,255,0.6);
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
-  }
-
-  .login-btn {
-    width: 100%;
-    padding: 15px;
-    background: rgba(255,255,255,0.28);
-    border: 1.5px solid rgba(255,255,255,0.5);
-    border-radius: 50px;
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: 'Nunito', sans-serif;
-    cursor: pointer;
-    margin-top: 8px;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  }
-
-  .login-btn:hover {
-    background: rgba(255,255,255,0.38);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-  }
-
-  .login-links {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
-
-  .login-links a {
-    color: rgba(255,255,255,0.85);
-    font-size: 13px;
-    text-decoration: underline;
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-
-  .login-links a:hover { color: white; }
-
-  /* MAIN DASHBOARD */
-  #dashboardApp {
-    display: none;
-    width: 100vw;
-    height: 100vh;
-    padding: 16px;
-    gap: 14px;
-  }
-
-  .app-layout {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    gap: 14px;
-  }
-
-  /* SIDEBAR */
-  .sidebar {
-    width: 220px;
-    min-width: 220px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 16px 12px;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1.5px solid rgba(255,255,255,0.25);
-    border-radius: 20px;
-  }
-
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-radius: 50px;
-    cursor: pointer;
-    color: rgba(255,255,255,0.85);
-    font-size: 15px;
-    font-weight: 600;
-    transition: all 0.25s;
-    border: 1.5px solid transparent;
-  }
-
-  .nav-item:hover {
-    background: rgba(255,255,255,0.15);
-    border-color: rgba(255,255,255,0.3);
-    color: white;
-  }
-
-  .nav-item.active {
-    background: rgba(255,255,255,0.22);
-    border-color: rgba(255,255,255,0.4);
-    color: white;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  }
-
-  .nav-icon {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0;
-  }
-
-  .nav-icon.purple { background: linear-gradient(135deg, #a855f7, #7c3aed); }
-  .nav-icon.orange { background: linear-gradient(135deg, #f97316, #ea580c); }
-  .nav-icon.green  { background: linear-gradient(135deg, #22c55e, #16a34a); }
-  .nav-icon.red    { background: linear-gradient(135deg, #ef4444, #dc2626); }
-  .nav-icon.blue   { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-  .nav-icon.gray   { background: linear-gradient(135deg, #6b7280, #4b5563); }
-  .nav-icon.teal   { background: linear-gradient(135deg, #14b8a6, #0d9488); }
-
-  .sidebar-spacer { flex: 1; }
-
-  .sidebar-user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: rgba(255,255,255,0.12);
-    border-radius: 50px;
-    border: 1.5px solid rgba(255,255,255,0.25);
-  }
-
-  .user-avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    border: 2px solid rgba(255,255,255,0.4);
-  }
-
-  .user-info { color: white; }
-  .user-info .label { font-size: 11px; opacity: 0.7; }
-  .user-info .name  { font-size: 13px; font-weight: 700; }
-
-  /* MAIN CONTENT */
-  .main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    overflow: hidden;
-  }
-
-  /* TOP BAR */
-  .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 22px;
-    background: rgba(255,255,255,0.12);
-    backdrop-filter: blur(20px);
-    border: 1.5px solid rgba(255,255,255,0.25);
-    border-radius: 16px;
-  }
-
-  .topbar-title h1 { color: white; font-size: 22px; font-weight: 800; }
-  .topbar-title p  { color: rgba(255,255,255,0.65); font-size: 12px; }
-
-  .topbar-stats {
-    display: flex;
-    gap: 16px;
-  }
-
-  .topbar-stat {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: white;
-  }
-
-  .topbar-stat-icon {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-  }
-
-  .topbar-stat .val { font-size: 16px; font-weight: 800; }
-  .topbar-stat .lbl { font-size: 10px; opacity: 0.7; }
-
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
   .search-box {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 18px;
-    background: rgba(255,255,255,0.15);
-    border: 1.5px solid rgba(255,255,255,0.3);
-    border-radius: 50px;
-    color: rgba(255,255,255,0.7);
-    font-size: 13px;
-  }
-
-  .search-box input {
-    background: none;
-    border: none;
-    outline: none;
-    color: white;
-    font-family: 'Nunito', sans-serif;
-    font-size: 13px;
-    width: 160px;
-  }
-  .search-box input::placeholder { color: rgba(255,255,255,0.5); }
-
-  .notif-btn {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    border: 1.5px solid rgba(255,255,255,0.3);
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 15px; cursor: pointer;
-    position: relative;
-  }
-
-  .notif-badge {
-    position: absolute;
-    top: -2px; right: -2px;
-    width: 14px; height: 14px;
-    background: #ef4444;
-    border-radius: 50%;
-    font-size: 9px;
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-weight: 700;
-  }
-
-  .topbar-avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border: 2px solid rgba(255,255,255,0.4);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; cursor: pointer;
-  }
-
-  /* PAGES */
-  .page { display: none; flex: 1; overflow: auto; }
-  .page.active { display: flex; flex-direction: column; gap: 12px; }
-
-  /* GLASS PANEL */
-  .glass-panel {
-    background: rgba(255,255,255,0.12);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1.5px solid rgba(255,255,255,0.25);
-    border-radius: 18px;
-    padding: 20px;
-  }
-
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-
-  .panel-header h3 { color: white; font-size: 16px; font-weight: 700; }
-
-  .more-btn {
-    color: rgba(255,255,255,0.6);
-    cursor: pointer;
-    font-size: 18px;
-    letter-spacing: 2px;
-  }
-
-  /* TABLE */
-  .glass-table { width: 100%; border-collapse: collapse; }
-
-  .glass-table th {
-    color: rgba(255,255,255,0.6);
-    font-size: 12px;
-    font-weight: 600;
-    padding: 8px 12px;
-    text-align: left;
-    border-bottom: 1px solid rgba(255,255,255,0.15);
-  }
-
-  .glass-table td {
-    color: white;
-    font-size: 13px;
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-  }
-
-  .glass-table tr:last-child td { border-bottom: none; }
-  .glass-table tr:hover td { background: rgba(255,255,255,0.06); }
-
-  .user-cell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .avatar-sm {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px;
-    flex-shrink: 0;
-    border: 1.5px solid rgba(255,255,255,0.3);
-  }
-
-  .user-cell .uname { font-size: 13px; font-weight: 600; }
-  .user-cell .urole { font-size: 11px; color: rgba(255,255,255,0.5); }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 10px;
-    border-radius: 50px;
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  .badge.up   { background: rgba(34,197,94,0.2);  color: #4ade80; }
-  .badge.down { background: rgba(239,68,68,0.2);   color: #f87171; }
-
-  .action-btn {
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 8px;
-    color: rgba(255,255,255,0.7);
-    padding: 4px 8px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.2s;
-  }
-  .action-btn:hover { background: rgba(255,255,255,0.22); color: white; }
-
-  /* STATS CARD */
-  .stat-card {
-    background: rgba(255,255,255,0.12);
-    backdrop-filter: blur(20px);
-    border: 1.5px solid rgba(255,255,255,0.25);
-    border-radius: 18px;
-    padding: 20px;
-  }
-
-  .stat-card h4 { color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-  .stat-card .big-num { color: white; font-size: 36px; font-weight: 800; }
-  .stat-card .sub { color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 2px; }
-
-  /* GRID LAYOUTS */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-  .grid-main-side { display: grid; grid-template-columns: 1fr 280px; gap: 12px; }
-  .grid-main-side2 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
-
-  /* TOGGLE */
-  .toggle-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    color: white;
-    font-size: 14px;
-  }
-  .toggle-wrap:last-child { border-bottom: none; }
-
-  .toggle-icon { margin-right: 10px; font-size: 16px; }
-
-  .toggle {
-    width: 44px; height: 24px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50px;
-    position: relative;
-    cursor: pointer;
-    transition: background 0.3s;
-    border: 1.5px solid rgba(255,255,255,0.3);
-  }
-  .toggle.on { background: rgba(59,130,246,0.7); }
-  .toggle::after {
-    content: '';
-    position: absolute;
-    width: 18px; height: 18px;
-    background: white;
-    border-radius: 50%;
-    top: 1px; left: 1px;
-    transition: left 0.3s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  }
-  .toggle.on::after { left: 22px; }
-
-  /* PROGRESS BAR */
-  .progress-bar-wrap { margin-bottom: 14px; }
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    color: white;
-    font-size: 13px;
-    margin-bottom: 6px;
-  }
-  .progress-track {
-    height: 6px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 50px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    border-radius: 50px;
-    transition: width 1s ease;
-  }
-
-  /* PROJECT CARD */
-  .project-card {
-    background: rgba(255,255,255,0.12);
-    backdrop-filter: blur(20px);
-    border: 1.5px solid rgba(255,255,255,0.25);
-    border-radius: 18px;
-    padding: 22px;
-  }
-
-  .project-status {
-    font-size: 13px;
-    font-weight: 700;
-    margin-bottom: 14px;
-  }
-  .project-status.inprogress { color: #fbbf24; }
-  .project-status.completed  { color: #4ade80; }
-  .project-status.onhold     { color: #f87171; }
-
-  .project-card h3 { color: white; font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-
-  .team-avatars {
-    display: flex;
-    margin: 14px 0 16px;
-  }
-
-  .team-avatars .avatar-sm {
-    margin-left: -8px;
-    border: 2px solid rgba(255,255,255,0.3);
-  }
-  .team-avatars .avatar-sm:first-child { margin-left: 0; }
-
-  .project-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 12px;
-  }
-
-  .project-date {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: rgba(255,255,255,0.7);
-    font-size: 13px;
-    background: rgba(255,255,255,0.1);
-    padding: 6px 12px;
-    border-radius: 50px;
-    border: 1px solid rgba(255,255,255,0.2);
-  }
-
-  .project-icons { display: flex; gap: 8px; }
-  .proj-icon-btn {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-    cursor: pointer;
-  }
-
-  /* DONUT CHART */
-  .donut-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-  }
-  .donut-wrap canvas { max-width: 80px; max-height: 80px; }
-  .donut-label { color: white; font-size: 11px; text-align: center; opacity: 0.8; }
-
-  /* GAUGE */
-  .gauge-card {
-    background: rgba(255,255,255,0.12);
-    border: 1.5px solid rgba(255,255,255,0.25);
-    border-radius: 18px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .gauge-circle {
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    border: 6px solid rgba(255,255,255,0.15);
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 18px; font-weight: 800;
-    position: relative;
-  }
-
-  /* QUICK CONTROLS */
-  .quick-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-  }
-
-  .quick-btn {
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 17px;
-    cursor: pointer;
-    border: 2px solid rgba(255,255,255,0.25);
-    transition: transform 0.2s;
-    margin: auto;
-  }
-  .quick-btn:hover { transform: scale(1.1); }
-  .quick-btn.blue   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-  .quick-btn.orange { background: linear-gradient(135deg, #f97316, #ea580c); }
-  .quick-btn.green  { background: linear-gradient(135deg, #22c55e, #16a34a); }
-  .quick-btn.purple { background: linear-gradient(135deg, #a855f7, #7c3aed); }
-  .quick-btn.teal   { background: linear-gradient(135deg, #14b8a6, #0d9488); }
-  .quick-btn.red    { background: linear-gradient(135deg, #ef4444, #dc2626); }
-  .quick-btn.yellow { background: linear-gradient(135deg, #eab308, #ca8a04); }
-  .quick-btn.gray   { background: linear-gradient(135deg, #6b7280, #4b5563); }
-
-  /* SETTINGS */
-  .settings-input {
-    width: 100%;
-    padding: 10px 14px;
-    background: rgba(255,255,255,0.12);
-    border: 1.5px solid rgba(255,255,255,0.25);
-    border-radius: 10px;
-    color: white;
-    font-size: 14px;
-    font-family: 'Nunito', sans-serif;
-    outline: none;
-    margin-top: 4px;
-  }
-  .settings-input::placeholder { color: rgba(255,255,255,0.4); }
-
-  .settings-label { color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 14px; margin-bottom: 2px; }
-
-  .upload-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 18px;
-    background: rgba(255,255,255,0.15);
-    border: 1.5px solid rgba(255,255,255,0.3);
-    border-radius: 10px;
-    color: white;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .upload-btn:hover { background: rgba(255,255,255,0.25); }
-
-  .color-dots {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-  }
-
-  .color-dot {
-    width: 24px; height: 24px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: transform 0.2s;
-    border: 2px solid transparent;
-  }
-  .color-dot:hover { transform: scale(1.15); }
-  .color-dot.selected { border-color: white; }
-
-  .theme-toggle {
-    display: flex;
-    background: rgba(255,255,255,0.12);
-    border-radius: 50px;
-    padding: 4px;
-    gap: 4px;
-  }
-  .theme-btn {
-    padding: 6px 18px;
-    border-radius: 50px;
-    color: rgba(255,255,255,0.7);
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .theme-btn.active {
-    background: rgba(255,255,255,0.25);
-    color: white;
-  }
-
-  .slider-wrap { margin-top: 8px; }
-  .slider {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 4px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50px;
-    outline: none;
-  }
-  .slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px; height: 18px;
-    background: white;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  }
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    font-size: 13px;
-  }
-  .info-row:last-child { border-bottom: none; }
-  .info-row .key { color: rgba(255,255,255,0.6); }
-  .info-row .val { color: white; font-weight: 600; }
-
-  .help-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 12px;
-    cursor: pointer;
-    color: white;
-    font-size: 14px;
-    margin-bottom: 8px;
-    transition: all 0.2s;
-  }
-  .help-row:hover { background: rgba(255,255,255,0.15); }
-
-  /* TASKS */
-  .task-row { display: flex; align-items: center; gap: 12px; }
-  .task-check {
-    width: 16px; height: 16px;
-    border: 1.5px solid rgba(255,255,255,0.4);
-    border-radius: 4px;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .priority-bar {
-    width: 60px; height: 6px;
-    border-radius: 50px;
-    background: rgba(255,255,255,0.1);
-    overflow: hidden;
-  }
-  .priority-fill { height: 100%; border-radius: 50px; }
-
-  .task-btn {
-    padding: 4px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.25);
-    background: rgba(255,255,255,0.12);
-    color: white;
-    transition: all 0.2s;
-  }
-  .task-btn:hover { background: rgba(255,255,255,0.22); }
-
-  .add-task-btn {
-    width: 100%;
-    padding: 16px;
-    background: rgba(255,255,255,0.15);
-    border: 1.5px solid rgba(255,255,255,0.3);
-    border-radius: 50px;
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: 'Nunito', sans-serif;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-  .add-task-btn:hover { background: rgba(255,255,255,0.25); }
-
-  /* REPORTS */
-  .report-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    color: white;
-    font-size: 13px;
-  }
-  .report-row:last-child { border-bottom: none; }
-
-  .report-type {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .file-icon {
-    width: 28px; height: 28px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-  }
-  .file-icon.pdf  { background: rgba(239,68,68,0.25); color: #f87171; }
-  .file-icon.xlsx { background: rgba(34,197,94,0.25); color: #4ade80; }
-
-  .dl-btn {
-    width: 28px; height: 28px;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    color: rgba(255,255,255,0.7);
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.2s;
-  }
-  .dl-btn:hover { background: rgba(255,255,255,0.22); color: white; }
-
-  .template-card {
-    background: rgba(255,255,255,0.1);
-    border: 1.5px solid rgba(255,255,255,0.2);
-    border-radius: 14px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: flex; align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 6px 6px 6px 20px;
     gap: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
+    backdrop-filter: blur(20px);
+    transition: border-color 0.3s, box-shadow 0.3s;
   }
-  .template-card:hover { background: rgba(255,255,255,0.18); }
-
-  .template-icon {
-    width: 50px; height: 50px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
+  .search-box:focus-within {
+    border-color: var(--arc);
+    box-shadow: 0 0 0 3px rgba(0,229,255,0.1), 0 20px 60px rgba(0,0,0,0.4);
   }
-
-  .template-card .label { color: white; font-size: 14px; font-weight: 600; text-align: center; }
-
-  .create-btn {
-    padding: 7px 22px;
-    background: rgba(255,255,255,0.12);
-    border: 1.5px solid rgba(255,255,255,0.3);
-    border-radius: 50px;
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: 'Nunito', sans-serif;
-    cursor: pointer;
-    transition: all 0.2s;
+  .search-box input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-family: var(--font-mono); font-size: 16px; font-weight: 400;
+    padding: 10px 0;
   }
-  .create-btn:hover { background: rgba(255,255,255,0.22); }
+  .search-box input::placeholder { color: var(--muted); }
+  .search-suffix {
+    color: var(--arc); font-family: var(--font-mono); font-size: 15px;
+    padding: 0 4px; white-space: nowrap; opacity: 0.7;
+  }
+  .btn-search {
+    background: var(--arc); color: var(--bg);
+    border: none; border-radius: 10px;
+    padding: 12px 28px; font-family: var(--font-body);
+    font-weight: 700; font-size: 15px; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .btn-search:hover { background: #33EEFF; box-shadow: 0 0 20px rgba(0,229,255,0.4); }
+  .btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* ANALYTICS */
-  .world-map-placeholder {
-    width: 100%; height: 120px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    color: rgba(255,255,255,0.4);
-    font-size: 13px;
-    position: relative;
+  /* ===== SEARCH RESULT ===== */
+  .search-result {
+    margin-top: 16px; border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--card); backdrop-filter: blur(20px);
+    overflow: hidden; display: none;
+    animation: slideDown 0.3s ease;
+  }
+  .search-result.show { display: block; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .result-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 22px; gap: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-name {
+    font-family: var(--font-mono); font-size: 16px; font-weight: 500;
+    color: var(--text);
+  }
+  .result-meta { display: flex; align-items: center; gap: 10px; }
+  .chain-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2);
+    padding: 4px 10px; border-radius: 20px; font-size: 12px;
+    color: var(--arc); font-family: var(--font-mono);
+  }
+  .chain-badge img { width: 16px; height: 16px; border-radius: 50%; }
+  .status-available {
+    display: flex; align-items: center; gap: 6px;
+    color: var(--success); font-size: 13px; font-weight: 600;
+  }
+  .status-available::before { content: '●'; font-size: 8px; }
+  .status-taken {
+    display: flex; align-items: center; gap: 6px;
+    color: var(--error); font-size: 13px; font-weight: 600;
+  }
+  .status-taken::before { content: '●'; font-size: 8px; }
+  .btn-register {
+    background: linear-gradient(135deg, var(--arc), var(--arc2));
+    color: white; border: none; border-radius: 8px;
+    padding: 9px 20px; font-family: var(--font-body);
+    font-weight: 700; font-size: 13px; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .btn-register:hover { opacity: 0.9; box-shadow: 0 0 20px rgba(123,97,255,0.4); transform: translateY(-1px); }
+
+  /* ===== LOADING ===== */
+  .search-loading {
+    display: none; align-items: center; justify-content: center;
+    gap: 12px; padding: 24px;
+    color: var(--muted); font-size: 14px; font-family: var(--font-mono);
+  }
+  .search-loading.show { display: flex; }
+  .spinner {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid rgba(0,229,255,0.2);
+    border-top-color: var(--arc);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== STATS ===== */
+  .stats {
+    position: relative; z-index: 1;
+    display: flex; justify-content: center; gap: 0;
+    max-width: 700px; margin: 60px auto 0;
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--card); backdrop-filter: blur(20px);
     overflow: hidden;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+  .stat { flex: 1; padding: 24px 20px; text-align: center; border-right: 1px solid var(--border); }
+  .stat:last-child { border-right: none; }
+  .stat-value { font-family: var(--font-head); font-size: 28px; font-weight: 800; color: var(--arc); }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; font-family: var(--font-mono); }
+
+  /* ===== SECTION ===== */
+  .section {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 100px auto 0; padding: 0 40px;
+  }
+  .section-title {
+    font-family: var(--font-head); font-size: 36px; font-weight: 800;
+    letter-spacing: -1px; margin-bottom: 40px;
+  }
+  .section-title span { color: var(--arc); }
+
+  /* ===== FEATURES ===== */
+  .features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+  .feature-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px;
+    transition: all 0.3s; backdrop-filter: blur(10px);
+    position: relative; overflow: hidden;
+  }
+  .feature-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; background: linear-gradient(90deg, var(--arc), var(--arc2));
+    transform: scaleX(0); transition: transform 0.3s; transform-origin: left;
+  }
+  .feature-card:hover { border-color: rgba(0,229,255,0.3); transform: translateY(-4px); }
+  .feature-card:hover::before { transform: scaleX(1); }
+  .feature-icon { font-size: 32px; margin-bottom: 16px; }
+  .feature-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .feature-desc { color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+  /* ===== HOW IT WORKS ===== */
+  .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; position: relative; }
+  .steps::before {
+    content: ''; position: absolute; top: 32px; left: 15%; right: 15%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--arc), transparent);
+    opacity: 0.3;
+  }
+  .step { text-align: center; padding: 20px; }
+  .step-num {
+    width: 56px; height: 56px; border-radius: 50%;
+    border: 2px solid var(--arc);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; font-family: var(--font-head); font-weight: 800; font-size: 20px;
+    color: var(--arc); background: rgba(0,229,255,0.05);
+    box-shadow: 0 0 20px rgba(0,229,255,0.15);
+  }
+  .step-title { font-family: var(--font-head); font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .step-desc { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+  /* ===== CREATOR ===== */
+  .creator-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 24px; padding: 48px;
+    display: flex; align-items: center; gap: 48px;
+    backdrop-filter: blur(20px); position: relative; overflow: hidden;
+  }
+  .creator-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 0% 50%, rgba(0,229,255,0.04) 0%, transparent 60%);
+  }
+  .creator-avatar {
+    width: 120px; height: 120px; border-radius: 50%;
+    border: 3px solid var(--arc);
+    box-shadow: 0 0 30px rgba(0,229,255,0.3);
+    object-fit: cover; flex-shrink: 0;
+  }
+  .creator-info { flex: 1; position: relative; }
+  .creator-tag {
+    font-family: var(--font-mono); font-size: 11px; color: var(--arc);
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .creator-name { font-family: var(--font-head); font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+  .creator-desc { color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    position: relative; z-index: 1;
+    margin-top: 120px; padding: 40px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    color: var(--muted); font-size: 13px; font-family: var(--font-mono);
+  }
+  .footer-logo { font-family: var(--font-head); font-weight: 800; font-size: 18px; color: var(--text); }
+  .footer-logo span { color: var(--arc); }
+
+  /* ===== MODAL OVERLAY ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(5,10,20,0.85); backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 24px; padding: 40px;
+    width: 440px; max-width: calc(100vw - 32px);
+    transform: scale(0.95) translateY(20px);
+    transition: transform 0.3s;
+    position: relative;
+  }
+  .modal-overlay.show .modal { transform: scale(1) translateY(0); }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: rgba(255,255,255,0.05); border: none; color: var(--muted);
+    width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 18px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+  .modal-title { font-family: var(--font-head); font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .modal-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+
+  /* ===== WALLET OPTIONS ===== */
+  .wallet-options { display: flex; flex-direction: column; gap: 12px; }
+  .wallet-btn {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 20px; cursor: pointer;
+    transition: all 0.25s; width: 100%;
+  }
+  .wallet-btn:hover { border-color: var(--arc); background: rgba(0,229,255,0.05); transform: translateX(4px); }
+  .wallet-btn img { width: 40px; height: 40px; border-radius: 10px; object-fit: contain; }
+  .wallet-btn-info { flex: 1; text-align: left; }
+  .wallet-btn-name { font-family: var(--font-head); font-size: 16px; font-weight: 700; }
+  .wallet-btn-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .wallet-btn-arrow { color: var(--muted); font-size: 18px; }
+
+  /* ===== WALLET CONNECTING ===== */
+  .connecting-state {
+    text-align: center; padding: 20px 0; display: none;
+  }
+  .connecting-state.show { display: block; }
+  .wallet-options.hide { display: none; }
+  .connect-spinner {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 3px solid rgba(0,229,255,0.15);
+    border-top-color: var(--arc);
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+    position: relative;
+  }
+  .connect-spinner::after {
+    content: ''; position: absolute; inset: 6px; border-radius: 50%;
+    border: 3px solid rgba(123,97,255,0.15);
+    border-bottom-color: var(--arc2);
+    animation: spin 1.5s linear infinite reverse;
+  }
+  .connecting-wallet-name { font-family: var(--font-head); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .connecting-sub { color: var(--muted); font-size: 13px; }
+
+  /* ===== TX MODAL ===== */
+  .tx-state { display: none; }
+  .tx-state.show { display: block; }
+  .tx-steps { margin: 20px 0; display: flex; flex-direction: column; gap: 12px; }
+  .tx-step {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-radius: 12px;
+    background: var(--bg3); border: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .tx-step.active { border-color: var(--arc); background: rgba(0,229,255,0.05); }
+  .tx-step.done { border-color: var(--success); background: rgba(0,255,178,0.05); }
+  .tx-step-icon { font-size: 20px; width: 28px; text-align: center; }
+  .tx-step-label { flex: 1; font-weight: 500; }
+  .tx-step-status { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+  .tx-step.active .tx-step-status { color: var(--arc); }
+  .tx-step.done .tx-step-status { color: var(--success); }
+  .step-spinner { display: inline-block; animation: spin 0.8s linear infinite; }
+
+  /* ===== SUCCESS ===== */
+  .success-state { display: none; text-align: center; }
+  .success-state.show { display: block; }
+  .success-checkmark {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(0,255,178,0.1); border: 2px solid var(--success);
+    margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
+    font-size: 36px; animation: successPop 0.5s ease;
+    box-shadow: 0 0 30px rgba(0,255,178,0.2);
+  }
+  @keyframes successPop {
+    0% { transform: scale(0); opacity: 0; }
+    80% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .success-title { font-family: var(--font-head); font-size: 24px; font-weight: 800; margin-bottom: 8px; color: var(--success); }
+  .success-sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .explorer-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2);
+    color: var(--arc); padding: 12px 24px; border-radius: 10px;
+    text-decoration: none; font-family: var(--font-mono); font-size: 13px;
+    transition: all 0.2s; width: 100%; justify-content: center;
+  }
+  .explorer-link:hover { background: rgba(0,229,255,0.15); box-shadow: 0 0 20px rgba(0,229,255,0.2); }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
   }
 
-  .map-dot {
-    position: absolute;
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: rgba(251,191,36,0.7);
-    box-shadow: 0 0 8px rgba(251,191,36,0.5);
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed; bottom: 32px; right: 32px; z-index: 300;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px; font-family: var(--font-mono);
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s; pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--success); color: var(--success); }
+  .toast.error { border-color: var(--error); color: var(--error); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+
+  /* Floating particles */
+  .particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .particle {
+    position: absolute; border-radius: 50%;
+    background: var(--arc); opacity: 0;
+    animation: float-particle linear infinite;
+  }
+  @keyframes float-particle {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.1; }
+    100% { transform: translateY(-100px) scale(1); opacity: 0; }
   }
 
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 50px; }
-
-  /* ANALYTICS PIE LEGEND */
-  .legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  /* responsive font */
-  @media (max-width: 1100px) {
-    .sidebar { width: 180px; min-width: 180px; }
-    .topbar-stats { display: none; }
+  @media (max-width: 768px) {
+    nav { padding: 14px 20px; }
+    .nav-links { display: none; }
+    .hero { padding: 120px 20px 60px; }
+    .search-wrap { margin: 32px 20px 0; }
+    .stats { margin: 40px 20px 0; }
+    .section { padding: 0 20px; margin-top: 70px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: repeat(2,1fr); }
+    .steps::before { display: none; }
+    .creator-card { flex-direction: column; text-align: center; padding: 32px 24px; gap: 24px; }
+    footer { flex-direction: column; gap: 12px; text-align: center; padding: 24px 20px; }
+    .search-box input { font-size: 14px; }
   }
 </style>
 </head>
 <body>
 
-<!-- ===================== LOGIN ===================== -->
-<div id="loginPage">
-  <div class="login-logo">
-    <div class="login-logo-icon">⬡</div>
-    Logo
+<div class="bg-mesh"></div>
+<div class="grid-overlay"></div>
+<div class="noise"></div>
+<div class="particles" id="particles"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">
+    <img src="https://i.postimg.cc/3xv4dzRw/20260603-214607.jpg" alt="Arc" onerror="this.style.display='none'">
+    Arc<span>Domains</span>
+  </a>
+  <div class="nav-links">
+    <a href="#">Explore</a>
+    <a href="#">My Domains</a>
+    <a href="#">Docs</a>
   </div>
-  <div class="glass-card login-card">
-    <h2>Login</h2>
-    <div class="glass-input-wrap">
-      <span class="icon">👤</span>
-      <input class="glass-input" type="text" placeholder="Username">
+  <button class="btn-connect" id="connectBtn" onclick="openWalletModal()">
+    <span class="dot"></span>
+    <span id="connectBtnText">Connect Wallet</span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Built on Arc Network · EVM Compatible</div>
+  <h1>Your Identity on<br><span class="accent">Arc Blockchain</span></h1>
+  <p>Register Web3 domains on Arc Network. Own your digital identity, link your wallet, and build your onchain presence.</p>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search for your domain..." autocomplete="off" onkeypress="handleKey(event)">
+    <span class="search-suffix">.arc</span>
+    <button class="btn-search" id="searchBtn" onclick="searchDomain()">Search</button>
+  </div>
+  <div class="search-loading" id="searchLoading">
+    <div class="spinner"></div>
+    <span>Checking availability on Arc Network...</span>
+  </div>
+  <div class="search-result" id="searchResult"></div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-value" id="stat1">0</div>
+    <div class="stat-label">Domains Registered</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">5042002</div>
+    <div class="stat-label">Arc Chain ID</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">&lt;1s</div>
+    <div class="stat-label">Finality</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">$1</div>
+    <div class="stat-label">Per Year (USDC)</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section">
+  <div class="section-title">How it <span>Works</span></div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Connect Wallet</div>
+      <div class="step-desc">Connect MetaMask or Rabby to Arc Testnet with one click</div>
     </div>
-    <div class="glass-input-wrap">
-      <span class="icon">🔒</span>
-      <input class="glass-input" type="password" id="pwdInput" placeholder="Password">
-      <span class="eye-icon" onclick="togglePwd()">🙈</span>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">Search Domain</div>
+      <div class="step-desc">Check availability of your desired .arc domain name</div>
     </div>
-    <button class="login-btn" onclick="showDashboard()">Log In</button>
-    <div class="login-links">
-      <a>Forgot Password?</a>
-      <a>Create Account</a>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-title">Register</div>
+      <div class="step-desc">Pay 1 USDC per year and own your domain onchain</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-title">Configure</div>
+      <div class="step-desc">Link wallet address, IPFS site, social records and more</div>
     </div>
   </div>
 </div>
 
-<!-- ===================== DASHBOARD APP ===================== -->
-<div id="dashboardApp">
-  <div class="app-layout">
+<!-- FEATURES -->
+<div class="section">
+  <div class="section-title">Platform <span>Features</span></div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔗</div>
+      <div class="feature-title">Wallet Linking</div>
+      <div class="feature-desc">Map your domain to any EVM wallet address. Send crypto with just a name instead of 0x addresses.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <div class="feature-title">IPFS Websites</div>
+      <div class="feature-desc">Host decentralized websites on IPFS and link them to your domain. Fully censorship-resistant.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏷️</div>
+      <div class="feature-title">Subdomains</div>
+      <div class="feature-desc">Create unlimited subdomains under your domain. Perfect for teams and projects.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔄</div>
+      <div class="feature-title">Transferable</div>
+      <div class="feature-desc">Domains are NFTs on Arc blockchain. Transfer or sell them freely on any marketplace.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <div class="feature-title">Social Records</div>
+      <div class="feature-desc">Store email, Twitter, website and other metadata directly onchain with your domain.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-title">Instant Finality</div>
+      <div class="feature-desc">Arc's Malachite consensus engine provides sub-second finality for all transactions.</div>
+    </div>
+  </div>
+</div>
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-      <div class="nav-item active" onclick="showPage('dashboard', this)">
-        <div class="nav-icon purple">⊞</div> Dashboard
+<!-- CREATOR -->
+<div class="section" style="margin-bottom: 40px;">
+  <div class="section-title">Meet the <span>Creator</span></div>
+  <div class="creator-card">
+    <img class="creator-avatar" src="https://i.postimg.cc/vZVgcCBH/IMG-20260603-214625-417.jpg" alt="Joynal" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Joynal'">
+    <div class="creator-info">
+      <div class="creator-tag">Platform Creator</div>
+      <div class="creator-name">Joynal</div>
+      <div class="creator-desc">Built ArcDomains to bring decentralized domain registration to Arc Network — making Web3 identity accessible to everyone. Powered by Arc's stablecoin-native L1 blockchain with USDC as gas.</div>
+      <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <span style="background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2); color: var(--arc); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-family: var(--font-mono);">Arc Network</span>
+        <span style="background: rgba(123,97,255,0.08); border: 1px solid rgba(123,97,255,0.2); color: var(--arc2); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-family: var(--font-mono);">Solidity</span>
+        <span style="background: rgba(255,209,102,0.08); border: 1px solid rgba(255,209,102,0.2); color: var(--gold); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-family: var(--font-mono);">Web3</span>
       </div>
-      <div class="nav-item" onclick="showPage('analytics', this)">
-        <div class="nav-icon orange">📊</div> Analytics
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Arc<span>Domains</span></div>
+  <div>Contract: <span style="color: var(--arc);">0xdE23Aad9...ffb854</span></div>
+  <div>Built by Joynal · Arc Testnet</div>
+</footer>
+
+<!-- WALLET MODAL -->
+<div class="modal-overlay" id="walletModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeWalletModal()">×</button>
+    <div id="walletSelectView">
+      <div class="modal-title">Connect Wallet</div>
+      <div class="modal-sub">Choose your wallet to connect to Arc Network</div>
+      <div class="wallet-options" id="walletOptions">
+        <button class="wallet-btn" onclick="connectWallet('MetaMask')">
+          <img src="https://i.postimg.cc/023K598J/download.png" alt="MetaMask">
+          <div class="wallet-btn-info">
+            <div class="wallet-btn-name">MetaMask</div>
+            <div class="wallet-btn-desc">Most popular EVM wallet</div>
+          </div>
+          <span class="wallet-btn-arrow">→</span>
+        </button>
+        <button class="wallet-btn" onclick="connectWallet('Rabby')">
+          <img src="https://i.postimg.cc/DyD4f72m/images.png" alt="Rabby">
+          <div class="wallet-btn-info">
+            <div class="wallet-btn-name">Rabby Wallet</div>
+            <div class="wallet-btn-desc">Multi-chain smart wallet</div>
+          </div>
+          <span class="wallet-btn-arrow">→</span>
+        </button>
       </div>
-      <div class="nav-item" onclick="showPage('projects', this)">
-        <div class="nav-icon green">📁</div> Projects
+      <div class="connecting-state" id="connectingState">
+        <div class="connect-spinner"></div>
+        <div class="connecting-wallet-name" id="connectingName">Connecting...</div>
+        <div class="connecting-sub">Approve the connection in your wallet</div>
       </div>
-      <div class="nav-item" onclick="showPage('tasks', this)">
-        <div class="nav-icon red">☰</div> Tasks
-      </div>
-      <div class="nav-item" onclick="showPage('users', this)">
-        <div class="nav-icon blue">👥</div> Users
-      </div>
-      <div class="nav-item" onclick="showPage('settings', this)">
-        <div class="nav-icon gray">⚙</div> Settings
-      </div>
-      <div class="nav-item" onclick="showPage('reports', this)">
-        <div class="nav-icon teal">📈</div> Reports
-      </div>
-      <div class="sidebar-spacer"></div>
-      <div class="sidebar-user">
-        <div class="user-avatar">👤</div>
-        <div class="user-info">
-          <div class="label">Admin:</div>
-          <div class="name">Devorin</div>
+    </div>
+  </div>
+</div>
+
+<!-- TX MODAL -->
+<div class="modal-overlay" id="txModal">
+  <div class="modal">
+    <div class="modal-title" id="txTitle">Registering Domain</div>
+    <div class="modal-sub" id="txSub">Please wait while we process your transaction</div>
+
+    <div class="tx-state show" id="txProgress">
+      <div class="tx-steps">
+        <div class="tx-step active" id="txStep1">
+          <span class="tx-step-icon">📝</span>
+          <span class="tx-step-label">Preparing transaction</span>
+          <span class="tx-step-status"><span class="step-spinner">⟳</span> pending</span>
+        </div>
+        <div class="tx-step" id="txStep2">
+          <span class="tx-step-icon">✍️</span>
+          <span class="tx-step-label">Waiting for signature</span>
+          <span class="tx-step-status">waiting</span>
+        </div>
+        <div class="tx-step" id="txStep3">
+          <span class="tx-step-icon">⛓️</span>
+          <span class="tx-step-label">Confirming on Arc Network</span>
+          <span class="tx-step-status">waiting</span>
         </div>
       </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
+    <div class="success-state" id="txSuccess">
+      <div class="success-checkmark">✓</div>
+      <div class="success-title">Domain Registered!</div>
+      <div class="success-sub" id="successDomainName"></div>
+      <a class="explorer-link" id="explorerLink" href="https://testnet.arcscan.app" target="_blank">
+        🔍 View on Arc Explorer →
+      </a>
+      <button onclick="closeTxModal()" style="margin-top: 12px; width: 100%; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 10px; border-radius: 10px; cursor: pointer; font-family: var(--font-body); font-size: 14px;">Close</button>
+    </div>
+  </div>
+</div>
 
-      <!-- TOP BAR -->
-      <div class="topbar" id="topbar">
-        <div class="topbar-title">
-          <h1 id="pageTitle">Welcome, Devorin</h1>
-          <p>Glass dashboard management system</p>
-        </div>
-        <div class="topbar-stats" id="topbarStats">
-          <div class="topbar-stat">
-            <div class="topbar-stat-icon" style="background:rgba(59,130,246,0.3)">🖥</div>
-            <div><div class="val">10%</div><div class="lbl">System</div></div>
-          </div>
-          <div class="topbar-stat">
-            <div class="topbar-stat-icon" style="background:rgba(34,197,94,0.3)">🔧</div>
-            <div><div class="val">22x</div><div class="lbl">Ment</div></div>
-          </div>
-          <div class="topbar-stat">
-            <div class="topbar-stat-icon" style="background:rgba(239,68,68,0.3)">⚙</div>
-            <div><div class="val">33%</div><div class="lbl">System</div></div>
-          </div>
-          <div class="topbar-stat">
-            <div class="topbar-stat-icon" style="background:rgba(251,191,36,0.3)">⚡</div>
-            <div><div class="val">7</div><div class="lbl">Userid</div></div>
-          </div>
-        </div>
-        <div class="topbar-right">
-          <div class="search-box">
-            <span>🔍</span>
-            <input type="text" placeholder="Search...">
-          </div>
-          <div class="notif-btn">🔔<div class="notif-badge">1</div></div>
-          <div class="topbar-avatar">👤</div>
-        </div>
-      </div>
-
-      <!-- ===== DASHBOARD PAGE ===== -->
-      <div class="page active" id="page-dashboard">
-        <div class="grid-main-side">
-          <div class="glass-panel">
-            <div class="panel-header">
-              <h3>Charts</h3>
-              <div style="display:flex;align-items:center;gap:8px">
-                <select style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:50px;padding:4px 12px;color:white;font-size:12px;outline:none;">
-                  <option style="color:#000">Months</option>
-                </select>
-              </div>
-            </div>
-            <canvas id="dashChart" height="120"></canvas>
-          </div>
-          <div>
-            <div class="glass-panel" style="margin-bottom:12px">
-              <div class="panel-header"><h3>Data Tables</h3><span class="more-btn">···</span></div>
-              <div class="progress-bar-wrap">
-                <div class="progress-label"><span>👤 Aoni Admin <span style="opacity:.5;font-size:11px">Viutown</span></span><span>100%</span></div>
-                <div class="progress-track"><div class="progress-fill" style="width:100%;background:linear-gradient(90deg,#ef4444,#f97316)"></div></div>
-              </div>
-              <div class="progress-bar-wrap">
-                <div class="progress-label"><span>👤 Alioen blisonam</span><span>75%</span></div>
-                <div class="progress-track"><div class="progress-fill" style="width:75%;background:linear-gradient(90deg,#22c55e,#86efac)"></div></div>
-              </div>
-              <div class="progress-bar-wrap">
-                <div class="progress-label"><span>👤 Klen Mitter</span><span>26%</span></div>
-                <div class="progress-track"><div class="progress-fill" style="width:26%;background:linear-gradient(90deg,#6b7280,#9ca3af)"></div></div>
-              </div>
-              <div class="progress-bar-wrap">
-                <div class="progress-label"><span>👤 Bon Wunii</span><span>35%</span></div>
-                <div class="progress-track"><div class="progress-fill" style="width:35%;background:linear-gradient(90deg,#a855f7,#c084fc)"></div></div>
-              </div>
-            </div>
-            <div class="glass-panel">
-              <div class="panel-header"><h3>Data Sitting</h3><span class="more-btn">···</span></div>
-              <div class="grid-2" style="margin-bottom:10px">
-                <div><div style="color:rgba(255,255,255,.6);font-size:12px">Data hiore</div><div style="color:white;font-size:22px;font-weight:800">31%</div></div>
-                <div><div style="color:rgba(255,255,255,.6);font-size:12px">Data Write</div><div style="color:white;font-size:22px;font-weight:800">77%</div></div>
-              </div>
-              <canvas id="sittingChart" height="60"></canvas>
-              <div class="grid-2" style="margin-top:10px">
-                <div style="color:rgba(255,255,255,.6);font-size:12px">Banoing</div>
-                <div style="color:rgba(255,255,255,.6);font-size:12px">Complete</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid-main-side">
-          <div class="glass-panel">
-            <div class="panel-header"><h3>Data Tables</h3><span class="more-btn">···</span></div>
-            <table class="glass-table">
-              <thead><tr><th>Name</th><th>Price</th><th>Status</th></tr></thead>
-              <tbody>
-                <tr><td><div class="user-cell"><div class="avatar-sm">👤</div><div><div class="uname">Admin Sutiin</div><div class="urole">Birlender</div></div></div></td><td>2576.8k</td><td><span class="badge up">▲ 9.17%</span></td></tr>
-                <tr><td><div class="user-cell"><div class="avatar-sm" style="background:linear-gradient(135deg,#f43f5e,#fb7185)">👤</div><div><div class="uname">Boricy Rithanii</div><div class="urole">Treander</div></div></div></td><td>1094.9k</td><td><span class="badge down">▼ 3.0%</span></td></tr>
-                <tr><td><div class="user-cell"><div class="avatar-sm" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">👤</div><div><div class="uname">Ronch Muget</div><div class="urole">Developer</div></div></div></td><td>1023.0k</td><td><span class="badge up">▲ 3.17%</span></td></tr>
-                <tr><td><div class="user-cell"><div class="avatar-sm" style="background:linear-gradient(135deg,#10b981,#34d399)">👤</div><div><div class="uname">Adnun Deverin</div><div class="urole">Extincior</div></div></div></td><td>975.0B</td><td><span class="badge up">▲ 1.45%</span></td></tr>
-                <tr><td><div class="user-cell"><div class="avatar-sm" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">👤</div><div><div class="uname">Beril Naima</div><div class="urole">Developer</div></div></div></td><td>902.0B</td><td><span class="badge up">▲ 5.0%</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-              <div class="gauge-card">
-                <div class="gauge-circle" style="border-color:rgba(34,197,94,0.5);color:#4ade80">75%</div>
-              </div>
-              <div class="gauge-card">
-                <div class="gauge-circle" style="border-color:rgba(239,68,68,0.5);color:#f87171">60%</div>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-              <div class="gauge-card">
-                <div style="font-size:26px;font-weight:800;color:white">40</div>
-                <div style="color:rgba(255,255,255,.6);font-size:12px">Status</div>
-              </div>
-              <div class="gauge-card">
-                <div style="font-size:14px;font-weight:700;color:white">Quick</div>
-                <div style="color:rgba(255,255,255,.6);font-size:12px">Controls</div>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div class="gauge-card">
-                <div style="font-size:28px">⚡</div>
-                <div style="color:rgba(255,255,255,.8);font-size:12px;text-align:center">System Status</div>
-              </div>
-              <div class="gauge-card">
-                <div class="quick-grid">
-                  <div class="quick-btn blue">✈</div>
-                  <div class="quick-btn orange">↕</div>
-                  <div class="quick-btn green">📶</div>
-                  <div class="quick-btn purple">📷</div>
-                  <div class="quick-btn teal">🔦</div>
-                  <div class="quick-btn red">⏱</div>
-                  <div class="quick-btn yellow">🧮</div>
-                  <div class="quick-btn gray">⊠</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== ANALYTICS PAGE ===== -->
-      <div class="page" id="page-analytics">
-        <div class="glass-panel" style="margin-bottom:0">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <div>
-              <span style="color:white;font-size:20px;font-weight:800">Analytics Overview</span>
-              <span style="color:rgba(255,255,255,.6);font-size:12px;margin-left:12px">Glass dashboard management system</span>
-            </div>
-            <div style="display:flex;gap:20px">
-              <div class="topbar-stat"><div class="topbar-stat-icon" style="background:rgba(59,130,246,0.3)">📊</div><div><div class="val">17,286</div><div class="lbl">Total Sessions</div></div></div>
-              <div class="topbar-stat"><div class="topbar-stat-icon" style="background:rgba(34,197,94,0.3)">📈</div><div><div class="val">80%</div><div class="lbl">Bounce Rate</div></div></div>
-              <div class="topbar-stat"><div class="topbar-stat-icon" style="background:rgba(239,68,68,0.3)">⚙</div><div><div class="val">33%</div><div class="lbl">Conversion Rate</div></div></div>
-            </div>
-          </div>
-        </div>
-        <div class="grid-3">
-          <div class="glass-panel" style="grid-column:span 2">
-            <div class="grid-2">
-              <div>
-                <div class="panel-header"><h3>User Growth</h3></div>
-                <canvas id="userGrowthChart" height="120"></canvas>
-              </div>
-              <div>
-                <div class="panel-header"><h3>Revenue</h3></div>
-                <canvas id="revenueChart" height="120"></canvas>
-              </div>
-            </div>
-          </div>
-          <div class="glass-panel">
-            <div class="panel-header"><h3>User Hame</h3><span class="more-btn">···</span></div>
-            <div class="world-map-placeholder">
-              <div class="map-dot" style="top:30%;left:25%"></div>
-              <div class="map-dot" style="top:40%;left:50%;background:rgba(59,130,246,0.8)"></div>
-              <div class="map-dot" style="top:50%;left:70%;background:rgba(239,68,68,0.8)"></div>
-              <div class="map-dot" style="top:35%;left:80%"></div>
-              <span>🗺 World Map</span>
-            </div>
-          </div>
-        </div>
-        <div class="grid-3">
-          <div class="glass-panel">
-            <div class="panel-header"><h3>Traffic Sources</h3><span class="more-btn">···</span></div>
-            <div style="display:flex;align-items:center;gap:16px">
-              <canvas id="trafficChart" width="120" height="120"></canvas>
-              <div style="display:flex;flex-direction:column;gap:8px">
-                <div style="display:flex;align-items:center;gap:8px;color:white;font-size:13px"><div class="legend-dot" style="background:#3b82f6"></div>Direct</div>
-                <div style="display:flex;align-items:center;gap:8px;color:white;font-size:13px"><div class="legend-dot" style="background:#22c55e"></div>Organic</div>
-                <div style="display:flex;align-items:center;gap:8px;color:white;font-size:13px"><div class="legend-dot" style="background:#ef4444"></div>Referral</div>
-                <div style="display:flex;align-items:center;gap:8px;color:white;font-size:13px"><div class="legend-dot" style="background:#f59e0b"></div>Social</div>
-              </div>
-            </div>
-          </div>
-          <div class="glass-panel">
-            <div class="panel-header"><h3>Top Pages</h3><span class="more-btn">···</span></div>
-            <canvas id="topPagesChart" height="80"></canvas>
-            <div class="progress-bar-wrap" style="margin-top:12px">
-              <div class="progress-label"><span>👤 Aoni Admin</span><span>100%</span></div>
-              <div class="progress-track"><div class="progress-fill" style="width:100%;background:linear-gradient(90deg,#ef4444,#f97316)"></div></div>
-            </div>
-            <div class="progress-bar-wrap">
-              <div class="progress-label"><span>👤 Alioen Nisonam</span><span>75%</span></div>
-              <div class="progress-track"><div class="progress-fill" style="width:75%;background:linear-gradient(90deg,#22c55e,#86efac)"></div></div>
-            </div>
-            <div class="progress-bar-wrap">
-              <div class="progress-label"><span>👤 Xfen Midter</span><span>35%</span></div>
-              <div class="progress-track"><div class="progress-fill" style="width:35%;background:linear-gradient(90deg,#a855f7,#c084fc)"></div></div>
-            </div>
-          </div>
-          <div class="glass-panel">
-            <div class="panel-header"><h3>User Demographics</h3><span class="more-btn">···</span></div>
-            <div class="world-map-placeholder" style="height:80px;margin-bottom:12px"></div>
-            <div class="grid-2">
-              <div>
-                <div style="color:rgba(255,255,255,.6);font-size:11px;margin-bottom:6px">Age</div>
-                <canvas id="ageChart" height="60"></canvas>
-              </div>
-              <div>
-                <div style="color:rgba(255,255,255,.6);font-size:11px;margin-bottom:6px">Location</div>
-                <canvas id="locationChart" height="60"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== PROJECTS PAGE ===== -->
-      <div class="page" id="page-projects">
-        <div style="color:rgba(255,255,255,.8);font-size:14px;font-weight:600;margin-bottom:4px">Projects Overview</div>
-        <div class="grid-3">
-          <div class="project-card">
-            <div style="display:flex;justify-content:space-between;align-items:start">
-              <h3>Project Alpha</h3><span class="more-btn">···</span>
-            </div>
-            <div class="project-status inprogress">In Progress</div>
-            <div class="progress-label"><span>Progress</span><span>75%</span></div>
-            <div class="progress-track" style="margin-bottom:12px"><div class="progress-fill" style="width:75%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
-            <div style="color:rgba(255,255,255,.6);font-size:12px;margin-bottom:6px">Team</div>
-            <div class="team-avatars">
-              <div class="avatar-sm">👤</div>
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#f43f5e,#fb7185)">👤</div>
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">👤</div>
-            </div>
-            <div class="project-footer">
-              <div class="project-date">📅 Oct 25</div>
-              <div class="project-icons">
-                <div class="proj-icon-btn" style="background:rgba(251,191,36,0.3)">📊</div>
-                <div class="proj-icon-btn" style="background:rgba(34,197,94,0.3)">✓</div>
-              </div>
-            </div>
-          </div>
-          <div class="project-card">
-            <div style="display:flex;justify-content:space-between;align-items:start">
-              <h3>Project Beta</h3><span class="more-btn">···</span>
-            </div>
-            <div class="project-status completed">Completed</div>
-            <div class="progress-label"><span>Progress</span><span>100%</span></div>
-            <div class="progress-track" style="margin-bottom:12px"><div class="progress-fill" style="width:100%;background:linear-gradient(90deg,#22c55e,#86efac)"></div></div>
-            <div style="color:rgba(255,255,255,.6);font-size:12px;margin-bottom:6px">Team</div>
-            <div class="team-avatars">
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#f43f5e,#fb7185)">👤</div>
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">👤</div>
-              <div class="avatar-sm">👤</div>
-            </div>
-            <div class="project-footer">
-              <div class="project-date">📅 Oct 25</div>
-              <div class="project-icons">
-                <div class="proj-icon-btn" style="background:rgba(34,197,94,0.3)">✓</div>
-                <div class="proj-icon-btn" style="background:rgba(34,197,94,0.3)">✓</div>
-              </div>
-            </div>
-          </div>
-          <div class="project-card">
-            <div style="display:flex;justify-content:space-between;align-items:start">
-              <h3>Project Gamma</h3><span class="more-btn">···</span>
-            </div>
-            <div class="project-status onhold">On Hold</div>
-            <div class="progress-label"><span>Progress</span><span>30%</span></div>
-            <div class="progress-track" style="margin-bottom:12px"><div class="progress-fill" style="width:30%;background:linear-gradient(90deg,#ef4444,#f87171)"></div></div>
-            <div style="color:rgba(255,255,255,.6);font-size:12px;margin-bottom:6px">Team</div>
-            <div class="team-avatars">
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#10b981,#34d399)">👤</div>
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">👤</div>
-              <div class="avatar-sm">👤</div>
-            </div>
-            <div class="project-footer">
-              <div class="project-date">📅 Oct 25</div>
-              <div class="project-icons">
-                <div class="proj-icon-btn" style="background:rgba(239,68,68,0.3)">✕</div>
-                <div class="proj-icon-btn" style="background:rgba(251,191,36,0.3)">⚠</div>
-              </div>
-            </div>
-          </div>
-          <div class="project-card">
-            <div style="display:flex;justify-content:space-between;align-items:start">
-              <h3>Project Alpha</h3><span class="more-btn">···</span>
-            </div>
-            <div class="project-status inprogress">In Progress</div>
-            <div class="progress-label"><span>Progress</span><span>75%</span></div>
-            <div class="progress-track" style="margin-bottom:12px"><div class="progress-fill" style="width:75%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
-            <div style="color:rgba(255,255,255,.6);font-size:12px;margin-bottom:6px">Team</div>
-            <div class="team-avatars">
-              <div class="avatar-sm">👤</div>
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#f43f5e,#fb7185)">👤</div>
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">👤</div>
-            </div>
-            <div class="project-footer">
-              <div class="project-date">📅 Oct 25</div>
-              <div class="project-icons">
-                <div class="proj-icon-btn" style="background:rgba(251,191,36,0.3)">📊</div>
-                <div class="proj-icon-btn" style="background:rgba(34,197,94,0.3)">✓</div>
-              </div>
-            </div>
-          </div>
-          <div class="project-card">
-            <div style="display:flex;justify-content:space-between;align-items:start">
-              <h3>Project Beta</h3><span class="more-btn">···</span>
-            </div>
-            <div class="project-status completed">Completed</div>
-            <div class="progress-label"><span>Progress</span><span>100%</span></div>
-            <div class="progress-track" style="margin-bottom:12px"><div class="progress-fill" style="width:100%;background:linear-gradient(90deg,#a855f7,#c084fc)"></div></div>
-            <div style="color:rgba(255,255,255,.6);font-size:12px;margin-bottom:6px">Team</div>
-            <div class="team-avatars">
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#f43f5e,#fb7185)">👤</div>
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">👤</div>
-              <div class="avatar-sm">👤</div>
-            </div>
-            <div class="project-footer">
-              <div class="project-date">📅 Oct 25</div>
-              <div class="project-icons">
-                <div class="proj-icon-btn" style="background:rgba(239,68,68,0.3)">✕</div>
-                <div class="proj-icon-btn" style="background:rgba(34,197,94,0.3)">✓</div>
-              </div>
-            </div>
-          </div>
-          <div class="project-card">
-            <div style="display:flex;justify-content:space-between;align-items:start">
-              <h3>Project Gamma</h3><span class="more-btn">···</span>
-            </div>
-            <div class="project-status onhold">On Hold</div>
-            <div class="progress-label"><span>Progress</span><span>30%</span></div>
-            <div class="progress-track" style="margin-bottom:12px"><div class="progress-fill" style="width:30%;background:linear-gradient(90deg,#ef4444,#f87171)"></div></div>
-            <div style="color:rgba(255,255,255,.6);font-size:12px;margin-bottom:6px">Team</div>
-            <div class="team-avatars">
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#10b981,#34d399)">👤</div>
-              <div class="avatar-sm" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">👤</div>
-            </div>
-            <div class="project-footer">
-              <div class="project-date">📅 Oct 25</div>
-              <div class="project-icons">
-                <div class="proj-icon-btn" style="background:rgba(239,68,68,0.3)">✕</div>
-                <div class="proj-icon-btn" style="background:rgba(251,191,36,0.3)">✓</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== TASKS PAGE ===== -->
-      <div class="page" id="page-tasks">
-        <div class="grid-main-side2">
-          <div class="glass-panel">
-            <div class="panel-header">
-              <h3>Current Tasks</h3><span class="more-btn">···</span>
-            </div>
-            <table class="glass-table">
-              <thead>
-                <tr>
-                  <th style="width:20px"></th>
-                  <th>Task Name</th>
-                  <th>Assignee</th>
-                  <th>Status</th>
-                  <th>Priority</th>
-                  <th>Due Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="tasksBody"></tbody>
-            </table>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div class="glass-panel">
-              <div class="panel-header"><h3>Task Statistics</h3><span class="more-btn">···</span></div>
-              <div class="grid-3" style="margin-bottom:14px">
-                <div style="text-align:center">
-                  <div style="color:rgba(255,255,255,.6);font-size:11px">Open</div>
-                  <div style="color:white;font-size:20px;font-weight:800">31</div>
-                  <canvas id="openDonut" width="60" height="60"></canvas>
-                </div>
-                <div style="text-align:center">
-                  <div style="color:rgba(255,255,255,.6);font-size:11px">In Progress</div>
-                  <div style="color:white;font-size:20px;font-weight:800">30%</div>
-                  <canvas id="inprogDonut" width="60" height="60"></canvas>
-                </div>
-                <div style="text-align:center">
-                  <div style="color:rgba(255,255,255,.6);font-size:11px">Completed</div>
-                  <div style="color:white;font-size:20px;font-weight:800">77%</div>
-                  <canvas id="compDonut" width="60" height="60"></canvas>
-                </div>
-              </div>
-            </div>
-            <button class="add-task-btn">Add New Task</button>
-            <div class="glass-panel">
-              <div class="panel-header"><h3>Upcoming Deadlines</h3><span class="more-btn">···</span></div>
-              <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1)">
-                <div style="width:4px;height:36px;background:#f59e0b;border-radius:50px"></div>
-                <div>
-                  <div style="color:white;font-size:13px;font-weight:600">Add New Taarlines</div>
-                  <div style="color:rgba(255,255,255,.5);font-size:11px">24 minutes</div>
-                </div>
-                <div style="margin-left:auto;color:rgba(255,255,255,.5);font-size:11px">12/10/2024</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
-                <div style="width:4px;height:36px;background:#3b82f6;border-radius:50px"></div>
-                <div>
-                  <div style="color:white;font-size:13px;font-weight:600">Upcoming Deadlines</div>
-                  <div style="color:rgba(255,255,255,.5);font-size:11px">3 year ago</div>
-                </div>
-                <div style="margin-left:auto;color:rgba(255,255,255,.5);font-size:11px">22/30/2024</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== USERS PAGE ===== -->
-      <div class="page" id="page-users">
-        <div class="grid-main-side2">
-          <div class="glass-panel">
-            <div class="panel-header"><h3>User Management</h3><span class="more-btn">···</span></div>
-            <table class="glass-table">
-              <thead><tr><th>User Name</th><th>Role</th><th>Status</th><th>Last Active</th><th>Actions</th></tr></thead>
-              <tbody id="usersBody"></tbody>
-            </table>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div class="stat-card">
-              <div style="display:flex;align-items:center;justify-content:space-between">
-                <h4>Total Users</h4>
-                <select style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:50px;padding:3px 10px;color:white;font-size:11px;outline:none;"><option style="color:#000">Months</option></select>
-              </div>
-              <div class="big-num">208</div>
-              <canvas id="totalUsersChart" height="70" style="margin-top:8px"></canvas>
-            </div>
-            <div class="stat-card">
-              <div style="display:flex;align-items:center;justify-content:space-between">
-                <h4>Active Users</h4><span class="more-btn">···</span>
-              </div>
-              <div class="big-num">40</div>
-              <div class="sub">Users</div>
-              <canvas id="activeUsersChart" height="60" style="margin-top:8px"></canvas>
-            </div>
-            <div class="stat-card">
-              <div style="display:flex;align-items:center;justify-content:space-between">
-                <h4>New Users Today</h4><span class="more-btn">···</span>
-              </div>
-              <div class="big-num">10</div>
-              <div class="sub">New Users</div>
-              <canvas id="newUsersChart" height="50" style="margin-top:8px"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== SETTINGS PAGE ===== -->
-      <div class="page" id="page-settings">
-        <div class="grid-3">
-          <div class="glass-panel">
-            <div class="panel-header"><h3>Account Settings</h3></div>
-            <div class="settings-label">Name</div>
-            <input class="settings-input" value="Aoni Admin">
-            <div class="settings-label">Email</div>
-            <input class="settings-input" value="devorin@gmail.com">
-            <div class="settings-label">Password</div>
-            <div style="position:relative">
-              <input class="settings-input" type="password" placeholder="Password" style="padding-right:40px">
-              <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.5);cursor:pointer">🙈</span>
-            </div>
-            <div class="settings-label">Profile Picture</div>
-            <div style="display:flex;align-items:center;gap:16px;margin-top:8px">
-              <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:28px;border:3px solid rgba(255,255,255,0.3)">👤</div>
-              <button class="upload-btn">⬆ Upload</button>
-            </div>
-            <div class="settings-label">Accent Color</div>
-            <div class="color-dots">
-              <div class="color-dot selected" style="background:#ef4444"></div>
-              <div class="color-dot" style="background:#ef4444"></div>
-              <div class="color-dot" style="background:#f97316"></div>
-              <div class="color-dot" style="background:#22c55e"></div>
-              <div class="color-dot" style="background:#3b82f6"></div>
-              <div class="color-dot" style="background:#a855f7"></div>
-              <div class="color-dot" style="background:#ec4899"></div>
-            </div>
-            <div class="settings-label">Font Size <span style="float:right;color:white">16</span></div>
-            <div class="slider-wrap"><input type="range" class="slider" min="10" max="24" value="16"></div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div class="glass-panel">
-              <div class="panel-header"><h3>Notifications</h3><span class="more-btn">···</span></div>
-              <div class="toggle-wrap">
-                <div><span class="toggle-icon">📧</span>Email</div>
-                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="toggle-wrap">
-                <div><span class="toggle-icon">🔔</span>Push Alerts</div>
-                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="toggle-wrap">
-                <div><span class="toggle-icon">🔔</span>System Alerts</div>
-                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-              </div>
-            </div>
-            <div class="glass-panel">
-              <div class="panel-header"><h3>Appearance</h3><span class="more-btn">···</span></div>
-              <div class="theme-toggle">
-                <div class="theme-btn active">Light</div>
-                <div class="theme-btn">Dark</div>
-                <div class="theme-btn">System</div>
-              </div>
-              <div style="margin-top:16px">
-                <div style="color:rgba(255,255,255,.7);font-size:13px;font-weight:600;margin-bottom:8px">System Info</div>
-                <div class="info-row"><span class="key">App Version</span><span class="val">1.7.5</span></div>
-                <div class="info-row"><span class="key">OS</span><span class="val">Windows 10</span></div>
-                <div class="info-row"><span class="key">Storage</span><span class="val">137 GB / 288 GB</span></div>
-              </div>
-            </div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div class="glass-panel">
-              <div class="panel-header"><h3>Privacy</h3><span class="more-btn">···</span></div>
-              <div class="toggle-wrap">
-                <div><span class="toggle-icon">🔗</span>Data Share</div>
-                <div class="toggle" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="toggle-wrap">
-                <div><span class="toggle-icon">👁</span>Data Visibility</div>
-                <div class="toggle" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="toggle-wrap">
-                <div><span class="toggle-icon">🚫</span>Visibility</div>
-                <div class="toggle" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="settings-label">Accent Color</div>
-              <div class="color-dots">
-                <div class="color-dot selected" style="background:#ef4444"></div>
-                <div class="color-dot" style="background:#ef4444"></div>
-                <div class="color-dot" style="background:#f97316"></div>
-                <div class="color-dot" style="background:#22c55e"></div>
-                <div class="color-dot" style="background:#3b82f6"></div>
-                <div class="color-dot" style="background:#a855f7"></div>
-                <div class="color-dot" style="background:#ec4899"></div>
-              </div>
-              <div class="settings-label">Font Size <span style="float:right;color:white">10</span></div>
-              <div class="slider-wrap"><input type="range" class="slider" min="10" max="24" value="10"></div>
-            </div>
-            <div class="glass-panel">
-              <div class="panel-header"><h3>Help & Support</h3><span class="more-btn">···</span></div>
-              <div class="help-row"><div>❓ FAQs</div><div>›</div></div>
-              <div class="help-row"><div>📞 Contact</div><div>›</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== REPORTS PAGE ===== -->
-      <div class="page" id="page-reports">
-        <div class="glass-panel">
-          <div class="panel-header">
-            <h3>Reports Overview</h3>
-            <select style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:50px;padding:4px 12px;color:white;font-size:12px;outline:none;"><option style="color:#000">Months</option></select>
-          </div>
-          <canvas id="reportsChart" height="100"></canvas>
-        </div>
-        <div class="grid-2">
-          <div class="glass-panel">
-            <div class="panel-header"><h3>Generated Reports</h3><span class="more-btn">···</span></div>
-            <div class="report-row">
-              <div class="report-type"><div class="file-icon pdf">📄</div><div><div style="font-weight:600">Monthly Sales Report - PDF</div><div style="color:rgba(255,255,255,.5);font-size:11px">PDF</div></div></div>
-              <div class="dl-btn">⬇</div>
-            </div>
-            <div class="report-row">
-              <div class="report-type"><div class="file-icon pdf">📊</div><div><div style="font-weight:600">Merthly Sales Report - PDF</div><div style="color:rgba(255,255,255,.5);font-size:11px">PDF</div></div></div>
-              <div class="dl-btn">⬇</div>
-            </div>
-            <div class="report-row">
-              <div class="report-type"><div class="file-icon xlsx">📗</div><div><div style="font-weight:600">User Activity Report - Excel</div><div style="color:rgba(255,255,255,.5);font-size:11px">Excel</div></div></div>
-              <div class="dl-btn">⬇</div>
-            </div>
-            <div class="report-row">
-              <div class="report-type"><div class="file-icon pdf">📄</div><div><div style="font-weight:600">System Performance Report - PDF</div><div style="color:rgba(255,255,255,.5);font-size:11px">PDF</div></div></div>
-              <div class="dl-btn">⬇</div>
-            </div>
-            <div class="report-row">
-              <div class="report-type"><div class="file-icon pdf">📄</div><div><div style="font-weight:600">System Performance Report - PDF</div><div style="color:rgba(255,255,255,.5);font-size:11px">PDF</div></div></div>
-              <div class="dl-btn">⬇</div>
-            </div>
-          </div>
-          <div class="glass-panel">
-            <div class="panel-header"><h3>Report Templates</h3><span class="more-btn">···</span></div>
-            <div class="grid-3">
-              <div class="template-card">
-                <div class="template-icon" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">📋</div>
-                <div class="label">Custom Report</div>
-                <button class="create-btn">Create</button>
-              </div>
-              <div class="template-card">
-                <div class="template-icon" style="background:linear-gradient(135deg,#059669,#10b981)">💰</div>
-                <div class="label">Financial Summary</div>
-                <button class="create-btn">Create</button>
-              </div>
-              <div class="template-card">
-                <div class="template-icon" style="background:linear-gradient(135deg,#d97706,#f59e0b)">📊</div>
-                <div class="label">Analytics Breakdown</div>
-                <button class="create-btn">Create</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- end main-content -->
-  </div><!-- end app-layout -->
-</div><!-- end dashboardApp -->
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <script>
-// ============ LOGIN ============
-function togglePwd() {
-  const i = document.getElementById('pwdInput');
-  i.type = i.type === 'password' ? 'text' : 'password';
-}
+  // ===== STATE =====
+  let walletConnected = false;
+  let walletAddress = '0xdE23Aad93d7837A10865E784EbF20b8673ffb854';
+  let walletName = '';
+  let domainCount = 0;
 
-function showDashboard() {
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('dashboardApp').style.display = 'flex';
-  initCharts();
-  buildTables();
-}
-
-// ============ NAVIGATION ============
-const pageTitles = {
-  dashboard: 'Welcome, Devorin',
-  analytics: 'Analytics Overview',
-  projects: 'Welcome, Devorin',
-  tasks: 'Tasks',
-  users: 'User Management',
-  settings: 'Settings',
-  reports: 'Reports'
-};
-
-function showPage(page, el) {
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  el.classList.add('active');
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.getElementById('pageTitle').textContent = pageTitles[page];
-  const statsEl = document.getElementById('topbarStats');
-  const searchEl = document.querySelector('.topbar-right');
-  if (page === 'users') {
-    statsEl.style.display = 'none';
-    searchEl.style.display = 'flex';
-  } else if (page === 'tasks') {
-    statsEl.style.display = 'none';
-  } else {
-    statsEl.style.display = 'flex';
+  // ===== PARTICLES =====
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 3 + 1;
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      animation-duration:${Math.random()*20+15}s;
+      animation-delay:${Math.random()*20}s;
+      opacity:0;
+    `;
+    container.appendChild(p);
   }
-}
 
-// ============ CHART CONFIG ============
-const glassColor = (ctx, c1, c2) => {
-  const g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-  g.addColorStop(0, c1); g.addColorStop(1, c2); return g;
-};
-
-const chartDefaults = {
-  responsive: true,
-  plugins: { legend: { display: false } },
-  scales: {
-    x: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10 } } },
-    y: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10 } } }
+  // ===== COUNTER ANIMATION =====
+  function animateCounter(el, target, duration=2000) {
+    const start = performance.now();
+    const update = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.floor(ease * target).toLocaleString();
+      if (progress < 1) requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
   }
-};
 
-const days = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+  // ===== WALLET MODAL =====
+  function openWalletModal() {
+    if (walletConnected) return showToast('Wallet already connected ✓', 'success');
+    document.getElementById('walletModal').classList.add('show');
+    document.getElementById('walletOptions').classList.remove('hide');
+    document.getElementById('connectingState').classList.remove('show');
+  }
+  function closeWalletModal() {
+    document.getElementById('walletModal').classList.remove('show');
+  }
 
-function initCharts() {
-  // Dashboard main chart
-  const dc = document.getElementById('dashChart').getContext('2d');
-  new Chart(dc, { type: 'line', data: {
-    labels: days,
-    datasets: [
-      { data: [20,45,35,60,40,75], borderColor: '#f97316', backgroundColor: glassColor(dc,'rgba(249,115,22,0.3)','rgba(249,115,22,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 },
-      { data: [10,30,50,40,65,55], borderColor: '#3b82f6', backgroundColor: glassColor(dc,'rgba(59,130,246,0.2)','rgba(59,130,246,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 },
-      { data: [5,15,25,35,30,45],  borderColor: '#a855f7', backgroundColor: glassColor(dc,'rgba(168,85,247,0.2)','rgba(168,85,247,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }
-    ]
-  }, options: { ...chartDefaults } });
+  function connectWallet(name) {
+    walletName = name;
+    document.getElementById('walletOptions').classList.add('hide');
+    const cs = document.getElementById('connectingState');
+    cs.classList.add('show');
+    document.getElementById('connectingName').textContent = `Connecting to ${name}...`;
 
-  // Sitting mini chart
-  const sc = document.getElementById('sittingChart').getContext('2d');
-  new Chart(sc, { type: 'line', data: {
-    labels: ['','','','','',''],
-    datasets: [
-      { data: [30,55,40,65,50,70], borderColor: '#f97316', fill: false, tension: 0.4, borderWidth: 2, pointRadius: 0 },
-      { data: [20,35,55,30,60,45], borderColor: '#ec4899', fill: false, tension: 0.4, borderWidth: 2, pointRadius: 0 }
-    ]
-  }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } } });
+    setTimeout(() => {
+      walletConnected = true;
+      closeWalletModal();
+      const btn = document.getElementById('connectBtn');
+      btn.classList.add('connected');
+      const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
+      document.getElementById('connectBtnText').textContent = short;
+      showToast(`${name} connected ✓`, 'success');
+      animateCounter(document.getElementById('stat1'), 1247, 1500);
+    }, 2200);
+  }
 
-  // Analytics charts
-  const ugc = document.getElementById('userGrowthChart').getContext('2d');
-  new Chart(ugc, { type: 'line', data: {
-    labels: days,
-    datasets: [
-      { data: [20,45,35,60,40,80], borderColor: '#f97316', backgroundColor: glassColor(ugc,'rgba(249,115,22,0.3)','rgba(249,115,22,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 },
-      { data: [10,30,55,40,65,55], borderColor: '#3b82f6', backgroundColor: glassColor(ugc,'rgba(59,130,246,0.2)','rgba(59,130,246,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }
-    ]
-  }, options: { ...chartDefaults } });
+  // ===== SEARCH =====
+  function handleKey(e) {
+    if (e.key === 'Enter') searchDomain();
+  }
 
-  const rc = document.getElementById('revenueChart').getContext('2d');
-  new Chart(rc, { type: 'line', data: {
-    labels: days,
-    datasets: [
-      { data: [5000,8000,6000,12000,9000,15000], borderColor: '#a855f7', backgroundColor: glassColor(rc,'rgba(168,85,247,0.3)','rgba(168,85,247,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 },
-      { data: [3000,6000,9000,7000,11000,10000], borderColor: '#22c55e', backgroundColor: glassColor(rc,'rgba(34,197,94,0.2)','rgba(34,197,94,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }
-    ]
-  }, options: { ...chartDefaults } });
+  const takenDomains = ['bitcoin', 'ethereum', 'arc', 'crypto', 'defi', 'nft', 'web3', 'circle', 'usdc'];
 
-  // Traffic pie
-  const tc = document.getElementById('trafficChart').getContext('2d');
-  new Chart(tc, { type: 'doughnut', data: {
-    datasets: [{ data: [35, 30, 20, 15], backgroundColor: ['#3b82f6','#22c55e','#ef4444','#f59e0b'], borderWidth: 0, hoverOffset: 4 }]
-  }, options: { responsive: false, plugins: { legend: { display: false } }, cutout: '60%' } });
+  function searchDomain() {
+    const val = document.getElementById('searchInput').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
+    if (!val) return showToast('Enter a domain name', 'error');
+    if (val.length < 3) return showToast('Minimum 3 characters', 'error');
 
-  // Top pages bar
-  const tpc = document.getElementById('topPagesChart').getContext('2d');
-  new Chart(tpc, { type: 'bar', data: {
-    labels: ['Jan','Feb','Mar','Apr','May','Jun','Fri','Sat','Sun'],
-    datasets: [
-      { data: [30,50,40,90,60,75,20,45,35], backgroundColor: ['#3b82f6','#22c55e','#ef4444','#f59e0b','#a855f7','#ec4899','#3b82f6','#22c55e','#ef4444'], borderRadius: 4, borderWidth: 0 }
-    ]
-  }, options: { ...chartDefaults } });
+    const loading = document.getElementById('searchLoading');
+    const result = document.getElementById('searchResult');
+    const btn = document.getElementById('searchBtn');
 
-  // Age & location tiny bars
-  const agC = document.getElementById('ageChart').getContext('2d');
-  new Chart(agC, { type: 'bar', data: {
-    labels: ['10','20','30','40','55+'],
-    datasets: [{ data: [15,30,40,25,10], backgroundColor: '#3b82f6', borderRadius: 3, borderWidth: 0 }]
-  }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 } }, grid: { display: false } }, y: { display: false } } } });
+    result.classList.remove('show');
+    loading.classList.add('show');
+    btn.disabled = true;
 
-  const locC = document.getElementById('locationChart').getContext('2d');
-  new Chart(locC, { type: 'bar', data: {
-    labels: ['Un','Dr','Fl','Sa','Dg'],
-    datasets: [
-      { data: [40,25,60,35,50], backgroundColor: '#22c55e', borderRadius: 3, borderWidth: 0 },
-      { data: [30,45,25,55,30], backgroundColor: '#3b82f6', borderRadius: 3, borderWidth: 0 }
-    ]
-  }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 } }, grid: { display: false } }, y: { display: false } } } });
+    setTimeout(() => {
+      loading.classList.remove('show');
+      btn.disabled = false;
 
-  // Users charts
-  const tuC = document.getElementById('totalUsersChart').getContext('2d');
-  new Chart(tuC, { type: 'line', data: {
-    labels: days,
-    datasets: [
-      { data: [40,60,45,80,65,100], borderColor: '#f97316', backgroundColor: glassColor(tuC,'rgba(249,115,22,0.3)','rgba(249,115,22,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 },
-      { data: [20,40,60,50,75,80], borderColor: '#a855f7', backgroundColor: glassColor(tuC,'rgba(168,85,247,0.2)','rgba(168,85,247,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }
-    ]
-  }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.06)' } }, y: { ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.06)' } } } } });
+      const isAvailable = !takenDomains.includes(val);
+      const domain = `${val}.arc`;
+      const price = val.length === 3 ? '$640' : val.length === 4 ? '$160' : '$5';
 
-  const auC = document.getElementById('activeUsersChart').getContext('2d');
-  new Chart(auC, { type: 'bar', data: {
-    labels: ['M','T','W','T','F','S'],
-    datasets: [
-      { data: [20,35,25,40,30,45], backgroundColor: '#3b82f6', borderRadius: 4, borderWidth: 0 },
-      { data: [15,25,35,30,40,35], backgroundColor: '#a855f7', borderRadius: 4, borderWidth: 0 },
-      { data: [10,20,15,25,20,30], backgroundColor: '#22c55e', borderRadius: 4, borderWidth: 0 }
-    ]
-  }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, barPercentage: 0.6 } });
+      result.innerHTML = `
+        <div class="result-row">
+          <div>
+            <div class="result-name">${domain}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;font-family:var(--font-mono);">${price}/year</div>
+          </div>
+          <div class="result-meta">
+            <div class="chain-badge">
+              <img src="https://i.postimg.cc/3xv4dzRw/20260603-214607.jpg" alt="Arc" onerror="this.style.display='none'">
+              Arc Network
+            </div>
+            <div class="${isAvailable ? 'status-available' : 'status-taken'}">${isAvailable ? 'Available' : 'Taken'}</div>
+            ${isAvailable ? `<button class="btn-register" onclick="startRegister('${domain}')">${walletConnected ? 'Register' : 'Connect & Register'}</button>` : ''}
+          </div>
+        </div>
+      `;
+      result.classList.add('show');
+    }, 1800);
+  }
 
-  const nuC = document.getElementById('newUsersChart').getContext('2d');
-  new Chart(nuC, { type: 'line', data: {
-    labels: days,
-    datasets: [{ data: [2,5,3,8,6,10], borderColor: '#f59e0b', backgroundColor: glassColor(nuC,'rgba(245,158,11,0.3)','rgba(245,158,11,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }]
-  }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } } });
+  // ===== REGISTER =====
+  function startRegister(domain) {
+    if (!walletConnected) {
+      openWalletModal();
+      return;
+    }
+    openTxModal(domain);
+  }
 
-  // Task donuts
-  makeDonut('openDonut', 31, '#3b82f6');
-  makeDonut('inprogDonut', 30, '#f59e0b');
-  makeDonut('compDonut', 77, '#22c55e');
+  function openTxModal(domain) {
+    const modal = document.getElementById('txModal');
+    document.getElementById('txTitle').textContent = `Register ${domain}`;
+    document.getElementById('txSub').textContent = 'Processing your registration on Arc Network';
+    document.getElementById('txProgress').classList.add('show');
+    document.getElementById('txSuccess').classList.remove('show');
 
-  // Reports chart
-  const repC = document.getElementById('reportsChart').getContext('2d');
-  new Chart(repC, { type: 'line', data: {
-    labels: ['Mon','Tue','Wed','Thu','Thu','Fri','Sat'],
-    datasets: [
-      { data: [20,30,35,40,50,65,90], borderColor: '#f97316', backgroundColor: glassColor(repC,'rgba(249,115,22,0.25)','rgba(249,115,22,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 },
-      { data: [25,28,32,38,45,58,78], borderColor: '#a855f7', backgroundColor: glassColor(repC,'rgba(168,85,247,0.15)','rgba(168,85,247,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 },
-      { data: [10,15,18,20,25,30,35], borderColor: '#ef4444', backgroundColor: glassColor(repC,'rgba(239,68,68,0.1)','rgba(239,68,68,0)'), fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }
-    ]
-  }, options: { ...chartDefaults } });
-}
+    // Reset steps
+    ['txStep1','txStep2','txStep3'].forEach(id => {
+      const el = document.getElementById(id);
+      el.className = 'tx-step';
+      el.querySelector('.tx-step-status').textContent = 'waiting';
+    });
 
-function makeDonut(id, pct, color) {
-  new Chart(document.getElementById(id).getContext('2d'), {
-    type: 'doughnut',
-    data: { datasets: [{ data: [pct, 100 - pct], backgroundColor: [color, 'rgba(255,255,255,0.1)'], borderWidth: 0 }] },
-    options: { responsive: false, plugins: { legend: { display: false } }, cutout: '70%' }
+    modal.classList.add('show');
+    runTxSteps(domain);
+  }
+
+  function runTxSteps(domain) {
+    const steps = ['txStep1','txStep2','txStep3'];
+    const labels = ['pending ⟳', 'signing... ⟳', 'confirming... ⟳'];
+    let current = 0;
+
+    function nextStep() {
+      if (current > 0) {
+        const prev = document.getElementById(steps[current-1]);
+        prev.className = 'tx-step done';
+        prev.querySelector('.tx-step-status').textContent = '✓ done';
+      }
+      if (current >= steps.length) {
+        showSuccess(domain);
+        return;
+      }
+      const el = document.getElementById(steps[current]);
+      el.className = 'tx-step active';
+      el.querySelector('.tx-step-status').innerHTML = `<span class="step-spinner">⟳</span> ${labels[current]}`;
+      current++;
+      const delay = current === 2 ? 2000 : current === 3 ? 1500 : 1200;
+      setTimeout(nextStep, delay);
+    }
+    nextStep();
+  }
+
+  function showSuccess(domain) {
+    document.getElementById('txProgress').classList.remove('show');
+    const success = document.getElementById('txSuccess');
+    success.classList.add('show');
+    document.getElementById('successDomainName').textContent = `${domain} is now yours!`;
+    const fakeTx = '0x' + Math.random().toString(16).slice(2,10) + '...' + Math.random().toString(16).slice(2,6);
+    document.getElementById('explorerLink').href = `https://testnet.arcscan.app/tx/${fakeTx}`;
+    document.getElementById('explorerLink').title = fakeTx;
+    domainCount++;
+    animateCounter(document.getElementById('stat1'), 1247 + domainCount, 500);
+    showToast(`${domain} registered! 🎉`, 'success');
+  }
+
+  function closeTxModal() {
+    document.getElementById('txModal').classList.remove('show');
+  }
+
+  // ===== TOAST =====
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent = type === 'success' ? '✓ ' + msg : '✗ ' + msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ===== CLOSE ON OUTSIDE CLICK =====
+  document.getElementById('walletModal').addEventListener('click', function(e) {
+    if (e.target === this) closeWalletModal();
   });
-}
-
-// ============ TABLES ============
-const avatarColors = ['linear-gradient(135deg,#667eea,#764ba2)','linear-gradient(135deg,#f43f5e,#fb7185)','linear-gradient(135deg,#0ea5e9,#38bdf8)','linear-gradient(135deg,#10b981,#34d399)','linear-gradient(135deg,#f59e0b,#fbbf24)','linear-gradient(135deg,#a855f7,#c084fc)','linear-gradient(135deg,#ef4444,#f87171)','linear-gradient(135deg,#14b8a6,#2dd4bf)'];
-
-const usersData = [
-  { name: 'Admin Sudin', role2: 'Eimender', role: 'Developer', status: 5.7, dir: 'up', time: '24 hours ago' },
-  { name: 'Boricy Ritthani', role2: 'Tirsander', role: 'Esotonor', status: 3.0, dir: 'down', time: '23 hours ago' },
-  { name: 'Alioen Nisonam', role2: 'Stkfsparts', role: 'Developer', status: 1.7, dir: 'up', time: '02 hours ago' },
-  { name: 'Xfen Midter', role2: 'Oladawen', role: 'Developer', status: 3.0, dir: 'down', time: '27 hours ago' },
-  { name: 'Bon Wrunii', role2: 'Viyetaton', role: 'Developer', status: 5.0, dir: 'down', time: '26 hours ago' },
-  { name: 'Admin Sudin', role2: 'E inender', role: 'Developer', status: 3.8, dir: 'up', time: '08 hours ago' },
-  { name: 'Boricy Ritthani', role2: 'Tirsander', role: 'Developer', status: 3.0, dir: 'down', time: '23 months ago' },
-  { name: 'Ronch Muget', role2: 'Developer', role: 'Developer', status: 1.2, dir: 'up', time: '16 hours ago' },
-  { name: 'Adnun Deverin', role2: 'Extinlinar', role: 'Developer', status: 1.3, dir: 'up', time: '13 minuts ago' },
-  { name: 'Beril Nalma', role2: 'Developer', role: 'Developer', status: 5.0, dir: 'down', time: '16 hours ago' }
-];
-
-function buildTables() {
-  const ub = document.getElementById('usersBody');
-  usersData.forEach((u, i) => {
-    ub.innerHTML += `<tr>
-      <td><div class="user-cell">
-        <div class="avatar-sm" style="background:${avatarColors[i % avatarColors.length]}">👤</div>
-        <div><div class="uname">${u.name}</div><div class="urole">${u.role2}</div></div>
-      </div></td>
-      <td>${u.role}</td>
-      <td><span class="badge ${u.dir}">${u.dir === 'up' ? '▲' : '▼'} ${u.status}%</span></td>
-      <td style="color:rgba(255,255,255,.7)">${u.time}</td>
-      <td><span style="margin-right:8px" class="action-btn">✏</span><span class="action-btn">🗑</span></td>
-    </tr>`;
+  document.getElementById('txModal').addEventListener('click', function(e) {
+    if (e.target === this) closeTxModal();
   });
 
-  const tasks = [
-    { name: 'Dummy tasks upda...', sub: 'Developer', assignee: 'Aoni Admin', priority: '#ef4444', due: '23/02/2024' },
-    { name: 'Dummy task+ mark...', sub: 'Developer', assignee: 'Skfeparts', priority: '#ef4444', due: '33/07/2024' },
-    { name: 'Dummy tasks unda...', sub: 'Developer', assignee: 'Skfeparts', priority: '#22c55e', due: '25/05/2024' },
-    { name: 'Dummy task macve...', sub: 'Developer', assignee: 'Aoni Admin', priority: '#f59e0b', due: '33/09/2024' },
-    { name: 'Dummy tasks dens...', sub: 'Developer', assignee: 'Skfeparts', priority: '#22c55e', due: '25/02/2024' },
-    { name: 'Dummy taskn inot k...', sub: 'Developer', assignee: 'Viyetaton', priority: '#a855f7', due: '29/02/2024' },
-    { name: 'Dummy taskn ande...', sub: 'Developer', assignee: 'Vlyetaton', priority: '#3b82f6', due: '25/02/2024' },
-    { name: 'Dummy task mars e...', sub: 'Developer', assignee: 'Skleparts', priority: '#22c55e', due: '29/02/2024' },
-    { name: 'Dummy tasks firt k...', sub: 'Developer', assignee: 'Vlyetaton', priority: '#f97316', due: '33/02/2024' },
-    { name: 'Dummy taskn and e...', sub: 'Developer', assignee: 'Berl hiten', priority: '#ef4444', due: '25/02/2024' },
-    { name: 'Dummy tasks truck...', sub: 'Developer', assignee: 'Viystaton', priority: '#22c55e', due: '09/02/2024' }
-  ];
-
-  const tb = document.getElementById('tasksBody');
-  tasks.forEach((t, i) => {
-    tb.innerHTML += `<tr>
-      <td><div class="task-check"></div></td>
-      <td><div><div style="color:white;font-size:13px;font-weight:600">${t.name}</div><div style="color:rgba(255,255,255,.5);font-size:11px">${t.sub}</div></div></td>
-      <td><div class="user-cell"><div class="avatar-sm" style="background:${avatarColors[i % avatarColors.length]};width:24px;height:24px;font-size:10px">👤</div><span style="font-size:12px">${t.assignee}</span></div></td>
-      <td><div class="priority-bar"><div class="priority-fill" style="width:60%;background:${t.priority}"></div></div></td>
-      <td style="color:rgba(255,255,255,.8);font-size:12px">${t.due.includes('High') ? '<span style="color:#ef4444;font-size:11px;font-weight:700">⚡ High</span>' : ''}</td>
-      <td style="color:rgba(255,255,255,.7);font-size:12px">${t.due}</td>
-      <td><span class="task-btn" style="margin-right:6px">Edit</span><span class="task-btn">Complete</span></td>
-    </tr>`;
+  // ===== INIT =====
+  window.addEventListener('load', () => {
+    animateCounter(document.getElementById('stat1'), 1247, 2000);
   });
-}
+
+  // ===== SCROLL REVEAL =====
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.animation = 'fadeUp 0.6s ease both';
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.feature-card, .step, .creator-card').forEach(el => {
+    el.style.opacity = '0';
+    observer.observe(el);
+  });
 </script>
 </body>
 </html>
