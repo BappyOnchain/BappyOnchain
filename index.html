@@ -887,16 +887,22 @@ async function connectW(name) {
   document.getElementById('connName').textContent = name + ' connecting...';
 
   try {
-    try {
-      await window.ethereum.request({ method:'wallet_switchEthereumChain', params:[{chainId:CHAIN_ID}] });
-    } catch(e) {
-      if (e.code===4902||e.code===-32603) {
-        await window.ethereum.request({ method:'wallet_addEthereumChain', params:[{
-          chainId: CHAIN_ID, chainName: CHAIN_NAME,
-          nativeCurrency:{name:'USDC',symbol:'USDC',decimals:18},
-          rpcUrls:[RPC], blockExplorerUrls:[EXPLORER]
-        }]});
-      } else throw e;
+    // Already on Arc? skip switch entirely
+    const currentChain = await window.ethereum.request({ method:'eth_chainId' });
+    if (currentChain.toLowerCase() !== CHAIN_ID.toLowerCase()) {
+      try {
+        await window.ethereum.request({ method:'wallet_switchEthereumChain', params:[{chainId:CHAIN_ID}] });
+      } catch(e) {
+        // 4902 = chain not added yet — তখনই add করো
+        if (e.code === 4902) {
+          await window.ethereum.request({ method:'wallet_addEthereumChain', params:[{
+            chainId: CHAIN_ID, chainName: CHAIN_NAME,
+            nativeCurrency:{name:'USDC',symbol:'USDC',decimals:18},
+            rpcUrls:[RPC, 'https://arc-testnet.drpc.org'],
+            blockExplorerUrls:[EXPLORER]
+          }]});
+        } else if (e.code !== 4001) throw e;
+      }
     }
 
     provider = new ethers.BrowserProvider(window.ethereum);
