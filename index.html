@@ -22,7 +22,6 @@
 html{-webkit-tap-highlight-color:transparent;font-size:16px;}
 body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;overflow-x:hidden;}
 
-/* BG */
 .bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
 .bg-grad{position:absolute;inset:0;background:radial-gradient(ellipse 120% 40% at 50% -5%,rgba(0,180,255,0.07) 0%,transparent 55%);}
 .bg-grid{
@@ -33,7 +32,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100
   mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,black,transparent 70%);
 }
 
-/* NAV */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;
@@ -61,7 +59,6 @@ nav{
 .w-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 2s infinite;flex-shrink:0;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.25;}}
 
-/* HERO */
 .hero{position:relative;z-index:1;padding:76px 18px 0;text-align:center;}
 .hero-chip{
   display:inline-flex;align-items:center;gap:6px;
@@ -82,7 +79,6 @@ nav{
   animation:fadeUp 0.5s 0.14s ease both;
 }
 
-/* SEARCH CARD */
 .search-wrap{position:relative;z-index:1;padding:24px 16px 0;animation:fadeUp 0.5s 0.2s ease both;}
 .search-card{
   background:rgba(7,20,40,0.92);border:1px solid var(--border);
@@ -116,7 +112,6 @@ nav{
 .btn-search:active{background:#33ddff;}
 .btn-search:disabled{opacity:0.4;cursor:not-allowed;}
 
-/* SEARCH STATES */
 .search-loader{display:none;align-items:center;gap:8px;padding:14px 0 4px;color:var(--muted);font-size:12px;font-family:var(--fm);}
 .search-loader.on{display:flex;}
 .dots{display:flex;gap:4px;}
@@ -162,7 +157,6 @@ nav{
 .err-line{font-size:11px;color:var(--err);font-family:var(--fm);margin-top:8px;display:none;}
 .err-line.on{display:block;}
 
-/* STATS */
 .stats{
   position:relative;z-index:1;
   display:grid;grid-template-columns:repeat(4,1fr);
@@ -176,19 +170,16 @@ nav{
 .stat-v{font-family:var(--fh);font-size:20px;color:var(--arc);line-height:1;}
 .stat-l{font-size:9px;color:var(--muted);margin-top:3px;font-family:var(--fm);}
 
-/* SECTIONS */
 .sec{position:relative;z-index:1;padding:44px 16px 0;}
 .sec-h{font-family:var(--fh);font-size:28px;letter-spacing:1px;margin-bottom:16px;}
 .sec-h span{color:var(--arc);}
 
-/* STEPS */
 .steps{display:flex;flex-direction:column;gap:10px;}
 .step{
   display:flex;align-items:flex-start;gap:12px;
   background:rgba(7,20,40,0.8);border:1px solid var(--border);
   border-radius:13px;padding:14px;transition:border-color 0.2s;
 }
-.step:active{border-color:rgba(0,212,255,0.2);}
 .step-n{
   width:34px;height:34px;border-radius:50%;flex-shrink:0;
   border:1.5px solid var(--arc);
@@ -199,18 +190,15 @@ nav{
 .step-t{font-weight:700;font-size:14px;margin-bottom:3px;}
 .step-d{font-size:12px;color:var(--muted);line-height:1.5;}
 
-/* FEATURES */
 .feats{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .feat{
   background:rgba(7,20,40,0.8);border:1px solid var(--border);
   border-radius:13px;padding:14px;transition:border-color 0.2s;
-  position:relative;overflow:hidden;
 }
 .feat-icon{width:28px;height:28px;margin-bottom:10px;color:var(--arc);}
 .feat-t{font-weight:700;font-size:13px;margin-bottom:4px;}
 .feat-d{font-size:11px;color:var(--muted);line-height:1.5;}
 
-/* CREATOR */
 .creator{
   background:rgba(7,20,40,0.9);border:1px solid var(--border);
   border-radius:18px;padding:20px;position:relative;overflow:hidden;
@@ -236,7 +224,6 @@ nav{
 .tb{background:rgba(150,100,255,0.07);border:1px solid rgba(150,100,255,0.2);color:#9664ff;}
 .tc{background:rgba(245,200,66,0.07);border:1px solid rgba(245,200,66,0.2);color:#f5c842;}
 
-/* FOOTER */
 footer{
   position:relative;z-index:1;
   margin-top:52px;padding:20px 16px 32px;
@@ -246,7 +233,6 @@ footer{
 .foot-logo span{color:var(--arc);}
 .foot-sub{font-size:11px;color:var(--muted);font-family:var(--fm);}
 
-/* OVERLAY / BOTTOM SHEET */
 .overlay{
   position:fixed;inset:0;z-index:200;
   background:rgba(2,8,16,0.9);
@@ -271,11 +257,9 @@ footer{
   cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;
   transition:all 0.15s;-webkit-appearance:none;
 }
-.sheet-close:active{background:rgba(255,255,255,0.1);}
 .sheet-title{font-family:var(--fh);font-size:24px;letter-spacing:1px;margin-bottom:5px;}
 .sheet-sub{color:var(--muted);font-size:13px;margin-bottom:20px;}
 
-/* WALLET LIST */
 .wlist{display:flex;flex-direction:column;gap:9px;}
 .witem{
   display:flex;align-items:center;gap:12px;
@@ -291,7 +275,6 @@ footer{
 .wdesc{font-size:12px;color:var(--muted);margin-top:2px;}
 .warrow{color:var(--muted);}
 
-/* CONNECTING */
 .connecting{display:none;text-align:center;padding:8px 0;}
 .connecting.on{display:block;}
 .wlist.hide{display:none;}
@@ -299,7 +282,6 @@ footer{
 .conn-name{font-family:var(--fh);font-size:22px;letter-spacing:1px;margin-bottom:5px;}
 .conn-sub{font-size:13px;color:var(--muted);}
 
-/* TX STEPS */
 .tx-steps{display:flex;flex-direction:column;gap:9px;margin:14px 0;}
 .ts{
   display:flex;align-items:center;gap:11px;
@@ -314,7 +296,6 @@ footer{
 .ts.active .ts-status{color:var(--arc);}
 .ts.done .ts-status{color:var(--ok);}
 
-/* SUCCESS */
 .success{display:none;text-align:center;padding:8px 0;}
 .success.on{display:block;}
 .success-ring{
@@ -335,16 +316,13 @@ footer{
   color:var(--arc);font-family:var(--fm);font-size:13px;
   text-decoration:none;transition:all 0.2s;margin-bottom:9px;
 }
-.btn-explorer:active{background:rgba(0,212,255,0.12);}
 .btn-dismiss{
   width:100%;padding:12px;border-radius:11px;
   background:transparent;border:1px solid var(--border);
   color:var(--muted);font-family:var(--fb);font-size:14px;
   cursor:pointer;-webkit-appearance:none;
 }
-.btn-dismiss:active{border-color:rgba(255,255,255,0.1);}
 
-/* TOAST */
 .toast{
   position:fixed;bottom:20px;left:50%;
   transform:translateX(-50%) translateY(60px);
@@ -359,9 +337,6 @@ footer{
 .toast.fail{border-color:var(--err);color:var(--err);}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
-
-/* SVG ICON HELPERS */
-svg.icon{display:inline-block;vertical-align:middle;}
 </style>
 </head>
 <body>
@@ -369,7 +344,6 @@ svg.icon{display:inline-block;vertical-align:middle;}
 <div class="bg-layer">
   <div class="bg-grad"></div>
   <div class="bg-grid"></div>
-  <!-- SVG animated orbs -->
   <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice">
     <defs>
       <radialGradient id="g1" cx="50%" cy="50%" r="50%">
@@ -390,7 +364,6 @@ svg.icon{display:inline-block;vertical-align:middle;}
   </svg>
 </div>
 
-<!-- NAV -->
 <nav>
   <a class="logo" href="#">
     <div class="logo-img"><img src="https://i.postimg.cc/3xv4dzRw/20260603-214607.jpg" alt="Arc"></div>
@@ -402,7 +375,6 @@ svg.icon{display:inline-block;vertical-align:middle;}
   </button>
 </nav>
 
-<!-- HERO -->
 <div class="hero">
   <div class="hero-chip">
     <svg width="8" height="8" viewBox="0 0 8 8"><polygon points="4,0 8,8 0,8" fill="currentColor"/></svg>
@@ -412,7 +384,6 @@ svg.icon{display:inline-block;vertical-align:middle;}
   <p class="hero-desc">Register Web3 domains on Arc Network. Own your name, link your wallet, build your presence.</p>
 </div>
 
-<!-- SEARCH -->
 <div class="search-wrap">
   <div class="search-card">
     <div class="search-lbl">Search Domain</div>
@@ -430,7 +401,6 @@ svg.icon{display:inline-block;vertical-align:middle;}
   </div>
 </div>
 
-<!-- STATS -->
 <div class="stats">
   <div class="stat"><div class="stat-v" id="sDomains">0</div><div class="stat-l">Domains</div></div>
   <div class="stat"><div class="stat-v">5042002</div><div class="stat-l">Chain ID</div></div>
@@ -438,7 +408,6 @@ svg.icon{display:inline-block;vertical-align:middle;}
   <div class="stat"><div class="stat-v">$1</div><div class="stat-l">Per Year</div></div>
 </div>
 
-<!-- HOW IT WORKS -->
 <div class="sec">
   <div class="sec-h">How it <span>Works</span></div>
   <div class="steps">
@@ -452,7 +421,7 @@ svg.icon{display:inline-block;vertical-align:middle;}
     </div>
     <div class="step">
       <div class="step-n">3</div>
-      <div><div class="step-t">Register Onchain</div><div class="step-d">Pay small fee. Transaction confirmed on Arc Network instantly</div></div>
+      <div><div class="step-t">Register Onchain</div><div class="step-d">Pay 1 USDC/year. Transaction confirmed on Arc Network instantly</div></div>
     </div>
     <div class="step">
       <div class="step-n">4</div>
@@ -461,7 +430,6 @@ svg.icon{display:inline-block;vertical-align:middle;}
   </div>
 </div>
 
-<!-- FEATURES -->
 <div class="sec">
   <div class="sec-h">Platform <span>Features</span></div>
   <div class="feats">
@@ -486,7 +454,7 @@ svg.icon{display:inline-block;vertical-align:middle;}
       <div class="feat-d">NFT on Arc — trade freely</div>
     </div>
     <div class="feat">
-      <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       <div class="feat-t">Social Records</div>
       <div class="feat-d">Store email, Twitter onchain</div>
     </div>
@@ -498,7 +466,6 @@ svg.icon{display:inline-block;vertical-align:middle;}
   </div>
 </div>
 
-<!-- CREATOR -->
 <div class="sec">
   <div class="sec-h">Meet the <span>Creator</span></div>
   <div class="creator">
@@ -519,7 +486,6 @@ svg.icon{display:inline-block;vertical-align:middle;}
   </div>
 </div>
 
-<!-- FOOTER -->
 <footer>
   <div class="foot-logo">Arc<span>Domains</span></div>
   <div class="foot-sub">Built by Joynal &middot; Arc Testnet &middot; 2026</div>
@@ -601,199 +567,243 @@ svg.icon{display:inline-block;vertical-align:middle;}
 <div class="toast" id="toast"></div>
 
 <script>
-const CONTRACT = '0x13d3470a3B24981C09D8a6eaE2cb5EF1fB7F127D';
-const CHAIN_ID = '0x4CFBA2';
+// ✅ নতুন contract address
+const CONTRACT = '0x6245d2239fd79Dc998c90E419bF6cb95F6519366';
+const CHAIN_ID = '0x4CFBA2'; // 5042002
 const RPC = 'https://rpc.testnet.arc.network';
 const EXPLORER = 'https://testnet.arcscan.app';
+
 const ABI = [
   "function registerDomain(string,uint256) external payable",
+  "function renewDomain(string,uint256) external payable",
   "function isAvailable(string) external view returns (bool)",
   "function totalSupply() external view returns (uint256)",
-  "function registrationFee() external view returns (uint256)"
+  "function registrationFee() external view returns (uint256)",
+  "function getDomainInfo(string) external view returns (address,uint256,bool)",
+  "function resolve(string) external view returns (address)",
+  "function getOwnerDomains(address) external view returns (string[])"
 ];
 
-let provider=null,signer=null,ctr=null,connected=false,addr='',pendingDomain='';
+let provider=null, signer=null, ctr=null, connected=false, addr='', pendingDomain='';
 
-window.addEventListener('load',async()=>{
-  animN(document.getElementById('sDomains'),1247,1800);
-  try{
-    const rpc=new ethers.JsonRpcProvider(RPC);
-    const rc=new ethers.Contract(CONTRACT,ABI,rpc);
-    const s=await rc.totalSupply();
-    animN(document.getElementById('sDomains'),Number(s),1000);
-  }catch(e){}
+// ✅ Arc এ native USDC = 18 decimals (msg.value এর জন্য)
+// Contract এ: registrationFee = 1 * 10**18
+const FEE_FALLBACK = ethers.parseUnits('1', 18); // 1 USDC fallback
+
+window.addEventListener('load', async () => {
+  animN(document.getElementById('sDomains'), 0, 800);
+  try {
+    const rpc = new ethers.JsonRpcProvider(RPC);
+    const rc = new ethers.Contract(CONTRACT, ABI, rpc);
+    const s = await rc.totalSupply();
+    animN(document.getElementById('sDomains'), Number(s), 1000);
+  } catch(e) {
+    console.log('totalSupply read error:', e.message);
+  }
 });
 
-function openWallet(){
-  if(connected){showToast('Wallet already connected','ok');return;}
+function openWallet() {
+  if (connected) { showToast('Wallet already connected', 'ok'); return; }
   document.getElementById('wlist').classList.remove('hide');
   document.getElementById('connecting').classList.remove('on');
   showOv('woverlay');
 }
 
-async function connectW(name){
-  if(!window.ethereum){showToast('Install '+name+' first','fail');closeOv('woverlay');return;}
+async function connectW(name) {
+  if (!window.ethereum) { showToast('Install ' + name + ' first', 'fail'); closeOv('woverlay'); return; }
   document.getElementById('wlist').classList.add('hide');
   document.getElementById('connecting').classList.add('on');
-  document.getElementById('connName').textContent='Connecting to '+name+'...';
-  try{
-    try{
-      await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_ID}]});
-    }catch(e){
-      if(e.code===4902){
-        await window.ethereum.request({method:'wallet_addEthereumChain',params:[{
-          chainId:CHAIN_ID,chainName:'Arc Network Testnet',
-          nativeCurrency:{name:'USDC',symbol:'USDC',decimals:6},
-          rpcUrls:[RPC],blockExplorerUrls:[EXPLORER]
-        }]});
+  document.getElementById('connName').textContent = 'Connecting to ' + name + '...';
+  try {
+    try {
+      await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_ID }] });
+    } catch(e) {
+      if (e.code === 4902) {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: CHAIN_ID,
+            chainName: 'Arc Network Testnet',
+            nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+            rpcUrls: [RPC],
+            blockExplorerUrls: [EXPLORER]
+          }]
+        });
       }
     }
-    provider=new ethers.BrowserProvider(window.ethereum);
-    const accs=await provider.send('eth_requestAccounts',[]);
-    signer=await provider.getSigner();
-    ctr=new ethers.Contract(CONTRACT,ABI,signer);
-    addr=accs[0];connected=true;
+    provider = new ethers.BrowserProvider(window.ethereum);
+    const accs = await provider.send('eth_requestAccounts', []);
+    signer = await provider.getSigner();
+    ctr = new ethers.Contract(CONTRACT, ABI, signer);
+    addr = accs[0]; connected = true;
     closeOv('woverlay');
-    const btn=document.getElementById('walletBtn');
+    const btn = document.getElementById('walletBtn');
     btn.classList.add('connected');
-    document.getElementById('walletTxt').textContent=addr.slice(0,6)+'...'+addr.slice(-4);
-    showToast(name+' connected','ok');
-    try{const s=await ctr.totalSupply();animN(document.getElementById('sDomains'),Number(s),600);}catch(e){}
-    if(pendingDomain){startReg(pendingDomain);pendingDomain='';}
-  }catch(err){
+    document.getElementById('walletTxt').textContent = addr.slice(0,6) + '...' + addr.slice(-4);
+    showToast(name + ' connected', 'ok');
+    try { const s = await ctr.totalSupply(); animN(document.getElementById('sDomains'), Number(s), 600); } catch(e) {}
+    if (pendingDomain) { startReg(pendingDomain); pendingDomain = ''; }
+  } catch(err) {
     document.getElementById('wlist').classList.remove('hide');
     document.getElementById('connecting').classList.remove('on');
-    if(err.code!==4001)showToast('Failed: '+(err.message||'').slice(0,50),'fail');
-    else showToast('Cancelled','fail');
+    if (err.code !== 4001) showToast('Failed: ' + (err.message||'').slice(0,50), 'fail');
+    else showToast('Cancelled', 'fail');
   }
 }
 
-const taken=['bitcoin','ethereum','arc','crypto','defi','nft','web3','circle','usdc'];
-
-async function doSearch(){
-  const v=document.getElementById('sinput').value.trim().toLowerCase().replace(/\s+/g,'');
-  const el=document.getElementById('errline');
+async function doSearch() {
+  const v = document.getElementById('sinput').value.trim().toLowerCase().replace(/\s+/g,'');
+  const el = document.getElementById('errline');
   el.classList.remove('on');
-  if(!v){showErr('Enter a domain name');return;}
-  if(v.length<3){showErr('Minimum 3 characters');return;}
-  if(!/^[a-z0-9-]+$/.test(v)){showErr('Only letters, numbers and hyphens');return;}
+  if (!v) { showErr('Enter a domain name'); return; }
+  if (v.length < 3) { showErr('Minimum 3 characters'); return; }
+  if (!/^[a-z0-9-]+$/.test(v)) { showErr('Only letters, numbers and hyphens'); return; }
 
-  const loader=document.getElementById('sloader');
-  const rbox=document.getElementById('rbox');
-  const sbtn=document.getElementById('sbtn');
+  const loader = document.getElementById('sloader');
+  const rbox = document.getElementById('rbox');
+  const sbtn = document.getElementById('sbtn');
   rbox.classList.remove('on');
   loader.classList.add('on');
-  sbtn.disabled=true;
+  sbtn.disabled = true;
 
-  let avail=!taken.includes(v);
-  try{
-    const rpc=new ethers.JsonRpcProvider(RPC);
-    const rc=new ethers.Contract(CONTRACT,ABI,rpc);
-    avail=await rc.isAvailable(v);
-  }catch(e){}
+  let avail = true;
+  try {
+    const rpc = new ethers.JsonRpcProvider(RPC);
+    const rc = new ethers.Contract(CONTRACT, ABI, rpc);
+    avail = await rc.isAvailable(v);
+  } catch(e) {
+    console.log('isAvailable error:', e.message);
+    showToast('RPC error — check connection', 'fail');
+  }
 
   loader.classList.remove('on');
-  sbtn.disabled=false;
+  sbtn.disabled = false;
 
-  const len=v.length;
-  const price=len===3?'$640/yr':len===4?'$160/yr':'$5/yr';
-  const domain=v+'.arc';
-
-  rbox.innerHTML=`
+  const domain = v + '.arc';
+  rbox.innerHTML = `
     <div class="result-row">
-      <div><div class="r-name">${domain}</div><div class="r-price">${price} &middot; Arc Network</div></div>
+      <div>
+        <div class="r-name">${domain}</div>
+        <div class="r-price">1 USDC/yr &middot; Arc Network</div>
+      </div>
       <div class="r-right">
         <div class="chain-pill">
           <img src="https://i.postimg.cc/3xv4dzRw/20260603-214607.jpg" alt="Arc" onerror="this.style.display='none'">
           Arc
         </div>
-        <div class="${avail?'avail':'taken'}">
+        <div class="${avail ? 'avail' : 'taken'}">
           <svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="currentColor"/></svg>
-          ${avail?'Available':'Taken'}
+          ${avail ? 'Available' : 'Taken'}
         </div>
-        ${avail?`<button class="btn-reg" onclick="startReg('${v}')">Register</button>`:''}
+        ${avail ? `<button class="btn-reg" onclick="startReg('${v}')">Register</button>` : ''}
       </div>
     </div>`;
   rbox.classList.add('on');
 }
 
-function showErr(m){const e=document.getElementById('errline');e.textContent=m;e.classList.add('on');}
+function showErr(m) {
+  const e = document.getElementById('errline');
+  e.textContent = m; e.classList.add('on');
+}
 
-function startReg(domain){
-  if(!connected){pendingDomain=domain;openWallet();return;}
+function startReg(domain) {
+  if (!connected) { pendingDomain = domain; openWallet(); return; }
   openTx(domain);
 }
 
-async function openTx(domain){
-  document.getElementById('txTitle').textContent='Register '+domain+'.arc';
-  document.getElementById('txSub').textContent='Sending to Arc Network...';
-  document.getElementById('txProg').style.display='block';
+async function openTx(domain) {
+  document.getElementById('txTitle').textContent = 'Register ' + domain + '.arc';
+  document.getElementById('txSub').textContent = 'Sending to Arc Network...';
+  document.getElementById('txProg').style.display = 'block';
   document.getElementById('txSuccess').classList.remove('on');
-  ['ts1','ts2','ts3'].forEach(id=>{
-    document.getElementById(id).className='ts';
-    document.getElementById(id+'s').textContent='waiting';
+  ['ts1','ts2','ts3'].forEach(id => {
+    document.getElementById(id).className = 'ts';
+    document.getElementById(id+'s').textContent = 'waiting';
   });
   showOv('txoverlay');
-  try{
-    setTS('ts1','active','preparing...');
-    const fee=await ctr.registrationFee();
-    setTS('ts1','done','done');
-    setTS('ts2','active','confirm in wallet...');
-    const tx=await ctr.registerDomain(domain,1,{value:fee});
-    setTS('ts2','done','signed');
-    setTS('ts3','active','confirming...');
-    const rc=await tx.wait();
-    setTS('ts3','done','confirmed');
-    document.getElementById('txProg').style.display='none';
+
+  try {
+    setTS('ts1', 'active', 'preparing...');
+
+    // ✅ Contract থেকে fee পড়ো (18 decimals)
+    let fee = FEE_FALLBACK;
+    try {
+      fee = await ctr.registrationFee();
+    } catch(e) {
+      console.log('fee read failed, using fallback:', e.message);
+    }
+
+    setTS('ts1', 'done', 'done');
+    setTS('ts2', 'active', 'confirm in wallet...');
+
+    // ✅ fee সহ transaction পাঠাও
+    const tx = await ctr.registerDomain(domain, 1, { value: fee });
+
+    setTS('ts2', 'done', 'signed');
+    setTS('ts3', 'active', 'confirming...');
+
+    const rc = await tx.wait();
+
+    setTS('ts3', 'done', 'confirmed');
+    document.getElementById('txProg').style.display = 'none';
     document.getElementById('txSuccess').classList.add('on');
-    document.getElementById('successMsg').textContent=domain+'.arc is now yours!';
-    document.getElementById('explorerBtn').href=EXPLORER+'/tx/'+rc.hash;
-    showToast(domain+'.arc registered!','ok');
-  }catch(err){
+    document.getElementById('successMsg').textContent = domain + '.arc is now yours!';
+    document.getElementById('explorerBtn').href = EXPLORER + '/tx/' + rc.hash;
+    showToast(domain + '.arc registered!', 'ok');
+
+    // supply আপডেট করো
+    try { const s = await ctr.totalSupply(); animN(document.getElementById('sDomains'), Number(s), 600); } catch(e) {}
+
+  } catch(err) {
     closeOv('txoverlay');
-    const m=err?.reason||err?.message||'';
-    if(!m.includes('user rejected'))showToast('Error: '+m.slice(0,55),'fail');
-    else showToast('Transaction cancelled','fail');
+    const m = err?.reason || err?.message || '';
+    if (!m.toLowerCase().includes('user rejected') && !m.toLowerCase().includes('denied'))
+      showToast('Error: ' + m.slice(0, 60), 'fail');
+    else
+      showToast('Transaction cancelled', 'fail');
+    console.log('TX error:', err);
   }
 }
 
-function setTS(id,state,txt){
-  document.getElementById(id).className='ts '+state;
-  document.getElementById(id+'s').textContent=txt;
+function setTS(id, state, txt) {
+  document.getElementById(id).className = 'ts ' + state;
+  document.getElementById(id+'s').textContent = txt;
 }
 
-function showOv(id){document.getElementById(id).classList.add('on');}
-function closeOv(id){document.getElementById(id).classList.remove('on');}
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('on');}));
+function showOv(id) { document.getElementById(id).classList.add('on'); }
+function closeOv(id) { document.getElementById(id).classList.remove('on'); }
 
-function showToast(msg,type){
-  const t=document.getElementById('toast');
-  t.textContent=(type==='ok'?'+ ':'- ')+msg;
-  t.className='toast on '+type;
-  setTimeout(()=>t.classList.remove('on'),3000);
+document.querySelectorAll('.overlay').forEach(o =>
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('on'); })
+);
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'ok' ? '✓ ' : '✕ ') + msg;
+  t.className = 'toast on ' + type;
+  setTimeout(() => t.classList.remove('on'), 3500);
 }
 
-function animN(el,target,dur){
-  const s=performance.now();
-  const tick=n=>{
-    const p=Math.min((n-s)/dur,1);
-    const e=1-Math.pow(1-p,3);
-    el.textContent=Math.floor(e*target).toLocaleString();
-    if(p<1)requestAnimationFrame(tick);
+function animN(el, target, dur) {
+  const s = performance.now();
+  const tick = n => {
+    const p = Math.min((n - s) / dur, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.floor(e * target).toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
 }
 
-const io=new IntersectionObserver(en=>{
-  en.forEach(e=>{
-    if(e.isIntersecting){e.target.style.animation='fadeUp 0.45s ease both';io.unobserve(e.target);}
+const io = new IntersectionObserver(en => {
+  en.forEach(e => {
+    if (e.isIntersecting) { e.target.style.animation = 'fadeUp 0.45s ease both'; io.unobserve(e.target); }
   });
-},{threshold:0.08});
-document.querySelectorAll('.step,.feat,.creator').forEach(el=>{el.style.opacity='0';io.observe(el);});
+}, { threshold: 0.08 });
+document.querySelectorAll('.step,.feat,.creator').forEach(el => { el.style.opacity='0'; io.observe(el); });
 
-// spin keyframe for wallet ring
-const style=document.createElement('style');
-style.textContent='@keyframes spin{to{transform:rotate(360deg);}}';
+const style = document.createElement('style');
+style.textContent = '@keyframes spin{to{transform:rotate(360deg);}}';
 document.head.appendChild(style);
 </script>
 </body>
