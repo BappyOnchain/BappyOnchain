@@ -2,655 +2,677 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArcDomains — Web3 Domain Registration</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Cabinet+Grotesk:wght@400;500;700;900&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ArcDomains — Web3 Identity on Arc Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 <style>
-  :root {
-    --arc: #00E5FF;
-    --arc2: #7B61FF;
-    --gold: #FFD166;
-    --bg: #050A14;
-    --bg2: #0A1428;
-    --bg3: #0F1E3A;
-    --card: rgba(15,30,58,0.85);
-    --border: rgba(0,229,255,0.13);
-    --text: #E8F4FF;
-    --muted: #6B8FAF;
-    --success: #00FFB2;
-    --error: #FF4D6D;
-    --font-head: 'Syne', sans-serif;
-    --font-mono: 'DM Mono', monospace;
-    --font-body: 'Cabinet Grotesk', sans-serif;
-  }
+:root {
+  --c0: #020810;
+  --c1: #040d1a;
+  --c2: #071428;
+  --c3: #0a1d3a;
+  --arc: #00d4ff;
+  --arc2: #0099cc;
+  --glow: rgba(0,212,255,0.15);
+  --gold: #f5c842;
+  --ok: #00e5a0;
+  --err: #ff4560;
+  --text: #e8f4ff;
+  --muted: #5a7a99;
+  --border: rgba(0,212,255,0.1);
+  --fh: 'Bebas Neue', sans-serif;
+  --fb: 'Outfit', sans-serif;
+  --fm: 'JetBrains Mono', monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:16px;-webkit-tap-highlight-color:transparent;}
+body{
+  background:var(--c0);color:var(--text);
+  font-family:var(--fb);min-height:100vh;
+  overflow-x:hidden;
+}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* BG */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.bg-grad{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 100% 50% at 50% -10%, rgba(0,180,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 90%, rgba(0,100,200,0.05) 0%, transparent 50%);
+}
+.bg-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.025) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 0%, black 0%, transparent 80%);
+}
 
-  html { scroll-behavior: smooth; }
+/* SVG ORBS */
+.orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;
+  background:rgba(2,8,16,0.8);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+}
+.logo{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--fh);font-size:22px;letter-spacing:1px;
+  color:var(--text);text-decoration:none;
+}
+.logo-icon{
+  width:34px;height:34px;border-radius:10px;
+  overflow:hidden;border:1.5px solid rgba(0,212,255,0.3);
+  flex-shrink:0;
+}
+.logo-icon img{width:100%;height:100%;object-fit:cover;}
+.logo span{color:var(--arc);}
 
-  /* ===== BACKGROUND ===== */
-  .bg-mesh {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background:
-      radial-gradient(ellipse 80% 60% at 10% 20%, rgba(0,229,255,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 80% at 90% 80%, rgba(123,97,255,0.07) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(0,229,255,0.03) 0%, transparent 70%);
-  }
-  .grid-overlay {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background-image:
-      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
-  }
-  .noise {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.025;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  }
+.btn-wallet{
+  display:flex;align-items:center;gap:7px;
+  background:transparent;
+  border:1.5px solid var(--arc);
+  color:var(--arc);
+  padding:8px 16px;border-radius:10px;
+  font-family:var(--fb);font-weight:600;font-size:13px;
+  cursor:pointer;transition:all 0.2s;
+  white-space:nowrap;
+}
+.btn-wallet:hover{background:rgba(0,212,255,0.08);box-shadow:0 0 16px rgba(0,212,255,0.2);}
+.btn-wallet.connected{border-color:var(--ok);color:var(--ok);}
+.wallet-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:currentColor;
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
 
-  /* ===== NAV ===== */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 40px;
-    background: rgba(5,10,20,0.7);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-logo {
-    display: flex; align-items: center; gap: 10px;
-    font-family: var(--font-head); font-weight: 800; font-size: 22px;
-    color: var(--text); text-decoration: none; letter-spacing: -0.5px;
-  }
-  .nav-logo img { width: 32px; height: 32px; border-radius: 8px; object-fit: cover; }
-  .nav-logo span { color: var(--arc); }
-  .nav-links { display: flex; align-items: center; gap: 32px; }
-  .nav-links a {
-    color: var(--muted); font-size: 14px; font-weight: 500;
-    text-decoration: none; transition: color 0.2s; letter-spacing: 0.3px;
-  }
-  .nav-links a:hover { color: var(--text); }
+/* HERO */
+.hero{
+  position:relative;z-index:1;
+  padding:110px 20px 0;
+  text-align:center;
+}
+.hero-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,212,255,0.06);
+  border:1px solid rgba(0,212,255,0.18);
+  color:var(--arc);font-size:11px;
+  font-family:var(--fm);letter-spacing:1px;
+  padding:5px 14px;border-radius:100px;
+  margin-bottom:22px;
+  animation:fadeUp 0.5s ease both;
+}
+.hero-chip svg{width:10px;height:10px;}
 
-  /* ===== CONNECT WALLET BUTTON ===== */
-  .btn-connect {
-    display: flex; align-items: center; gap: 8px;
-    background: transparent;
-    border: 1px solid var(--arc);
-    color: var(--arc);
-    padding: 9px 20px; border-radius: 10px;
-    font-family: var(--font-body); font-weight: 600; font-size: 14px;
-    cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden;
-  }
-  .btn-connect::before {
-    content: ''; position: absolute; inset: 0;
-    background: var(--arc); opacity: 0; transition: opacity 0.25s;
-  }
-  .btn-connect:hover::before { opacity: 0.1; }
-  .btn-connect:hover { box-shadow: 0 0 20px rgba(0,229,255,0.3); }
-  .btn-connect .dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--arc); box-shadow: 0 0 6px var(--arc);
-    animation: pulse-dot 2s infinite;
-  }
-  .btn-connect.connected { border-color: var(--success); color: var(--success); }
-  .btn-connect.connected .dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
-  @keyframes pulse-dot {
-    0%,100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
-  }
+.hero h1{
+  font-family:var(--fh);
+  font-size:clamp(52px,14vw,80px);
+  line-height:0.95;
+  letter-spacing:2px;
+  animation:fadeUp 0.5s 0.08s ease both;
+}
+.hero h1 em{
+  font-style:normal;
+  color:transparent;
+  -webkit-text-stroke:1.5px var(--arc);
+}
+.hero-sub{
+  margin-top:16px;
+  color:var(--muted);font-size:15px;line-height:1.6;
+  max-width:340px;margin-left:auto;margin-right:auto;
+  animation:fadeUp 0.5s 0.16s ease both;
+}
 
-  /* ===== HERO ===== */
-  .hero {
-    position: relative; z-index: 1;
-    padding: 160px 40px 80px;
-    text-align: center;
-    max-width: 900px; margin: 0 auto;
-  }
-  .hero-badge {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2);
-    color: var(--arc); font-size: 12px; font-family: var(--font-mono);
-    padding: 5px 14px; border-radius: 100px; margin-bottom: 28px;
-    animation: fadeUp 0.6s ease both;
-  }
-  .hero-badge::before { content: '◆'; font-size: 8px; }
-  .hero h1 {
-    font-family: var(--font-head); font-weight: 800; font-size: clamp(42px,6vw,80px);
-    line-height: 1.05; letter-spacing: -2px;
-    animation: fadeUp 0.6s 0.1s ease both;
-  }
-  .hero h1 .accent { color: var(--arc); }
-  .hero p {
-    margin-top: 20px; color: var(--muted); font-size: 18px; line-height: 1.6;
-    max-width: 560px; margin-left: auto; margin-right: auto;
-    animation: fadeUp 0.6s 0.2s ease both;
-  }
+/* SEARCH */
+.search-section{
+  position:relative;z-index:1;
+  padding:32px 20px 0;
+  animation:fadeUp 0.5s 0.24s ease both;
+}
+.search-card{
+  background:rgba(7,20,40,0.9);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:20px;
+  backdrop-filter:blur(20px);
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+}
+.search-label{
+  font-size:11px;font-family:var(--fm);
+  color:var(--muted);letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:10px;
+}
+.search-input-wrap{
+  display:flex;align-items:center;
+  background:var(--c2);
+  border:1.5px solid rgba(0,212,255,0.12);
+  border-radius:12px;
+  overflow:hidden;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.search-input-wrap:focus-within{
+  border-color:var(--arc);
+  box-shadow:0 0 0 3px rgba(0,212,255,0.08);
+}
+.search-input-wrap input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--text);font-family:var(--fm);font-size:15px;
+  padding:13px 14px;
+}
+.search-input-wrap input::placeholder{color:var(--muted);}
+.search-tld{
+  padding:0 10px;
+  color:var(--arc);font-family:var(--fm);font-size:14px;
+  border-right:1px solid rgba(0,212,255,0.1);
+  white-space:nowrap;
+}
+.btn-search{
+  background:var(--arc);color:var(--c0);
+  border:none;padding:13px 20px;
+  font-family:var(--fb);font-weight:700;font-size:14px;
+  cursor:pointer;transition:all 0.2s;white-space:nowrap;
+}
+.btn-search:hover{background:#33ddff;}
+.btn-search:disabled{opacity:0.4;cursor:not-allowed;}
 
-  /* ===== SEARCH BOX ===== */
-  .search-wrap {
-    position: relative; z-index: 1;
-    max-width: 680px; margin: 48px auto 0;
-    animation: fadeUp 0.6s 0.3s ease both;
-  }
-  .search-box {
-    display: flex; align-items: center;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 6px 6px 6px 20px;
-    gap: 12px;
-    backdrop-filter: blur(20px);
-    transition: border-color 0.3s, box-shadow 0.3s;
-  }
-  .search-box:focus-within {
-    border-color: var(--arc);
-    box-shadow: 0 0 0 3px rgba(0,229,255,0.1), 0 20px 60px rgba(0,0,0,0.4);
-  }
-  .search-box input {
-    flex: 1; background: transparent; border: none; outline: none;
-    color: var(--text); font-family: var(--font-mono); font-size: 16px; font-weight: 400;
-    padding: 10px 0;
-  }
-  .search-box input::placeholder { color: var(--muted); }
-  .search-suffix {
-    color: var(--arc); font-family: var(--font-mono); font-size: 15px;
-    padding: 0 4px; white-space: nowrap; opacity: 0.7;
-  }
-  .btn-search {
-    background: var(--arc); color: var(--bg);
-    border: none; border-radius: 10px;
-    padding: 12px 28px; font-family: var(--font-body);
-    font-weight: 700; font-size: 15px; cursor: pointer;
-    transition: all 0.2s; white-space: nowrap;
-  }
-  .btn-search:hover { background: #33EEFF; box-shadow: 0 0 20px rgba(0,229,255,0.4); }
-  .btn-search:disabled { opacity: 0.5; cursor: not-allowed; }
+/* RESULT */
+.result-box{
+  margin-top:14px;
+  border-radius:12px;
+  overflow:hidden;
+  display:none;
+  animation:slideIn 0.3s ease;
+}
+.result-box.show{display:block;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
 
-  /* ===== SEARCH RESULT ===== */
-  .search-result {
-    margin-top: 16px; border-radius: 14px;
-    border: 1px solid var(--border);
-    background: var(--card); backdrop-filter: blur(20px);
-    overflow: hidden; display: none;
-    animation: slideDown 0.3s ease;
-  }
-  .search-result.show { display: block; }
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .result-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 22px; gap: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-  .result-row:last-child { border-bottom: none; }
-  .result-name {
-    font-family: var(--font-mono); font-size: 16px; font-weight: 500;
-    color: var(--text);
-  }
-  .result-meta { display: flex; align-items: center; gap: 10px; }
-  .chain-badge {
-    display: flex; align-items: center; gap: 6px;
-    background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2);
-    padding: 4px 10px; border-radius: 20px; font-size: 12px;
-    color: var(--arc); font-family: var(--font-mono);
-  }
-  .chain-badge img { width: 16px; height: 16px; border-radius: 50%; }
-  .status-available {
-    display: flex; align-items: center; gap: 6px;
-    color: var(--success); font-size: 13px; font-weight: 600;
-  }
-  .status-available::before { content: '●'; font-size: 8px; }
-  .status-taken {
-    display: flex; align-items: center; gap: 6px;
-    color: var(--error); font-size: 13px; font-weight: 600;
-  }
-  .status-taken::before { content: '●'; font-size: 8px; }
-  .btn-register {
-    background: linear-gradient(135deg, var(--arc), var(--arc2));
-    color: white; border: none; border-radius: 8px;
-    padding: 9px 20px; font-family: var(--font-body);
-    font-weight: 700; font-size: 13px; cursor: pointer;
-    transition: all 0.2s; white-space: nowrap;
-  }
-  .btn-register:hover { opacity: 0.9; box-shadow: 0 0 20px rgba(123,97,255,0.4); transform: translateY(-1px); }
+.result-row{
+  background:var(--c2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.result-name-wrap{}
+.result-name{font-family:var(--fm);font-size:15px;font-weight:500;}
+.result-price{font-size:11px;color:var(--muted);margin-top:3px;}
+.result-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
 
-  /* ===== LOADING ===== */
-  .search-loading {
-    display: none; align-items: center; justify-content: center;
-    gap: 12px; padding: 24px;
-    color: var(--muted); font-size: 14px; font-family: var(--font-mono);
-  }
-  .search-loading.show { display: flex; }
-  .spinner {
-    width: 20px; height: 20px; border-radius: 50%;
-    border: 2px solid rgba(0,229,255,0.2);
-    border-top-color: var(--arc);
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+.chain-pill{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(0,212,255,0.07);
+  border:1px solid rgba(0,212,255,0.15);
+  padding:4px 9px;border-radius:20px;
+  font-size:11px;font-family:var(--fm);color:var(--arc);
+}
+.chain-pill img{width:14px;height:14px;border-radius:50%;}
 
-  /* ===== STATS ===== */
-  .stats {
-    position: relative; z-index: 1;
-    display: flex; justify-content: center; gap: 0;
-    max-width: 700px; margin: 60px auto 0;
-    border: 1px solid var(--border); border-radius: 16px;
-    background: var(--card); backdrop-filter: blur(20px);
-    overflow: hidden;
-    animation: fadeUp 0.6s 0.4s ease both;
-  }
-  .stat { flex: 1; padding: 24px 20px; text-align: center; border-right: 1px solid var(--border); }
-  .stat:last-child { border-right: none; }
-  .stat-value { font-family: var(--font-head); font-size: 28px; font-weight: 800; color: var(--arc); }
-  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; font-family: var(--font-mono); }
+.badge-avail{
+  font-size:11px;font-weight:600;color:var(--ok);
+  display:flex;align-items:center;gap:4px;
+}
+.badge-taken{font-size:11px;font-weight:600;color:var(--err);}
+.badge-avail::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--ok);flex-shrink:0;}
+.badge-taken::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--err);flex-shrink:0;display:inline-block;margin-right:4px;}
 
-  /* ===== SECTION ===== */
-  .section {
-    position: relative; z-index: 1;
-    max-width: 1100px; margin: 100px auto 0; padding: 0 40px;
-  }
-  .section-title {
-    font-family: var(--font-head); font-size: 36px; font-weight: 800;
-    letter-spacing: -1px; margin-bottom: 40px;
-  }
-  .section-title span { color: var(--arc); }
+.btn-reg{
+  background:linear-gradient(135deg,var(--arc),#0088bb);
+  color:var(--c0);border:none;border-radius:8px;
+  padding:8px 16px;
+  font-family:var(--fb);font-weight:700;font-size:12px;
+  cursor:pointer;transition:all 0.2s;white-space:nowrap;
+}
+.btn-reg:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,212,255,0.3);}
 
-  /* ===== FEATURES ===== */
-  .features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
-  .feature-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 16px; padding: 28px;
-    transition: all 0.3s; backdrop-filter: blur(10px);
-    position: relative; overflow: hidden;
-  }
-  .feature-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0;
-    height: 2px; background: linear-gradient(90deg, var(--arc), var(--arc2));
-    transform: scaleX(0); transition: transform 0.3s; transform-origin: left;
-  }
-  .feature-card:hover { border-color: rgba(0,229,255,0.3); transform: translateY(-4px); }
-  .feature-card:hover::before { transform: scaleX(1); }
-  .feature-icon { font-size: 32px; margin-bottom: 16px; }
-  .feature-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-  .feature-desc { color: var(--muted); font-size: 14px; line-height: 1.6; }
+/* LOADING BAR */
+.search-loading{
+  display:none;align-items:center;justify-content:center;
+  gap:10px;padding:16px;
+  color:var(--muted);font-size:12px;font-family:var(--fm);
+}
+.search-loading.show{display:flex;}
+.dot-spin{display:flex;gap:4px;}
+.dot-spin span{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--arc);
+  animation:dotBounce 1.2s ease infinite;
+}
+.dot-spin span:nth-child(2){animation-delay:0.2s;}
+.dot-spin span:nth-child(3){animation-delay:0.4s;}
+@keyframes dotBounce{0%,80%,100%{transform:scale(0.6);opacity:0.3;}40%{transform:scale(1);opacity:1;}}
 
-  /* ===== HOW IT WORKS ===== */
-  .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; position: relative; }
-  .steps::before {
-    content: ''; position: absolute; top: 32px; left: 15%; right: 15%; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--arc), transparent);
-    opacity: 0.3;
-  }
-  .step { text-align: center; padding: 20px; }
-  .step-num {
-    width: 56px; height: 56px; border-radius: 50%;
-    border: 2px solid var(--arc);
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 16px; font-family: var(--font-head); font-weight: 800; font-size: 20px;
-    color: var(--arc); background: rgba(0,229,255,0.05);
-    box-shadow: 0 0 20px rgba(0,229,255,0.15);
-  }
-  .step-title { font-family: var(--font-head); font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-  .step-desc { color: var(--muted); font-size: 13px; line-height: 1.5; }
+/* STATS */
+.stats{
+  position:relative;z-index:1;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  margin:24px 20px 0;
+  background:rgba(7,20,40,0.7);
+  border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;
+  animation:fadeUp 0.5s 0.32s ease both;
+}
+.stat{
+  padding:16px 10px;text-align:center;
+  border-right:1px solid var(--border);
+}
+.stat:last-child{border-right:none;}
+.stat-val{
+  font-family:var(--fh);font-size:22px;
+  color:var(--arc);line-height:1;
+}
+.stat-lbl{
+  font-size:9px;color:var(--muted);
+  margin-top:4px;font-family:var(--fm);
+  letter-spacing:0.5px;
+}
 
-  /* ===== CREATOR ===== */
-  .creator-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 24px; padding: 48px;
-    display: flex; align-items: center; gap: 48px;
-    backdrop-filter: blur(20px); position: relative; overflow: hidden;
-  }
-  .creator-card::before {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(ellipse 60% 80% at 0% 50%, rgba(0,229,255,0.04) 0%, transparent 60%);
-  }
-  .creator-avatar {
-    width: 120px; height: 120px; border-radius: 50%;
-    border: 3px solid var(--arc);
-    box-shadow: 0 0 30px rgba(0,229,255,0.3);
-    object-fit: cover; flex-shrink: 0;
-  }
-  .creator-info { flex: 1; position: relative; }
-  .creator-tag {
-    font-family: var(--font-mono); font-size: 11px; color: var(--arc);
-    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
-  }
-  .creator-name { font-family: var(--font-head); font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
-  .creator-desc { color: var(--muted); font-size: 15px; line-height: 1.6; }
+/* SECTIONS */
+.section{
+  position:relative;z-index:1;
+  padding:48px 20px 0;
+}
+.sec-title{
+  font-family:var(--fh);font-size:32px;
+  letter-spacing:1px;margin-bottom:20px;
+}
+.sec-title span{color:var(--arc);}
 
-  /* ===== FOOTER ===== */
-  footer {
-    position: relative; z-index: 1;
-    margin-top: 120px; padding: 40px;
-    border-top: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    color: var(--muted); font-size: 13px; font-family: var(--font-mono);
-  }
-  .footer-logo { font-family: var(--font-head); font-weight: 800; font-size: 18px; color: var(--text); }
-  .footer-logo span { color: var(--arc); }
+/* STEPS */
+.steps{display:flex;flex-direction:column;gap:12px;}
+.step-item{
+  display:flex;align-items:flex-start;gap:14px;
+  background:rgba(7,20,40,0.8);
+  border:1px solid var(--border);
+  border-radius:14px;padding:16px;
+  transition:all 0.2s;
+}
+.step-item:hover{border-color:rgba(0,212,255,0.25);}
+.step-num{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  border:1.5px solid var(--arc);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--fh);font-size:18px;color:var(--arc);
+  background:rgba(0,212,255,0.05);
+}
+.step-content{}
+.step-title{font-weight:700;font-size:15px;margin-bottom:4px;}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.5;}
 
-  /* ===== MODAL OVERLAY ===== */
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 200;
-    background: rgba(5,10,20,0.85); backdrop-filter: blur(12px);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity 0.3s;
-  }
-  .modal-overlay.show { opacity: 1; pointer-events: all; }
-  .modal {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 24px; padding: 40px;
-    width: 440px; max-width: calc(100vw - 32px);
-    transform: scale(0.95) translateY(20px);
-    transition: transform 0.3s;
-    position: relative;
-  }
-  .modal-overlay.show .modal { transform: scale(1) translateY(0); }
-  .modal-close {
-    position: absolute; top: 16px; right: 16px;
-    background: rgba(255,255,255,0.05); border: none; color: var(--muted);
-    width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 18px;
-    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
-  }
-  .modal-close:hover { background: rgba(255,255,255,0.1); color: var(--text); }
-  .modal-title { font-family: var(--font-head); font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-  .modal-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+/* FEATURES */
+.features{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.feat{
+  background:rgba(7,20,40,0.8);
+  border:1px solid var(--border);
+  border-radius:14px;padding:16px;
+  transition:all 0.25s;
+  position:relative;overflow:hidden;
+}
+.feat::after{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,var(--arc),transparent);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform 0.3s;
+}
+.feat:hover{border-color:rgba(0,212,255,0.2);}
+.feat:hover::after{transform:scaleX(1);}
+.feat-icon{font-size:24px;margin-bottom:10px;}
+.feat-title{font-weight:700;font-size:14px;margin-bottom:5px;}
+.feat-desc{font-size:12px;color:var(--muted);line-height:1.5;}
 
-  /* ===== WALLET OPTIONS ===== */
-  .wallet-options { display: flex; flex-direction: column; gap: 12px; }
-  .wallet-btn {
-    display: flex; align-items: center; gap: 14px;
-    background: var(--bg3); border: 1px solid var(--border);
-    border-radius: 14px; padding: 16px 20px; cursor: pointer;
-    transition: all 0.25s; width: 100%;
-  }
-  .wallet-btn:hover { border-color: var(--arc); background: rgba(0,229,255,0.05); transform: translateX(4px); }
-  .wallet-btn img { width: 40px; height: 40px; border-radius: 10px; object-fit: contain; }
-  .wallet-btn-info { flex: 1; text-align: left; }
-  .wallet-btn-name { font-family: var(--font-head); font-size: 16px; font-weight: 700; }
-  .wallet-btn-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .wallet-btn-arrow { color: var(--muted); font-size: 18px; }
+/* CREATOR */
+.creator{
+  background:rgba(7,20,40,0.9);
+  border:1px solid var(--border);
+  border-radius:20px;padding:24px;
+  position:relative;overflow:hidden;
+}
+.creator::before{
+  content:'';position:absolute;
+  top:-60px;right:-60px;
+  width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,0.08),transparent 70%);
+}
+.creator-top{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.creator-img{
+  width:64px;height:64px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--arc);
+  box-shadow:0 0 20px rgba(0,212,255,0.2);
+  object-fit:cover;
+}
+.creator-meta{}
+.creator-by{
+  font-size:10px;font-family:var(--fm);
+  color:var(--arc);letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:4px;
+}
+.creator-name{font-family:var(--fh);font-size:28px;letter-spacing:1px;}
+.creator-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+.creator-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;}
+.creator-tag{
+  font-size:11px;font-family:var(--fm);
+  padding:4px 10px;border-radius:20px;
+}
+.tag-arc{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);color:var(--arc);}
+.tag-sol{background:rgba(150,100,255,0.08);border:1px solid rgba(150,100,255,0.2);color:#9664ff;}
+.tag-web{background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.2);color:var(--gold);}
 
-  /* ===== WALLET CONNECTING ===== */
-  .connecting-state {
-    text-align: center; padding: 20px 0; display: none;
-  }
-  .connecting-state.show { display: block; }
-  .wallet-options.hide { display: none; }
-  .connect-spinner {
-    width: 60px; height: 60px; border-radius: 50%;
-    border: 3px solid rgba(0,229,255,0.15);
-    border-top-color: var(--arc);
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-    position: relative;
-  }
-  .connect-spinner::after {
-    content: ''; position: absolute; inset: 6px; border-radius: 50%;
-    border: 3px solid rgba(123,97,255,0.15);
-    border-bottom-color: var(--arc2);
-    animation: spin 1.5s linear infinite reverse;
-  }
-  .connecting-wallet-name { font-family: var(--font-head); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-  .connecting-sub { color: var(--muted); font-size: 13px; }
+/* FOOTER */
+footer{
+  position:relative;z-index:1;
+  margin-top:60px;
+  padding:24px 20px;
+  border-top:1px solid var(--border);
+  text-align:center;
+}
+.footer-logo{font-family:var(--fh);font-size:20px;letter-spacing:1px;margin-bottom:6px;}
+.footer-logo span{color:var(--arc);}
+.footer-sub{font-size:11px;color:var(--muted);font-family:var(--fm);}
 
-  /* ===== TX MODAL ===== */
-  .tx-state { display: none; }
-  .tx-state.show { display: block; }
-  .tx-steps { margin: 20px 0; display: flex; flex-direction: column; gap: 12px; }
-  .tx-step {
-    display: flex; align-items: center; gap: 12px;
-    padding: 14px 16px; border-radius: 12px;
-    background: var(--bg3); border: 1px solid var(--border);
-    font-size: 14px;
-  }
-  .tx-step.active { border-color: var(--arc); background: rgba(0,229,255,0.05); }
-  .tx-step.done { border-color: var(--success); background: rgba(0,255,178,0.05); }
-  .tx-step-icon { font-size: 20px; width: 28px; text-align: center; }
-  .tx-step-label { flex: 1; font-weight: 500; }
-  .tx-step-status { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
-  .tx-step.active .tx-step-status { color: var(--arc); }
-  .tx-step.done .tx-step-status { color: var(--success); }
-  .step-spinner { display: inline-block; animation: spin 0.8s linear infinite; }
+/* MODALS */
+.overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(2,8,16,0.88);
+  backdrop-filter:blur(16px);
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.25s;
+}
+.overlay.show{opacity:1;pointer-events:all;}
+.sheet{
+  background:var(--c1);
+  border:1px solid var(--border);
+  border-radius:24px 24px 0 0;
+  padding:28px 24px 40px;
+  width:100%;max-width:480px;
+  transform:translateY(40px);transition:transform 0.3s ease;
+  position:relative;
+}
+.overlay.show .sheet{transform:translateY(0);}
+.sheet-handle{
+  width:40px;height:4px;border-radius:2px;
+  background:rgba(255,255,255,0.1);
+  margin:0 auto 24px;
+}
+.sheet-title{font-family:var(--fh);font-size:26px;letter-spacing:1px;margin-bottom:6px;}
+.sheet-sub{color:var(--muted);font-size:13px;margin-bottom:24px;}
+.sheet-close{
+  position:absolute;top:20px;right:20px;
+  background:rgba(255,255,255,0.05);border:none;
+  color:var(--muted);width:32px;height:32px;
+  border-radius:8px;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+}
+.sheet-close:hover{background:rgba(255,255,255,0.1);color:var(--text);}
 
-  /* ===== SUCCESS ===== */
-  .success-state { display: none; text-align: center; }
-  .success-state.show { display: block; }
-  .success-checkmark {
-    width: 80px; height: 80px; border-radius: 50%;
-    background: rgba(0,255,178,0.1); border: 2px solid var(--success);
-    margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
-    font-size: 36px; animation: successPop 0.5s ease;
-    box-shadow: 0 0 30px rgba(0,255,178,0.2);
-  }
-  @keyframes successPop {
-    0% { transform: scale(0); opacity: 0; }
-    80% { transform: scale(1.1); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  .success-title { font-family: var(--font-head); font-size: 24px; font-weight: 800; margin-bottom: 8px; color: var(--success); }
-  .success-sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
-  .explorer-link {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2);
-    color: var(--arc); padding: 12px 24px; border-radius: 10px;
-    text-decoration: none; font-family: var(--font-mono); font-size: 13px;
-    transition: all 0.2s; width: 100%; justify-content: center;
-  }
-  .explorer-link:hover { background: rgba(0,229,255,0.15); box-shadow: 0 0 20px rgba(0,229,255,0.2); }
+/* WALLET BUTTONS */
+.wallet-list{display:flex;flex-direction:column;gap:10px;}
+.wallet-item{
+  display:flex;align-items:center;gap:12px;
+  background:var(--c2);border:1.5px solid var(--border);
+  border-radius:14px;padding:14px 16px;
+  cursor:pointer;transition:all 0.2s;width:100%;
+}
+.wallet-item:hover{border-color:var(--arc);background:rgba(0,212,255,0.04);}
+.wallet-item:active{transform:scale(0.98);}
+.wallet-img{width:42px;height:42px;border-radius:12px;object-fit:contain;flex-shrink:0;}
+.wallet-info{flex:1;text-align:left;}
+.wallet-name{font-weight:700;font-size:15px;}
+.wallet-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+.wallet-arrow{color:var(--muted);font-size:16px;}
 
-  /* ===== ANIMATIONS ===== */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes float {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
+/* CONNECTING */
+.connecting{display:none;text-align:center;padding:10px 0;}
+.connecting.show{display:block;}
+.wallet-list.hide{display:none;}
+.ring{
+  width:64px;height:64px;margin:0 auto 18px;
+  position:relative;
+}
+.ring svg{animation:spin 1.2s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.conn-name{font-family:var(--fh);font-size:22px;letter-spacing:1px;margin-bottom:6px;}
+.conn-sub{font-size:13px;color:var(--muted);}
 
-  /* ===== TOAST ===== */
-  .toast {
-    position: fixed; bottom: 32px; right: 32px; z-index: 300;
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px 20px;
-    display: flex; align-items: center; gap: 10px;
-    font-size: 14px; font-family: var(--font-mono);
-    transform: translateY(80px); opacity: 0;
-    transition: all 0.3s; pointer-events: none;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { border-color: var(--success); color: var(--success); }
-  .toast.error { border-color: var(--error); color: var(--error); }
+/* TX MODAL */
+.tx-steps{display:flex;flex-direction:column;gap:10px;margin:16px 0;}
+.tx-step{
+  display:flex;align-items:center;gap:12px;
+  background:var(--c2);border:1px solid var(--border);
+  border-radius:12px;padding:13px 14px;
+  transition:all 0.3s;font-size:13px;
+}
+.tx-step.active{border-color:var(--arc);background:rgba(0,212,255,0.04);}
+.tx-step.done{border-color:var(--ok);background:rgba(0,229,160,0.04);}
+.tx-icon{width:24px;text-align:center;font-size:16px;flex-shrink:0;}
+.tx-label{flex:1;font-weight:500;}
+.tx-status{font-size:11px;color:var(--muted);font-family:var(--fm);}
+.tx-step.active .tx-status{color:var(--arc);}
+.tx-step.done .tx-status{color:var(--ok);}
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+/* SUCCESS */
+.success{display:none;text-align:center;}
+.success.show{display:block;}
+.success-ring{
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(0,229,160,0.08);
+  border:2px solid var(--ok);
+  margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;
+  animation:pop 0.5s ease;
+  box-shadow:0 0 30px rgba(0,229,160,0.15);
+}
+@keyframes pop{0%{transform:scale(0);opacity:0;}80%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
+.success-title{font-family:var(--fh);font-size:28px;color:var(--ok);letter-spacing:1px;margin-bottom:6px;}
+.success-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.btn-explorer{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:13px;border-radius:12px;
+  background:rgba(0,212,255,0.06);
+  border:1.5px solid rgba(0,212,255,0.2);
+  color:var(--arc);font-family:var(--fm);font-size:13px;
+  text-decoration:none;transition:all 0.2s;margin-bottom:10px;
+}
+.btn-explorer:hover{background:rgba(0,212,255,0.12);box-shadow:0 0 16px rgba(0,212,255,0.15);}
+.btn-dismiss{
+  width:100%;padding:11px;border-radius:12px;
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);font-family:var(--fb);font-size:14px;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-dismiss:hover{border-color:rgba(255,255,255,0.1);color:var(--text);}
 
-  /* Floating particles */
-  .particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-  .particle {
-    position: absolute; border-radius: 50%;
-    background: var(--arc); opacity: 0;
-    animation: float-particle linear infinite;
-  }
-  @keyframes float-particle {
-    0% { transform: translateY(100vh) scale(0); opacity: 0; }
-    10% { opacity: 0.4; }
-    90% { opacity: 0.1; }
-    100% { transform: translateY(-100px) scale(1); opacity: 0; }
-  }
+/* TOAST */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
+  z-index:300;
+  background:var(--c2);border:1px solid var(--border);
+  border-radius:12px;padding:11px 18px;
+  font-size:13px;font-family:var(--fm);
+  white-space:nowrap;
+  transition:transform 0.3s,opacity 0.3s;opacity:0;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.ok{border-color:var(--ok);color:var(--ok);}
+.toast.fail{border-color:var(--err);color:var(--err);}
 
-  @media (max-width: 768px) {
-    nav { padding: 14px 20px; }
-    .nav-links { display: none; }
-    .hero { padding: 120px 20px 60px; }
-    .search-wrap { margin: 32px 20px 0; }
-    .stats { margin: 40px 20px 0; }
-    .section { padding: 0 20px; margin-top: 70px; }
-    .features-grid { grid-template-columns: 1fr; }
-    .steps { grid-template-columns: repeat(2,1fr); }
-    .steps::before { display: none; }
-    .creator-card { flex-direction: column; text-align: center; padding: 32px 24px; gap: 24px; }
-    footer { flex-direction: column; gap: 12px; text-align: center; padding: 24px 20px; }
-    .search-box input { font-size: 14px; }
-  }
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* Error state */
+.err-msg{
+  font-size:12px;color:var(--err);
+  font-family:var(--fm);margin-top:8px;
+  display:none;
+}
+.err-msg.show{display:block;}
 </style>
 </head>
 <body>
 
-<div class="bg-mesh"></div>
-<div class="grid-overlay"></div>
-<div class="noise"></div>
-<div class="particles" id="particles"></div>
+<!-- BG -->
+<div class="bg">
+  <div class="bg-grad"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<!-- SVG ORBS -->
+<div class="orbs">
+  <svg width="100%" height="100%" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <radialGradient id="orb1" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.06"/>
+        <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="orb2" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#0066ff" stop-opacity="0.05"/>
+        <stop offset="100%" stop-color="#0066ff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="200" cy="-50" rx="300" ry="200" fill="url(#orb1)">
+      <animate attributeName="cy" values="-50;0;-50" dur="8s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="350" cy="700" rx="200" ry="150" fill="url(#orb2)">
+      <animate attributeName="cx" values="350;300;350" dur="10s" repeatCount="indefinite"/>
+    </ellipse>
+  </svg>
+</div>
 
 <!-- NAV -->
 <nav>
-  <a class="nav-logo" href="#">
-    <img src="https://i.postimg.cc/3xv4dzRw/20260603-214607.jpg" alt="Arc" onerror="this.style.display='none'">
+  <a class="logo" href="#">
+    <div class="logo-icon">
+      <img src="https://i.postimg.cc/3xv4dzRw/20260603-214607.jpg" alt="Arc">
+    </div>
     Arc<span>Domains</span>
   </a>
-  <div class="nav-links">
-    <a href="#">Explore</a>
-    <a href="#">My Domains</a>
-    <a href="#">Docs</a>
-  </div>
-  <button class="btn-connect" id="connectBtn" onclick="openWalletModal()">
-    <span class="dot"></span>
-    <span id="connectBtnText">Connect Wallet</span>
+  <button class="btn-wallet" id="walletBtn" onclick="openWalletModal()">
+    <span class="wallet-dot"></span>
+    <span id="walletBtnText">Connect</span>
   </button>
 </nav>
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-badge">Built on Arc Network · EVM Compatible</div>
-  <h1>Your Identity on<br><span class="accent">Arc Blockchain</span></h1>
-  <p>Register Web3 domains on Arc Network. Own your digital identity, link your wallet, and build your onchain presence.</p>
+  <div class="hero-chip">
+    <svg viewBox="0 0 10 10" fill="currentColor"><polygon points="5,0 10,10 0,10"/></svg>
+    Arc Network · EVM Compatible
+  </div>
+  <h1>YOUR<br><em>IDENTITY</em><br>ON-CHAIN</h1>
+  <p class="hero-sub">Register Web3 domains on Arc Network. Own your name, link your wallet, build your presence.</p>
 </div>
 
 <!-- SEARCH -->
-<div class="search-wrap">
-  <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Search for your domain..." autocomplete="off" onkeypress="handleKey(event)">
-    <span class="search-suffix">.arc</span>
-    <button class="btn-search" id="searchBtn" onclick="searchDomain()">Search</button>
+<div class="search-section">
+  <div class="search-card">
+    <div class="search-label">Search Domain</div>
+    <div class="search-input-wrap">
+      <input type="text" id="searchInput" placeholder="yourname" autocomplete="off" spellcheck="false" onkeypress="if(event.key==='Enter')doSearch()">
+      <div class="search-tld">.arc</div>
+      <button class="btn-search" id="searchBtn" onclick="doSearch()">Search</button>
+    </div>
+    <div class="search-loading" id="searchLoading">
+      <div class="dot-spin"><span></span><span></span><span></span></div>
+      <span>Checking on Arc Network...</span>
+    </div>
+    <div class="result-box" id="resultBox"></div>
+    <div class="err-msg" id="errMsg"></div>
   </div>
-  <div class="search-loading" id="searchLoading">
-    <div class="spinner"></div>
-    <span>Checking availability on Arc Network...</span>
-  </div>
-  <div class="search-result" id="searchResult"></div>
 </div>
 
 <!-- STATS -->
 <div class="stats">
   <div class="stat">
-    <div class="stat-value" id="stat1">0</div>
-    <div class="stat-label">Domains Registered</div>
+    <div class="stat-val" id="statDomains">0</div>
+    <div class="stat-lbl">Domains</div>
   </div>
   <div class="stat">
-    <div class="stat-value">5042002</div>
-    <div class="stat-label">Arc Chain ID</div>
+    <div class="stat-val">5042002</div>
+    <div class="stat-lbl">Chain ID</div>
   </div>
   <div class="stat">
-    <div class="stat-value">&lt;1s</div>
-    <div class="stat-label">Finality</div>
+    <div class="stat-val">&lt;1s</div>
+    <div class="stat-lbl">Finality</div>
   </div>
   <div class="stat">
-    <div class="stat-value">$1</div>
-    <div class="stat-label">Per Year (USDC)</div>
+    <div class="stat-val">$1</div>
+    <div class="stat-lbl">Per Year</div>
   </div>
 </div>
 
 <!-- HOW IT WORKS -->
 <div class="section">
-  <div class="section-title">How it <span>Works</span></div>
+  <div class="sec-title">How it <span>Works</span></div>
   <div class="steps">
-    <div class="step">
+    <div class="step-item">
       <div class="step-num">1</div>
-      <div class="step-title">Connect Wallet</div>
-      <div class="step-desc">Connect MetaMask or Rabby to Arc Testnet with one click</div>
+      <div class="step-content">
+        <div class="step-title">Connect Wallet</div>
+        <div class="step-desc">Connect MetaMask or Rabby to Arc Testnet (Chain ID: 5042002)</div>
+      </div>
     </div>
-    <div class="step">
+    <div class="step-item">
       <div class="step-num">2</div>
-      <div class="step-title">Search Domain</div>
-      <div class="step-desc">Check availability of your desired .arc domain name</div>
+      <div class="step-content">
+        <div class="step-title">Search Your Name</div>
+        <div class="step-desc">Check real-time availability of your .arc domain on blockchain</div>
+      </div>
     </div>
-    <div class="step">
+    <div class="step-item">
       <div class="step-num">3</div>
-      <div class="step-title">Register</div>
-      <div class="step-desc">Pay 1 USDC per year and own your domain onchain</div>
+      <div class="step-content">
+        <div class="step-title">Register Onchain</div>
+        <div class="step-desc">Pay 1 USDC/year. Transaction confirmed on Arc Network instantly</div>
+      </div>
     </div>
-    <div class="step">
+    <div class="step-item">
       <div class="step-num">4</div>
-      <div class="step-title">Configure</div>
-      <div class="step-desc">Link wallet address, IPFS site, social records and more</div>
+      <div class="step-content">
+        <div class="step-title">Own & Configure</div>
+        <div class="step-desc">Link wallet address, IPFS website, social records — all onchain</div>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- FEATURES -->
 <div class="section">
-  <div class="section-title">Platform <span>Features</span></div>
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon">🔗</div>
-      <div class="feature-title">Wallet Linking</div>
-      <div class="feature-desc">Map your domain to any EVM wallet address. Send crypto with just a name instead of 0x addresses.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">🌐</div>
-      <div class="feature-title">IPFS Websites</div>
-      <div class="feature-desc">Host decentralized websites on IPFS and link them to your domain. Fully censorship-resistant.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">🏷️</div>
-      <div class="feature-title">Subdomains</div>
-      <div class="feature-desc">Create unlimited subdomains under your domain. Perfect for teams and projects.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">🔄</div>
-      <div class="feature-title">Transferable</div>
-      <div class="feature-desc">Domains are NFTs on Arc blockchain. Transfer or sell them freely on any marketplace.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">📋</div>
-      <div class="feature-title">Social Records</div>
-      <div class="feature-desc">Store email, Twitter, website and other metadata directly onchain with your domain.</div>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">⚡</div>
-      <div class="feature-title">Instant Finality</div>
-      <div class="feature-desc">Arc's Malachite consensus engine provides sub-second finality for all transactions.</div>
-    </div>
+  <div class="sec-title">Platform <span>Features</span></div>
+  <div class="features">
+    <div class="feat"><div class="feat-icon">🔗</div><div class="feat-title">Wallet Linking</div><div class="feat-desc">Map domain to EVM address</div></div>
+    <div class="feat"><div class="feat-icon">🌐</div><div class="feat-title">IPFS Hosting</div><div class="feat-desc">Decentralized websites</div></div>
+    <div class="feat"><div class="feat-icon">🏷️</div><div class="feat-title">Subdomains</div><div class="feat-desc">Unlimited subdomains</div></div>
+    <div class="feat"><div class="feat-icon">🔄</div><div class="feat-title">Transferable</div><div class="feat-desc">NFT on Arc chain</div></div>
+    <div class="feat"><div class="feat-icon">📋</div><div class="feat-title">Social Records</div><div class="feat-desc">Onchain metadata</div></div>
+    <div class="feat"><div class="feat-icon">⚡</div><div class="feat-title">Instant Finality</div><div class="feat-desc">Sub-second confirm</div></div>
   </div>
 </div>
 
 <!-- CREATOR -->
-<div class="section" style="margin-bottom: 40px;">
-  <div class="section-title">Meet the <span>Creator</span></div>
-  <div class="creator-card">
-    <img class="creator-avatar" src="https://i.postimg.cc/vZVgcCBH/IMG-20260603-214625-417.jpg" alt="Joynal" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=Joynal'">
-    <div class="creator-info">
-      <div class="creator-tag">Platform Creator</div>
-      <div class="creator-name">Joynal</div>
-      <div class="creator-desc">Built ArcDomains to bring decentralized domain registration to Arc Network — making Web3 identity accessible to everyone. Powered by Arc's stablecoin-native L1 blockchain with USDC as gas.</div>
-      <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-        <span style="background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2); color: var(--arc); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-family: var(--font-mono);">Arc Network</span>
-        <span style="background: rgba(123,97,255,0.08); border: 1px solid rgba(123,97,255,0.2); color: var(--arc2); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-family: var(--font-mono);">Solidity</span>
-        <span style="background: rgba(255,209,102,0.08); border: 1px solid rgba(255,209,102,0.2); color: var(--gold); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-family: var(--font-mono);">Web3</span>
+<div class="section" style="padding-bottom:0;">
+  <div class="sec-title">Meet the <span>Creator</span></div>
+  <div class="creator">
+    <div class="creator-top">
+      <img class="creator-img" src="https://i.postimg.cc/vZVgcCBH/IMG-20260603-214625-417.jpg" alt="Joynal" onerror="this.src='https://ui-avatars.com/api/?name=Joynal&background=00d4ff&color=020810&size=64'">
+      <div class="creator-meta">
+        <div class="creator-by">Platform Creator</div>
+        <div class="creator-name">Joynal</div>
       </div>
+    </div>
+    <div class="creator-desc">Built ArcDomains to bring decentralized domain registration to Arc Network — making Web3 identity accessible to everyone on Circle's stablecoin-native L1.</div>
+    <div class="creator-tags">
+      <span class="creator-tag tag-arc">Arc Network</span>
+      <span class="creator-tag tag-sol">Solidity</span>
+      <span class="creator-tag tag-web">Web3</span>
     </div>
   </div>
 </div>
@@ -658,78 +680,87 @@
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">Arc<span>Domains</span></div>
-  <div>Contract: <span style="color: var(--arc);">0xdE23Aad9...ffb854</span></div>
-  <div>Built by Joynal · Arc Testnet</div>
+  <div class="footer-sub">Built by Joynal · Arc Testnet · 2026</div>
 </footer>
 
 <!-- WALLET MODAL -->
-<div class="modal-overlay" id="walletModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeWalletModal()">×</button>
-    <div id="walletSelectView">
-      <div class="modal-title">Connect Wallet</div>
-      <div class="modal-sub">Choose your wallet to connect to Arc Network</div>
-      <div class="wallet-options" id="walletOptions">
-        <button class="wallet-btn" onclick="connectWallet('MetaMask')">
-          <img src="https://i.postimg.cc/023K598J/download.png" alt="MetaMask">
-          <div class="wallet-btn-info">
-            <div class="wallet-btn-name">MetaMask</div>
-            <div class="wallet-btn-desc">Most popular EVM wallet</div>
+<div class="overlay" id="walletOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <button class="sheet-close" onclick="closeOverlay('walletOverlay')">×</button>
+    <div id="walletView">
+      <div class="sheet-title">Connect Wallet</div>
+      <div class="sheet-sub">Choose wallet to connect to Arc Network (Chain 5042002)</div>
+      <div class="wallet-list" id="walletList">
+        <button class="wallet-item" onclick="connectWallet('MetaMask')">
+          <img class="wallet-img" src="https://i.postimg.cc/023K598J/download.png" alt="MetaMask">
+          <div class="wallet-info">
+            <div class="wallet-name">MetaMask</div>
+            <div class="wallet-desc">Browser & mobile wallet</div>
           </div>
-          <span class="wallet-btn-arrow">→</span>
+          <span class="wallet-arrow">›</span>
         </button>
-        <button class="wallet-btn" onclick="connectWallet('Rabby')">
-          <img src="https://i.postimg.cc/DyD4f72m/images.png" alt="Rabby">
-          <div class="wallet-btn-info">
-            <div class="wallet-btn-name">Rabby Wallet</div>
-            <div class="wallet-btn-desc">Multi-chain smart wallet</div>
+        <button class="wallet-item" onclick="connectWallet('Rabby')">
+          <img class="wallet-img" src="https://i.postimg.cc/DyD4f72m/images.png" alt="Rabby">
+          <div class="wallet-info">
+            <div class="wallet-name">Rabby Wallet</div>
+            <div class="wallet-desc">Multi-chain smart wallet</div>
           </div>
-          <span class="wallet-btn-arrow">→</span>
+          <span class="wallet-arrow">›</span>
         </button>
       </div>
-      <div class="connecting-state" id="connectingState">
-        <div class="connect-spinner"></div>
-        <div class="connecting-wallet-name" id="connectingName">Connecting...</div>
-        <div class="connecting-sub">Approve the connection in your wallet</div>
+      <div class="connecting" id="connecting">
+        <div class="ring">
+          <svg viewBox="0 0 64 64" width="64" height="64">
+            <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="4"/>
+            <circle cx="32" cy="32" r="28" fill="none" stroke="#00d4ff" stroke-width="4"
+              stroke-dasharray="44 132" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="conn-name" id="connName">Connecting...</div>
+        <div class="conn-sub">Approve in your wallet app</div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- TX MODAL -->
-<div class="modal-overlay" id="txModal">
-  <div class="modal">
-    <div class="modal-title" id="txTitle">Registering Domain</div>
-    <div class="modal-sub" id="txSub">Please wait while we process your transaction</div>
+<div class="overlay" id="txOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="txTitle">Registering Domain</div>
+    <div class="sheet-sub" id="txSubtitle">Processing on Arc Network...</div>
 
-    <div class="tx-state show" id="txProgress">
+    <div id="txProgress">
       <div class="tx-steps">
-        <div class="tx-step active" id="txStep1">
-          <span class="tx-step-icon">📝</span>
-          <span class="tx-step-label">Preparing transaction</span>
-          <span class="tx-step-status"><span class="step-spinner">⟳</span> pending</span>
+        <div class="tx-step" id="ts1">
+          <span class="tx-icon">📝</span>
+          <span class="tx-label">Preparing transaction</span>
+          <span class="tx-status" id="ts1s">waiting</span>
         </div>
-        <div class="tx-step" id="txStep2">
-          <span class="tx-step-icon">✍️</span>
-          <span class="tx-step-label">Waiting for signature</span>
-          <span class="tx-step-status">waiting</span>
+        <div class="tx-step" id="ts2">
+          <span class="tx-icon">✍️</span>
+          <span class="tx-label">Confirm in wallet</span>
+          <span class="tx-status" id="ts2s">waiting</span>
         </div>
-        <div class="tx-step" id="txStep3">
-          <span class="tx-step-icon">⛓️</span>
-          <span class="tx-step-label">Confirming on Arc Network</span>
-          <span class="tx-step-status">waiting</span>
+        <div class="tx-step" id="ts3">
+          <span class="tx-icon">⛓️</span>
+          <span class="tx-label">Confirming on Arc</span>
+          <span class="tx-status" id="ts3s">waiting</span>
         </div>
       </div>
     </div>
 
-    <div class="success-state" id="txSuccess">
-      <div class="success-checkmark">✓</div>
-      <div class="success-title">Domain Registered!</div>
-      <div class="success-sub" id="successDomainName"></div>
-      <a class="explorer-link" id="explorerLink" href="https://testnet.arcscan.app" target="_blank">
-        🔍 View on Arc Explorer →
+    <div class="success" id="txSuccess">
+      <div class="success-ring">✓</div>
+      <div class="success-title">Registered!</div>
+      <div class="success-sub" id="successMsg"></div>
+      <a class="btn-explorer" id="explorerBtn" href="https://testnet.arcscan.app" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        View on Arc Explorer
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
       </a>
-      <button onclick="closeTxModal()" style="margin-top: 12px; width: 100%; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 10px; border-radius: 10px; cursor: pointer; font-family: var(--font-body); font-size: 14px;">Close</button>
+      <button class="btn-dismiss" onclick="closeOverlay('txOverlay')">Close</button>
     </div>
   </div>
 </div>
@@ -738,222 +769,279 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // ===== STATE =====
-  let walletConnected = false;
-  let walletAddress = '0xdE23Aad93d7837A10865E784EbF20b8673ffb854';
-  let walletName = '';
-  let domainCount = 0;
+// ============================================================
+// CONFIG
+// ============================================================
+const CONTRACT_ADDRESS = '0xdE23Aad93d7837A10865E784EbF20b8673ffb854';
+const ARC_CHAIN_ID = '0x4CFBA2'; // 5042002 in hex
+const ARC_RPC = 'https://rpc.testnet.arc.network';
+const EXPLORER = 'https://testnet.arcscan.app';
 
-  // ===== PARTICLES =====
-  const container = document.getElementById('particles');
-  for (let i = 0; i < 18; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    const size = Math.random() * 3 + 1;
-    p.style.cssText = `
-      width:${size}px; height:${size}px;
-      left:${Math.random()*100}%;
-      animation-duration:${Math.random()*20+15}s;
-      animation-delay:${Math.random()*20}s;
-      opacity:0;
-    `;
-    container.appendChild(p);
+const ABI = [
+  "function registerDomain(string memory _domain, uint256 _years) external payable",
+  "function isAvailable(string memory _domain) external view returns (bool)",
+  "function getDomainInfo(string memory _domain) external view returns (address owner, uint256 expiresAt, bool isActive)",
+  "function totalSupply() external view returns (uint256)",
+  "function registrationFee() external view returns (uint256)"
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let provider = null;
+let signer = null;
+let contract = null;
+let walletConnected = false;
+let walletAddr = '';
+let pendingDomain = '';
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', async () => {
+  animCount(document.getElementById('statDomains'), 1247, 1800);
+  try {
+    const rpc = new ethers.JsonRpcProvider(ARC_RPC);
+    const roContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, rpc);
+    const supply = await roContract.totalSupply();
+    animCount(document.getElementById('statDomains'), Number(supply), 1200);
+  } catch(e) {}
+});
+
+// ============================================================
+// WALLET
+// ============================================================
+function openWalletModal() {
+  if (walletConnected) { toast('Wallet already connected ✓', 'ok'); return; }
+  document.getElementById('walletList').classList.remove('hide');
+  document.getElementById('connecting').classList.remove('show');
+  showOverlay('walletOverlay');
+}
+
+async function connectWallet(name) {
+  if (!window.ethereum) {
+    toast('Please install ' + name + ' extension', 'fail');
+    closeOverlay('walletOverlay');
+    return;
   }
+  document.getElementById('walletList').classList.add('hide');
+  document.getElementById('connecting').classList.add('show');
+  document.getElementById('connName').textContent = 'Connecting to ' + name + '...';
 
-  // ===== COUNTER ANIMATION =====
-  function animateCounter(el, target, duration=2000) {
-    const start = performance.now();
-    const update = (now) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.floor(ease * target).toLocaleString();
-      if (progress < 1) requestAnimationFrame(update);
-    };
-    requestAnimationFrame(update);
+  try {
+    // Switch to Arc Network
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: ARC_CHAIN_ID }]
+      });
+    } catch (switchErr) {
+      if (switchErr.code === 4902) {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: ARC_CHAIN_ID,
+            chainName: 'Arc Network Testnet',
+            nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
+            rpcUrls: [ARC_RPC],
+            blockExplorerUrls: [EXPLORER]
+          }]
+        });
+      }
+    }
+
+    provider = new ethers.BrowserProvider(window.ethereum);
+    const accounts = await provider.send('eth_requestAccounts', []);
+    signer = await provider.getSigner();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+    walletAddr = accounts[0];
+    walletConnected = true;
+
+    closeOverlay('walletOverlay');
+    const btn = document.getElementById('walletBtn');
+    btn.classList.add('connected');
+    document.getElementById('walletBtnText').textContent = walletAddr.slice(0,6) + '...' + walletAddr.slice(-4);
+    toast(name + ' connected ✓', 'ok');
+
+    // refresh supply
+    try {
+      const supply = await contract.totalSupply();
+      animCount(document.getElementById('statDomains'), Number(supply), 800);
+    } catch(e) {}
+
+  } catch (err) {
+    document.getElementById('walletList').classList.remove('hide');
+    document.getElementById('connecting').classList.remove('show');
+    if (err.code !== 4001) toast('Connection failed: ' + (err.message || ''), 'fail');
+    else toast('Connection cancelled', 'fail');
   }
+}
 
-  // ===== WALLET MODAL =====
-  function openWalletModal() {
-    if (walletConnected) return showToast('Wallet already connected ✓', 'success');
-    document.getElementById('walletModal').classList.add('show');
-    document.getElementById('walletOptions').classList.remove('hide');
-    document.getElementById('connectingState').classList.remove('show');
-  }
-  function closeWalletModal() {
-    document.getElementById('walletModal').classList.remove('show');
-  }
+// ============================================================
+// SEARCH
+// ============================================================
+const takenLocally = ['bitcoin','ethereum','arc','crypto','defi','nft','web3','circle','usdc'];
 
-  function connectWallet(name) {
-    walletName = name;
-    document.getElementById('walletOptions').classList.add('hide');
-    const cs = document.getElementById('connectingState');
-    cs.classList.add('show');
-    document.getElementById('connectingName').textContent = `Connecting to ${name}...`;
+async function doSearch() {
+  const raw = document.getElementById('searchInput').value.trim().toLowerCase().replace(/\s+/g,'');
+  const errEl = document.getElementById('errMsg');
+  errEl.classList.remove('show');
 
-    setTimeout(() => {
-      walletConnected = true;
-      closeWalletModal();
-      const btn = document.getElementById('connectBtn');
-      btn.classList.add('connected');
-      const short = walletAddress.slice(0,6) + '...' + walletAddress.slice(-4);
-      document.getElementById('connectBtnText').textContent = short;
-      showToast(`${name} connected ✓`, 'success');
-      animateCounter(document.getElementById('stat1'), 1247, 1500);
-    }, 2200);
-  }
+  if (!raw) { showErr('Enter a domain name'); return; }
+  if (raw.length < 3) { showErr('Minimum 3 characters required'); return; }
+  if (!/^[a-z0-9-]+$/.test(raw)) { showErr('Only letters, numbers and hyphens allowed'); return; }
 
-  // ===== SEARCH =====
-  function handleKey(e) {
-    if (e.key === 'Enter') searchDomain();
-  }
+  const loading = document.getElementById('searchLoading');
+  const result = document.getElementById('resultBox');
+  const btn = document.getElementById('searchBtn');
 
-  const takenDomains = ['bitcoin', 'ethereum', 'arc', 'crypto', 'defi', 'nft', 'web3', 'circle', 'usdc'];
+  result.classList.remove('show');
+  loading.classList.add('show');
+  btn.disabled = true;
 
-  function searchDomain() {
-    const val = document.getElementById('searchInput').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
-    if (!val) return showToast('Enter a domain name', 'error');
-    if (val.length < 3) return showToast('Minimum 3 characters', 'error');
+  let available = !takenLocally.includes(raw);
 
-    const loading = document.getElementById('searchLoading');
-    const result = document.getElementById('searchResult');
-    const btn = document.getElementById('searchBtn');
+  // Try real contract call
+  try {
+    const rpc = new ethers.JsonRpcProvider(ARC_RPC);
+    const roContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, rpc);
+    available = await roContract.isAvailable(raw);
+  } catch(e) {}
 
-    result.classList.remove('show');
-    loading.classList.add('show');
-    btn.disabled = true;
+  loading.classList.remove('show');
+  btn.disabled = false;
 
-    setTimeout(() => {
-      loading.classList.remove('show');
-      btn.disabled = false;
+  const len = raw.length;
+  const price = len === 3 ? '$640/yr' : len === 4 ? '$160/yr' : '$5/yr';
+  const domain = raw + '.arc';
 
-      const isAvailable = !takenDomains.includes(val);
-      const domain = `${val}.arc`;
-      const price = val.length === 3 ? '$640' : val.length === 4 ? '$160' : '$5';
-
-      result.innerHTML = `
-        <div class="result-row">
-          <div>
-            <div class="result-name">${domain}</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:4px;font-family:var(--font-mono);">${price}/year</div>
-          </div>
-          <div class="result-meta">
-            <div class="chain-badge">
-              <img src="https://i.postimg.cc/3xv4dzRw/20260603-214607.jpg" alt="Arc" onerror="this.style.display='none'">
-              Arc Network
-            </div>
-            <div class="${isAvailable ? 'status-available' : 'status-taken'}">${isAvailable ? 'Available' : 'Taken'}</div>
-            ${isAvailable ? `<button class="btn-register" onclick="startRegister('${domain}')">${walletConnected ? 'Register' : 'Connect & Register'}</button>` : ''}
-          </div>
+  result.innerHTML = `
+    <div class="result-row">
+      <div class="result-name-wrap">
+        <div class="result-name">${domain}</div>
+        <div class="result-price">${price} · Arc Network</div>
+      </div>
+      <div class="result-right">
+        <div class="chain-pill">
+          <img src="https://i.postimg.cc/3xv4dzRw/20260603-214607.jpg" alt="Arc" onerror="this.style.display='none'">
+          Arc
         </div>
-      `;
-      result.classList.add('show');
-    }, 1800);
-  }
+        <div class="${available ? 'badge-avail' : 'badge-taken'}">${available ? 'Available' : 'Taken'}</div>
+        ${available ? `<button class="btn-reg" onclick="startRegister('${raw}')">Register</button>` : ''}
+      </div>
+    </div>`;
+  result.classList.add('show');
+}
 
-  // ===== REGISTER =====
-  function startRegister(domain) {
-    if (!walletConnected) {
-      openWalletModal();
-      return;
+function showErr(msg) {
+  const el = document.getElementById('errMsg');
+  el.textContent = msg; el.classList.add('show');
+}
+
+// ============================================================
+// REGISTER
+// ============================================================
+function startRegister(domain) {
+  if (!walletConnected) { openWalletModal(); pendingDomain = domain; return; }
+  pendingDomain = domain;
+  openTxModal(domain);
+}
+
+async function openTxModal(domain) {
+  document.getElementById('txTitle').textContent = 'Register ' + domain + '.arc';
+  document.getElementById('txSubtitle').textContent = 'Sending transaction to Arc Network...';
+  document.getElementById('txProgress').style.display = 'block';
+  document.getElementById('txSuccess').classList.remove('show');
+
+  resetStep('ts1'); resetStep('ts2'); resetStep('ts3');
+  showOverlay('txOverlay');
+
+  try {
+    // Step 1 — prepare
+    setStep('ts1', 'active', 'preparing...');
+    const fee = await contract.registrationFee();
+    setStep('ts1', 'done', '✓ ready');
+
+    // Step 2 — send tx
+    setStep('ts2', 'active', 'confirm in wallet');
+    const tx = await contract.registerDomain(domain, 1, { value: fee });
+    setStep('ts2', 'done', '✓ signed');
+
+    // Step 3 — confirm
+    setStep('ts3', 'active', 'confirming...');
+    const receipt = await tx.wait();
+    setStep('ts3', 'done', '✓ confirmed');
+
+    // SUCCESS
+    document.getElementById('txProgress').style.display = 'none';
+    document.getElementById('txSuccess').classList.add('show');
+    document.getElementById('successMsg').textContent = domain + '.arc is now yours!';
+    document.getElementById('explorerBtn').href = EXPLORER + '/tx/' + receipt.hash;
+    toast(domain + '.arc registered! 🎉', 'ok');
+
+  } catch(err) {
+    closeOverlay('txOverlay');
+    const msg = err?.reason || err?.message || 'Transaction failed';
+    if (!msg.includes('user rejected')) toast('Error: ' + msg.slice(0,60), 'fail');
+    else toast('Transaction cancelled', 'fail');
+  }
+}
+
+function setStep(id, state, statusText) {
+  const el = document.getElementById(id);
+  el.className = 'tx-step ' + state;
+  document.getElementById(id + 's').textContent = statusText;
+}
+function resetStep(id) {
+  const el = document.getElementById(id);
+  el.className = 'tx-step';
+  document.getElementById(id + 's').textContent = 'waiting';
+}
+
+// ============================================================
+// OVERLAYS
+// ============================================================
+function showOverlay(id) { document.getElementById(id).classList.add('show'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
+
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+});
+
+// ============================================================
+// UTILS
+// ============================================================
+function toast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'ok' ? '✓ ' : '✗ ') + msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function animCount(el, target, dur=1500) {
+  const start = performance.now();
+  const tick = now => {
+    const p = Math.min((now - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.floor(ease * target).toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// Scroll reveal
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.animation = 'fadeUp 0.5s ease both';
+      io.unobserve(e.target);
     }
-    openTxModal(domain);
-  }
-
-  function openTxModal(domain) {
-    const modal = document.getElementById('txModal');
-    document.getElementById('txTitle').textContent = `Register ${domain}`;
-    document.getElementById('txSub').textContent = 'Processing your registration on Arc Network';
-    document.getElementById('txProgress').classList.add('show');
-    document.getElementById('txSuccess').classList.remove('show');
-
-    // Reset steps
-    ['txStep1','txStep2','txStep3'].forEach(id => {
-      const el = document.getElementById(id);
-      el.className = 'tx-step';
-      el.querySelector('.tx-step-status').textContent = 'waiting';
-    });
-
-    modal.classList.add('show');
-    runTxSteps(domain);
-  }
-
-  function runTxSteps(domain) {
-    const steps = ['txStep1','txStep2','txStep3'];
-    const labels = ['pending ⟳', 'signing... ⟳', 'confirming... ⟳'];
-    let current = 0;
-
-    function nextStep() {
-      if (current > 0) {
-        const prev = document.getElementById(steps[current-1]);
-        prev.className = 'tx-step done';
-        prev.querySelector('.tx-step-status').textContent = '✓ done';
-      }
-      if (current >= steps.length) {
-        showSuccess(domain);
-        return;
-      }
-      const el = document.getElementById(steps[current]);
-      el.className = 'tx-step active';
-      el.querySelector('.tx-step-status').innerHTML = `<span class="step-spinner">⟳</span> ${labels[current]}`;
-      current++;
-      const delay = current === 2 ? 2000 : current === 3 ? 1500 : 1200;
-      setTimeout(nextStep, delay);
-    }
-    nextStep();
-  }
-
-  function showSuccess(domain) {
-    document.getElementById('txProgress').classList.remove('show');
-    const success = document.getElementById('txSuccess');
-    success.classList.add('show');
-    document.getElementById('successDomainName').textContent = `${domain} is now yours!`;
-    const fakeTx = '0x' + Math.random().toString(16).slice(2,10) + '...' + Math.random().toString(16).slice(2,6);
-    document.getElementById('explorerLink').href = `https://testnet.arcscan.app/tx/${fakeTx}`;
-    document.getElementById('explorerLink').title = fakeTx;
-    domainCount++;
-    animateCounter(document.getElementById('stat1'), 1247 + domainCount, 500);
-    showToast(`${domain} registered! 🎉`, 'success');
-  }
-
-  function closeTxModal() {
-    document.getElementById('txModal').classList.remove('show');
-  }
-
-  // ===== TOAST =====
-  function showToast(msg, type='success') {
-    const t = document.getElementById('toast');
-    t.textContent = type === 'success' ? '✓ ' + msg : '✗ ' + msg;
-    t.className = `toast ${type} show`;
-    setTimeout(() => t.classList.remove('show'), 3000);
-  }
-
-  // ===== CLOSE ON OUTSIDE CLICK =====
-  document.getElementById('walletModal').addEventListener('click', function(e) {
-    if (e.target === this) closeWalletModal();
   });
-  document.getElementById('txModal').addEventListener('click', function(e) {
-    if (e.target === this) closeTxModal();
-  });
+}, { threshold: 0.1 });
 
-  // ===== INIT =====
-  window.addEventListener('load', () => {
-    animateCounter(document.getElementById('stat1'), 1247, 2000);
-  });
-
-  // ===== SCROLL REVEAL =====
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.style.animation = 'fadeUp 0.6s ease both';
-        observer.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.feature-card, .step, .creator-card').forEach(el => {
-    el.style.opacity = '0';
-    observer.observe(el);
-  });
+document.querySelectorAll('.step-item,.feat,.creator').forEach(el => {
+  el.style.opacity = '0'; io.observe(el);
+});
 </script>
 </body>
 </html>
