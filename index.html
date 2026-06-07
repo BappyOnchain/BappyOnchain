@@ -829,7 +829,7 @@ async function openTx(domain) {
 
     document.getElementById('txProg').style.display='none';
     document.getElementById('txSuccess').classList.add('on');
-    document.getElementById('successMsg').textContent = domain+'.arc তোমার হয়ে গেছে!';
+    document.getElementById('successMsg').textContent = domain+'.arc You're done!';
     document.getElementById('explorerBtn').href = EXPLORER+'/tx/'+receipt.hash;
     showToast(domain+'.arc registered!','ok');
 
