@@ -2,878 +2,1553 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ArcNames</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCLAUNCHPAD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#020810;--c1:#040d1a;--c2:#071428;
-  --arc:#00d4ff;--arc2:#0088bb;
-  --ok:#00e5a0;--err:#ff4560;
-  --text:#e8f4ff;--muted:#5a7a99;
-  --border:rgba(0,212,255,0.1);
-  --fh:'Bebas Neue',sans-serif;
-  --fb:'Outfit',sans-serif;
-  --fm:'JetBrains Mono',monospace;
+  --bg:#F2EDE3;
+  --card:#FFFFFF;
+  --border:#C8BFA8;
+  --accent:#E8460A;
+  --accent-dark:#C23608;
+  --success:#2D7A2D;
+  --text:#1A1A1A;
+  --text-secondary:#6B6560;
+  --sidebar-w:200px;
+  --header-h:56px;
+  --bottom-nav-h:60px;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;overflow-x:hidden;}
-
-.bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
-.bg-grad{position:absolute;inset:0;background:radial-gradient(ellipse 120% 40% at 50% -5%,rgba(0,180,255,0.07) 0%,transparent 55%);}
-.bg-grid{
-  position:absolute;inset:0;
-  background-image:linear-gradient(rgba(0,212,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.022) 1px,transparent 1px);
-  background-size:36px 36px;
-  -webkit-mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,black,transparent 70%);
-  mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,black,transparent 70%);
+html,body{height:100%;font-family:'Space Mono',monospace;background:var(--bg);color:var(--text);font-size:13px;overflow-x:hidden}
+body{
+  background-color:var(--bg);
+  background-image:linear-gradient(#C8BFA820 1px,transparent 1px),linear-gradient(90deg,#C8BFA820 1px,transparent 1px);
+  background-size:24px 24px;
 }
 
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#F2EDE3}
+::-webkit-scrollbar-thumb{background:#C8BFA8}
+
+/* KEYFRAMES */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{0%{transform:scale(0)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(232,70,10,0.4)}50%{box-shadow:0 0 0 8px rgba(232,70,10,0)}}
+
+/* LAYOUT */
+#app{display:flex;flex-direction:column;min-height:100vh}
+
+/* HEADER */
+#header{
+  position:fixed;top:0;left:0;right:0;height:var(--header-h);
+  background:var(--card);border-bottom:2px solid var(--text);
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;height:56px;
-  background:rgba(2,8,16,0.85);
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
+  padding:0 16px;z-index:100;gap:12px;
 }
-.logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
-.logo-img{width:30px;height:30px;border-radius:8px;border:1.5px solid rgba(0,212,255,0.25);overflow:hidden;flex-shrink:0;}
-.logo-img img{width:100%;height:100%;object-fit:cover;display:block;}
-.logo-text{font-family:var(--fh);font-size:20px;letter-spacing:1px;color:var(--text);}
-.logo-text span{color:var(--arc);}
+#header-left{display:flex;align-items:center;gap:10px;min-width:0}
+#header-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+#header-logo svg{flex-shrink:0}
+.header-brand{display:flex;flex-direction:column}
+.header-brand-name{font-weight:700;font-size:14px;letter-spacing:0.1em;color:var(--text);line-height:1}
+.header-brand-sub{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;margin-top:2px}
+#header-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.balance-box{border:1px solid var(--border);padding:4px 10px;font-size:11px;color:var(--text-secondary);letter-spacing:0.05em;white-space:nowrap;display:none}
+#connect-btn{background:var(--accent);color:#fff;border:2px solid var(--accent-dark);padding:8px 14px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;transition:all 0.1s;white-space:nowrap}
+#connect-btn:hover{background:var(--accent-dark);transform:translateY(-1px)}
+#connect-btn:active{transform:translateY(1px)}
+#wallet-addr-box{border:1px solid var(--border);padding:4px 10px;font-size:11px;letter-spacing:0.05em;display:none}
 
-.btn-wallet{
-  display:flex;align-items:center;gap:6px;
-  background:transparent;border:1.5px solid var(--arc);
-  color:var(--arc);padding:7px 14px;border-radius:9px;
-  font-family:var(--fb);font-weight:600;font-size:13px;
-  cursor:pointer;transition:all 0.2s;white-space:nowrap;-webkit-appearance:none;
+/* SIDEBAR */
+#sidebar{
+  position:fixed;top:var(--header-h);left:0;bottom:0;
+  width:var(--sidebar-w);background:var(--card);
+  border-right:2px solid var(--text);
+  display:flex;flex-direction:column;z-index:90;overflow-y:auto;
 }
-.btn-wallet.connected{border-color:var(--ok);color:var(--ok);}
-.w-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 2s infinite;flex-shrink:0;}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.25;}}
+.sidebar-top{padding:16px;border-bottom:1px solid var(--border)}
+.sidebar-brand{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.sidebar-brand-name{font-weight:700;font-size:12px;letter-spacing:0.1em}
+.sidebar-testnet{font-size:9px;color:var(--success);letter-spacing:0.08em;text-transform:uppercase}
+.live-badge{display:inline-block;background:#00AA00;color:#fff;font-size:9px;padding:2px 6px;letter-spacing:0.05em;margin-left:6px;animation:blink 1.5s step-end infinite}
+nav{flex:1;padding:8px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;color:var(--text-secondary);text-transform:uppercase;font-size:11px;letter-spacing:0.08em;font-weight:700;border-left:4px solid transparent;transition:all 0.1s;text-decoration:none;border-bottom:1px solid transparent}
+.nav-item:hover{background:#F5EFE6;color:var(--text)}
+.nav-item.active{border-left-color:var(--accent);background:#FFF5F0;color:var(--text)}
+.nav-item svg{flex-shrink:0;opacity:0.7}
+.nav-item.active svg{opacity:1}
+.sidebar-divider{height:1px;background:var(--border);margin:4px 0}
+.sidebar-bottom{padding:12px 16px;border-top:1px solid var(--border);font-size:9px;color:var(--text-secondary);letter-spacing:0.05em}
 
-.hero{position:relative;z-index:1;padding:76px 18px 0;text-align:center;}
-.hero-chip{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.18);
-  color:var(--arc);font-size:11px;font-family:var(--fm);letter-spacing:0.8px;
-  padding:5px 12px;border-radius:100px;margin-bottom:18px;
-  animation:fadeUp 0.5s ease both;
+/* MAIN CONTENT */
+#main{margin-left:var(--sidebar-w);margin-top:var(--header-h);padding:20px;min-height:calc(100vh - var(--header-h));animation:fadeIn 0.15s ease}
+.breadcrumb{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* BOTTOM NAV (mobile) */
+#bottom-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;height:var(--bottom-nav-h);
+  background:var(--card);border-top:2px solid var(--text);z-index:100;
 }
-.hero h1{font-family:var(--fh);font-size:58px;line-height:0.92;letter-spacing:2px;margin-bottom:14px;animation:fadeUp 0.5s 0.07s ease both;}
-.hero h1 em{font-style:normal;color:var(--arc);}
-.hero-desc{color:var(--muted);font-size:14px;line-height:1.6;max-width:300px;margin:0 auto;animation:fadeUp 0.5s 0.14s ease both;}
+.bottom-nav-inner{display:flex;height:100%}
+.bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text-secondary);font-size:9px;letter-spacing:0.05em;text-transform:uppercase;font-weight:700;border:none;background:none;font-family:'Space Mono',monospace;transition:color 0.1s}
+.bottom-nav-item.active{color:var(--accent)}
+.bottom-nav-item svg{flex-shrink:0}
 
-.search-wrap{position:relative;z-index:1;padding:24px 16px 0;animation:fadeUp 0.5s 0.2s ease both;}
-.search-card{background:rgba(7,20,40,0.92);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:0 16px 48px rgba(0,0,0,0.4);}
-.search-lbl{font-size:10px;font-family:var(--fm);color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
-.search-row{display:flex;align-items:stretch;border-radius:11px;overflow:hidden;border:1.5px solid rgba(0,212,255,0.12);transition:border-color 0.2s,box-shadow 0.2s;background:var(--c2);}
-.search-row:focus-within{border-color:var(--arc);box-shadow:0 0 0 3px rgba(0,212,255,0.07);}
-.search-input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--fm);font-size:15px;padding:13px 10px 13px 14px;}
-.search-input::placeholder{color:var(--muted);}
-.search-tld{display:flex;align-items:center;padding:0 8px;color:var(--arc);font-family:var(--fm);font-size:13px;border-right:1px solid rgba(0,212,255,0.1);white-space:nowrap;flex-shrink:0;}
-.btn-search{background:var(--arc);color:var(--bg);border:none;padding:0 18px;font-family:var(--fb);font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-appearance:none;min-width:72px;}
-.btn-search:active{background:#33ddff;}
-.btn-search:disabled{opacity:0.4;cursor:not-allowed;}
+/* TABS */
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn 0.15s ease}
 
-/* ── SEARCH LOADER — professional scanning animation ── */
-.search-loader{display:none;flex-direction:column;gap:10px;padding:16px 0 6px;}
-.search-loader.on{display:flex;}
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);padding:14px;position:relative;transition:border-color 0.1s}
+.stat-card:hover{border-color:var(--accent)}
+.stat-path{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:700;letter-spacing:-0.02em;line-height:1}
+.stat-label{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
 
-.sl-top{display:flex;align-items:center;gap:10px;}
-.sl-spinner{position:relative;width:28px;height:28px;flex-shrink:0;}
-.sl-spinner svg{width:28px;height:28px;animation:spinCW 1.1s linear infinite;}
-.sl-spinner-inner{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:6px;height:6px;border-radius:50%;
-  background:var(--arc);
-  box-shadow:0 0 8px var(--arc);
-  animation:pulse-dot 1.1s ease infinite;
+/* SORT BAR */
+.sort-bar{display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap}
+.sort-label{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-right:4px}
+.sort-btn{background:transparent;border:1px solid var(--border);padding:6px 12px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;color:var(--text-secondary);transition:all 0.1s}
+.sort-btn:hover{border-color:var(--accent);color:var(--accent)}
+.sort-btn.active{background:var(--accent);color:#fff;border-color:var(--accent-dark)}
+
+/* TOP STRIP */
+.top-strip{margin-bottom:20px}
+.section-header{font-size:10px;color:var(--text-secondary);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-header::after{content:'';flex:1;height:1px;background:var(--border)}
+.top-strip-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px}
+.top-strip-scroll::-webkit-scrollbar{height:3px}
+.mini-token-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);padding:10px 14px;min-width:160px;cursor:pointer;transition:all 0.1s;flex-shrink:0}
+.mini-token-card:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(232,70,10,0.2)}
+.mini-token-logo{width:28px;height:28px;border:1px solid var(--border);object-fit:cover;flex-shrink:0}
+.mini-token-info{min-width:0}
+.mini-token-name{font-size:11px;font-weight:700;letter-spacing:0.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-token-price{font-size:10px;color:var(--text-secondary)}
+
+/* TOKEN GRID */
+.token-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.token-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);padding:14px;cursor:pointer;transition:all 0.1s;position:relative}
+.token-card:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(232,70,10,0.2)}
+.token-card-path{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
+.token-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.token-logo{width:40px;height:40px;border:1px solid var(--border);object-fit:cover;flex-shrink:0;background:#F2EDE3}
+.token-logo-placeholder{width:40px;height:40px;border:1px solid var(--border);background:#F2EDE3;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.token-name{font-weight:700;font-size:12px;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.token-symbol{font-size:10px;color:var(--text-secondary);letter-spacing:0.08em}
+.token-price{font-size:14px;font-weight:700;letter-spacing:-0.01em;margin-bottom:8px}
+.token-price-label{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px}
+.token-creator{font-size:9px;color:var(--text-secondary);letter-spacing:0.05em;margin-top:8px}
+.token-trade-btn{background:var(--accent);color:#fff;border:2px solid var(--accent-dark);padding:7px 12px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;width:100%;margin-top:10px;transition:all 0.1s}
+.token-trade-btn:hover{background:var(--accent-dark);transform:translateY(-1px)}
+.token-trade-btn:active{transform:translateY(1px)}
+
+/* PROGRESS BAR */
+.progress-wrap{margin-bottom:4px}
+.progress-label{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px}
+.progress-bar{height:6px;background:#D4C9B0;position:relative;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);transition:width 0.3s ease}
+
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,#EDE8DF 25%,#F5F0E8 50%,#EDE8DF 75%);background-size:400px 100%;animation:shimmer 1.2s infinite linear;border:1px solid var(--border)}
+.skeleton-card{height:160px;margin-bottom:8px}
+
+/* FORM STYLES */
+.form-section{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);padding:20px;margin-bottom:16px}
+.form-path{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px}
+.form-title{font-size:14px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-secondary)}
+.form-label span{color:var(--accent)}
+.form-input,.form-textarea,.form-select{background:var(--bg);border:2px solid var(--border);padding:10px 12px;font-family:'Space Mono',monospace;font-size:12px;color:var(--text);width:100%;transition:border-color 0.1s;outline:none;-webkit-appearance:none}
+.form-input:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-textarea{resize:vertical;min-height:80px}
+.char-count{font-size:9px;color:var(--text-secondary);text-align:right;margin-top:2px}
+.form-hint{font-size:9px;color:var(--text-secondary);letter-spacing:0.05em;margin-top:3px}
+
+/* FILE UPLOAD */
+.file-upload-area{border:2px dashed var(--border);background:var(--bg);padding:20px;text-align:center;cursor:pointer;transition:all 0.1s;position:relative}
+.file-upload-area:hover{border-color:var(--accent);background:#FFF5F0}
+.file-upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.file-upload-text{font-size:10px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-top:8px}
+.upload-preview{width:60px;height:60px;object-fit:cover;border:1px solid var(--border);margin:0 auto 8px;display:block}
+
+/* PREVIEW CARD */
+.preview-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--success);padding:16px;position:sticky;top:80px}
+.preview-path{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px}
+.preview-title{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.preview-logo{width:64px;height:64px;border:1px solid var(--border);object-fit:cover;margin-bottom:10px;background:#F2EDE3}
+.preview-token-name{font-size:16px;font-weight:700;letter-spacing:0.05em}
+.preview-token-symbol{font-size:11px;color:var(--text-secondary);letter-spacing:0.08em;margin-bottom:8px}
+.preview-desc{font-size:11px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px}
+.preview-meta{font-size:9px;color:var(--text-secondary);letter-spacing:0.05em;border-top:1px solid var(--border);padding-top:8px;margin-top:8px}
+.preview-meta a{color:var(--accent);text-decoration:none}
+
+/* CREATE LAYOUT */
+.create-layout{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+
+/* LAUNCH BTN */
+#launch-btn{background:var(--accent);color:#fff;border:2px solid var(--accent-dark);padding:12px 24px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;width:100%;transition:all 0.1s;margin-top:4px}
+#launch-btn:hover{background:var(--accent-dark);transform:translateY(-1px)}
+#launch-btn:active{transform:translateY(1px)}
+#launch-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+/* TRADE TAB */
+.trade-layout{display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start}
+.trade-list-panel{background:var(--card);border:1px solid var(--border);max-height:calc(100vh - 160px);display:flex;flex-direction:column}
+.trade-list-header{padding:12px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase}
+.trade-search{border:none;border-bottom:2px solid var(--border);background:var(--bg);padding:10px 12px;font-family:'Space Mono',monospace;font-size:11px;width:100%;outline:none;transition:border-color 0.1s}
+.trade-search:focus{border-bottom-color:var(--accent)}
+.trade-token-list{overflow-y:auto;flex:1}
+.trade-token-row{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.1s}
+.trade-token-row:hover{background:#F5EFE6}
+.trade-token-row.active{background:#FFF5F0;border-left:3px solid var(--accent)}
+.trade-token-row-logo{width:32px;height:32px;border:1px solid var(--border);object-fit:cover;flex-shrink:0;background:#F2EDE3}
+.trade-token-row-name{font-size:11px;font-weight:700;letter-spacing:0.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trade-token-row-price{font-size:9px;color:var(--text-secondary)}
+.trade-detail-panel{background:var(--card);border:1px solid var(--border)}
+.trade-detail-header{padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.trade-detail-logo{width:48px;height:48px;border:1px solid var(--border);object-fit:cover;background:#F2EDE3}
+.trade-detail-info{flex:1;min-width:0}
+.trade-detail-name{font-size:15px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
+.trade-detail-symbol{font-size:10px;color:var(--text-secondary);letter-spacing:0.08em}
+.trade-detail-body{padding:14px}
+.trade-panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.trade-panel-card{border:1px solid var(--border);padding:14px}
+.trade-panel-title{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.trade-panel-title.buy-title{color:var(--success);border-bottom-color:var(--success)}
+.trade-panel-title.sell-title{color:#CC0000;border-bottom-color:#CC0000}
+.trade-input-wrap{position:relative;margin-bottom:10px}
+.trade-input{border:2px solid var(--border);background:var(--bg);padding:10px 12px;font-family:'Space Mono',monospace;font-size:13px;width:100%;outline:none;transition:border-color 0.1s}
+.trade-input:focus{border-color:var(--accent)}
+.trade-input-label{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px}
+.trade-estimate{background:#F5EFE6;border:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text-secondary);margin-bottom:10px}
+.estimate-label{font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px}
+.estimate-value{font-weight:700;color:var(--text);font-size:13px}
+.trade-btn{border:2px solid;padding:10px 16px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;width:100%;transition:all 0.1s;margin-top:4px}
+.buy-btn{background:var(--success);color:#fff;border-color:#1f5c1f}
+.buy-btn:hover{background:#1f5c1f;transform:translateY(-1px)}
+.approve-btn{background:transparent;color:var(--text);border-color:var(--text)}
+.approve-btn:hover{background:#F5EFE6;transform:translateY(-1px)}
+.sell-btn{background:#CC0000;color:#fff;border-color:#990000}
+.sell-btn:hover{background:#990000;transform:translateY(-1px)}
+.trade-btn:active{transform:translateY(1px)}
+.trade-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.no-wallet-msg{padding:40px;text-align:center;color:var(--text-secondary)}
+.no-wallet-msg .icon{margin-bottom:12px}
+.no-wallet-msg p{font-size:11px;letter-spacing:0.05em;text-transform:uppercase;margin-top:8px}
+
+/* WALLET MODAL */
+#wallet-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center}
+#wallet-modal.open{display:flex}
+.wallet-modal-box{background:var(--card);border:2px solid var(--text);width:340px;max-width:calc(100vw - 32px)}
+.wallet-modal-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.wallet-modal-title{font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase}
+.wallet-modal-close{background:none;border:none;cursor:pointer;color:var(--text);padding:2px;display:flex;align-items:center;justify-content:center}
+.wallet-option{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.1s}
+.wallet-option:hover{background:#F5EFE6}
+.wallet-option:last-child{border-bottom:none}
+.wallet-option-logo{width:32px;height:32px;object-fit:contain;border:1px solid var(--border)}
+.wallet-option-name{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;flex:1}
+.wallet-option-arrow{color:var(--text-secondary)}
+
+/* TRANSACTION OVERLAY */
+#tx-overlay{display:none;position:fixed;inset:0;background:rgba(242,237,227,0.96);z-index:2000;align-items:center;justify-content:center}
+#tx-overlay.open{display:flex}
+.tx-card{background:var(--card);border:2px solid var(--text);width:320px;max-width:calc(100vw - 32px)}
+.tx-card-header{padding:14px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase}
+.tx-steps{padding:16px}
+.tx-step{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.tx-step:last-child{border-bottom:none}
+.tx-step-num{width:24px;height:24px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.tx-step-label{font-size:11px;letter-spacing:0.05em;text-transform:uppercase;flex:1}
+.tx-step-icon{flex-shrink:0}
+.tx-step.pending .tx-step-num{border-color:var(--border);color:var(--text-secondary)}
+.tx-step.pending .tx-step-label{color:var(--text-secondary)}
+.tx-step.active .tx-step-num{border-color:var(--accent);color:var(--accent)}
+.tx-step.active .tx-step-label{color:var(--accent)}
+.tx-step.done .tx-step-num{border-color:var(--success);background:var(--success);color:#fff}
+.tx-step.done .tx-step-label{color:var(--success)}
+.spinner{animation:spin 0.8s linear infinite}
+.check-icon{animation:scaleIn 0.3s ease forwards}
+
+/* NOTIFICATIONS */
+.notification{border-left:4px solid var(--success);background:var(--card);border:1px solid var(--border);border-left-width:4px;padding:12px 14px;margin-bottom:12px;animation:fadeIn 0.2s ease}
+.notification.error{border-left-color:#CC0000}
+.notification.success{border-left-color:var(--success)}
+.notification-title{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px}
+.notification.success .notification-title{color:var(--success)}
+.notification.error .notification-title{color:#CC0000}
+.notification-msg{font-size:11px;color:var(--text-secondary)}
+.notification-link{color:var(--accent);text-decoration:none;font-size:10px;letter-spacing:0.05em;text-transform:uppercase;display:inline-block;margin-top:6px}
+.notification-link:hover{text-decoration:underline}
+
+/* BRIDGE TAB */
+.bridge-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center}
+.bridge-icon-wrap{width:100px;height:100px;border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:24px;animation:pulse-border 2s infinite}
+.bridge-title{font-size:28px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px}
+.bridge-badge{display:inline-block;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:4px 12px;letter-spacing:0.1em;margin-bottom:16px}
+.bridge-desc{font-size:12px;color:var(--text-secondary);max-width:360px;line-height:1.7}
+
+/* FEEDBACK TAB */
+.feedback-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.star-rating{display:flex;gap:4px;margin-top:4px}
+.star-btn{background:none;border:none;cursor:pointer;padding:2px;color:#C8BFA8;transition:color 0.1s}
+.star-btn.active,.star-btn:hover{color:#E8A000}
+.feedback-list{margin-top:0}
+.feedback-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--text-secondary);padding:14px;margin-bottom:10px;animation:fadeIn 0.2s ease}
+.feedback-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.feedback-name{font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
+.feedback-stars{display:flex;gap:2px}
+.feedback-star-filled{color:#E8A000}
+.feedback-star-empty{color:#C8BFA8}
+.feedback-msg{font-size:11px;color:var(--text-secondary);line-height:1.5;margin-bottom:4px}
+.feedback-time{font-size:9px;color:var(--text-secondary);letter-spacing:0.05em}
+
+/* SUCCESS RESULT */
+.success-result{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--success);padding:16px;margin-top:16px}
+.success-result-title{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--success);margin-bottom:8px}
+.success-result-addr{font-size:11px;word-break:break-all;margin-bottom:8px;padding:8px;background:var(--bg);border:1px solid var(--border)}
+
+/* RESPONSIVE */
+@media(max-width:1024px){
+  .token-grid{grid-template-columns:repeat(2,1fr)}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .create-layout{grid-template-columns:1fr}
+  .feedback-layout{grid-template-columns:1fr}
 }
-@keyframes spinCW{to{transform:rotate(360deg);}}
-@keyframes pulse-dot{0%,100%{opacity:1;transform:translate(-50%,-50%) scale(1);}50%{opacity:0.4;transform:translate(-50%,-50%) scale(0.6);}}
-
-.sl-texts{flex:1;}
-.sl-title{font-family:var(--fm);font-size:12px;color:var(--arc);letter-spacing:0.5px;margin-bottom:2px;}
-.sl-sub{font-family:var(--fm);font-size:10px;color:var(--muted);}
-
-.sl-scan-bar{
-  position:relative;height:3px;border-radius:2px;
-  background:rgba(0,212,255,0.08);overflow:hidden;
+@media(max-width:768px){
+  #sidebar{display:none}
+  #bottom-nav{display:block}
+  #main{margin-left:0;padding:12px;padding-bottom:calc(var(--bottom-nav-h) + 12px)}
+  .token-grid{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .trade-layout{grid-template-columns:1fr}
+  .trade-panels{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .balance-box{display:none !important}
+  #connect-btn{padding:6px 10px;font-size:10px}
+  .header-brand-sub{display:none}
+  #wallet-modal.open{align-items:flex-end}
+  .wallet-modal-box{width:100%;border-bottom:none;border-left:none;border-right:none}
 }
-.sl-scan-fill{
-  position:absolute;left:0;top:0;height:100%;
-  background:linear-gradient(90deg,transparent,var(--arc),rgba(0,212,255,0.3));
-  border-radius:2px;width:40%;
-  animation:scanSlide 1.6s cubic-bezier(0.4,0,0.6,1) infinite;
+@media(max-width:480px){
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .stat-value{font-size:18px}
 }
-@keyframes scanSlide{
-  0%{left:-40%;opacity:0.7;}
-  50%{opacity:1;}
-  100%{left:100%;opacity:0.3;}
-}
-
-.sl-nodes{display:flex;align-items:center;gap:5px;}
-.sl-node{
-  width:5px;height:5px;border-radius:50%;
-  background:rgba(0,212,255,0.2);
-  animation:nodeFlash 1.4s ease infinite;
-}
-.sl-node:nth-child(1){animation-delay:0s;}
-.sl-node:nth-child(2){animation-delay:0.2s;}
-.sl-node:nth-child(3){animation-delay:0.4s;}
-.sl-node:nth-child(4){animation-delay:0.6s;}
-.sl-node:nth-child(5){animation-delay:0.8s;}
-.sl-node:nth-child(6){animation-delay:1.0s;}
-.sl-node:nth-child(7){animation-delay:1.2s;}
-.sl-node-line{flex:1;height:1px;background:rgba(0,212,255,0.07);}
-@keyframes nodeFlash{0%,70%,100%{background:rgba(0,212,255,0.15);box-shadow:none;}35%{background:var(--arc);box-shadow:0 0 6px rgba(0,212,255,0.5);}}
-
-.sl-status{font-family:var(--fm);font-size:10px;color:var(--muted);}
-.sl-status span{color:var(--arc);}
-
-.result-box{display:none;margin-top:12px;animation:slideIn 0.25s ease;}
-.result-box.on{display:block;}
-@keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
-.result-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:var(--c2);border:1px solid var(--border);border-radius:11px;padding:13px 14px;}
-.r-name{font-family:var(--fm);font-size:14px;font-weight:500;}
-.r-price{font-size:11px;color:var(--muted);margin-top:3px;}
-.r-right{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
-.chain-pill{display:flex;align-items:center;gap:5px;background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.15);padding:4px 9px;border-radius:20px;font-size:11px;font-family:var(--fm);color:var(--arc);}
-.chain-pill img{width:13px;height:13px;border-radius:50%;object-fit:cover;}
-.avail{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--ok);}
-.taken{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--err);}
-.btn-reg{background:linear-gradient(135deg,var(--arc),var(--arc2));color:var(--bg);border:none;border-radius:8px;padding:8px 16px;font-family:var(--fb);font-weight:700;font-size:12px;cursor:pointer;-webkit-appearance:none;}
-.err-line{font-size:11px;color:var(--err);font-family:var(--fm);margin-top:8px;display:none;}
-.err-line.on{display:block;}
-
-.stats{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);margin:20px 16px 0;background:rgba(7,20,40,0.8);border:1px solid var(--border);border-radius:14px;overflow:hidden;animation:fadeUp 0.5s 0.28s ease both;}
-.stat{padding:14px 6px;text-align:center;border-right:1px solid var(--border);}
-.stat:last-child{border-right:none;}
-.stat-v{font-family:var(--fh);font-size:20px;color:var(--arc);line-height:1;}
-.stat-l{font-size:9px;color:var(--muted);margin-top:3px;font-family:var(--fm);}
-
-.sec{position:relative;z-index:1;padding:44px 16px 0;}
-.sec-h{font-family:var(--fh);font-size:28px;letter-spacing:1px;margin-bottom:16px;}
-.sec-h span{color:var(--arc);}
-
-.steps{display:flex;flex-direction:column;gap:10px;}
-.step{display:flex;align-items:flex-start;gap:12px;background:rgba(7,20,40,0.8);border:1px solid var(--border);border-radius:13px;padding:14px;}
-.step-n{width:34px;height:34px;border-radius:50%;flex-shrink:0;border:1.5px solid var(--arc);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:17px;color:var(--arc);background:rgba(0,212,255,0.05);}
-.step-t{font-weight:700;font-size:14px;margin-bottom:3px;}
-.step-d{font-size:12px;color:var(--muted);line-height:1.5;}
-
-.feats{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.feat{background:rgba(7,20,40,0.8);border:1px solid var(--border);border-radius:13px;padding:14px;}
-.feat-icon{width:28px;height:28px;margin-bottom:10px;color:var(--arc);}
-.feat-t{font-weight:700;font-size:13px;margin-bottom:4px;}
-.feat-d{font-size:11px;color:var(--muted);line-height:1.5;}
-
-.creator{background:rgba(7,20,40,0.9);border:1px solid var(--border);border-radius:18px;padding:20px;position:relative;overflow:hidden;}
-.creator-glow{position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,0.07),transparent 70%);pointer-events:none;}
-.creator-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-.creator-av{width:60px;height:60px;border-radius:50%;flex-shrink:0;border:2px solid var(--arc);box-shadow:0 0 16px rgba(0,212,255,0.2);object-fit:cover;}
-.creator-by{font-size:10px;font-family:var(--fm);color:var(--arc);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;}
-.creator-name{font-family:var(--fh);font-size:26px;letter-spacing:1px;}
-.creator-desc{font-size:13px;color:var(--muted);line-height:1.6;}
-.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
-.tag{font-size:10px;font-family:var(--fm);padding:4px 10px;border-radius:20px;}
-.ta{background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.2);color:var(--arc);}
-.tb{background:rgba(150,100,255,0.07);border:1px solid rgba(150,100,255,0.2);color:#9664ff;}
-.tc{background:rgba(245,200,66,0.07);border:1px solid rgba(245,200,66,0.2);color:#f5c842;}
-
-footer{position:relative;z-index:1;margin-top:52px;padding:20px 16px 32px;border-top:1px solid var(--border);text-align:center;}
-.foot-logo{font-family:var(--fh);font-size:18px;letter-spacing:1px;margin-bottom:5px;}
-.foot-logo span{color:var(--arc);}
-.foot-sub{font-size:11px;color:var(--muted);font-family:var(--fm);}
-
-/* ── OVERLAY / SHEET ── */
-.overlay{position:fixed;inset:0;z-index:200;background:rgba(2,8,16,0.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
-.overlay.on{opacity:1;pointer-events:all;}
-.sheet{background:var(--c1);border:1px solid var(--border);border-radius:22px 22px 0 0;padding:0 20px 36px;width:100%;max-width:480px;transform:translateY(30px);transition:transform 0.3s ease;position:relative;}
-.overlay.on .sheet{transform:translateY(0);}
-.sheet-handle{width:36px;height:3px;border-radius:2px;background:rgba(255,255,255,0.1);margin:14px auto 20px;}
-.sheet-close{position:absolute;top:14px;right:16px;background:rgba(255,255,255,0.05);border:none;color:var(--muted);width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;}
-.sheet-title{font-family:var(--fh);font-size:24px;letter-spacing:1px;margin-bottom:5px;}
-.sheet-sub{color:var(--muted);font-size:13px;margin-bottom:20px;}
-
-.wlist{display:flex;flex-direction:column;gap:9px;}
-.witem{display:flex;align-items:center;gap:12px;background:var(--c2);border:1.5px solid var(--border);border-radius:13px;padding:13px 14px;cursor:pointer;width:100%;-webkit-appearance:none;text-align:left;}
-.witem:active{border-color:var(--arc);}
-.wimg{width:40px;height:40px;border-radius:10px;object-fit:contain;flex-shrink:0;}
-.winfo{flex:1;}
-.wname{font-weight:700;font-size:15px;}
-.wdesc{font-size:12px;color:var(--muted);margin-top:2px;}
-.warrow{color:var(--muted);}
-
-.connecting{display:none;text-align:center;padding:8px 0;}
-.connecting.on{display:block;}
-.wlist.hide{display:none;}
-.conn-name{font-family:var(--fh);font-size:22px;letter-spacing:1px;margin-bottom:5px;}
-.conn-sub{font-size:13px;color:var(--muted);}
-
-/* ── TX STEPS — professional redesign ── */
-.tx-track{display:flex;flex-direction:column;gap:0;margin:18px 0 6px;position:relative;}
-
-/* vertical connector line */
-.tx-track::before{
-  content:'';position:absolute;left:18px;top:22px;bottom:22px;width:1.5px;
-  background:linear-gradient(to bottom,rgba(0,212,255,0.25),rgba(0,212,255,0.05));
-  z-index:0;
-}
-
-.tx-step{
-  display:flex;align-items:flex-start;gap:13px;
-  padding:10px 12px 10px 6px;border-radius:12px;
-  transition:background 0.3s;position:relative;z-index:1;
-}
-.tx-step.active{background:rgba(0,212,255,0.04);}
-.tx-step.done{background:rgba(0,229,160,0.03);}
-
-/* icon circle */
-.txs-orb{
-  width:36px;height:36px;border-radius:50%;flex-shrink:0;
-  border:1.5px solid rgba(0,212,255,0.15);
-  background:rgba(7,20,40,0.9);
-  display:flex;align-items:center;justify-content:center;
-  transition:all 0.35s;position:relative;
-}
-.tx-step.active .txs-orb{
-  border-color:var(--arc);
-  box-shadow:0 0 0 3px rgba(0,212,255,0.08),0 0 14px rgba(0,212,255,0.12);
-}
-.tx-step.done .txs-orb{
-  border-color:var(--ok);
-  background:rgba(0,229,160,0.08);
-  box-shadow:0 0 10px rgba(0,229,160,0.1);
-}
-
-/* spinning ring on active */
-.txs-ring{
-  position:absolute;inset:-2px;border-radius:50%;
-  border:1.5px solid transparent;border-top-color:var(--arc);
-  display:none;
-  animation:spinCW 0.9s linear infinite;
-}
-.tx-step.active .txs-ring{display:block;}
-
-.txs-icon{width:16px;height:16px;color:var(--muted);transition:color 0.3s;flex-shrink:0;}
-.tx-step.active .txs-icon{color:var(--arc);}
-.tx-step.done .txs-icon{display:none;}
-.txs-check{display:none;width:14px;height:14px;color:var(--ok);}
-.tx-step.done .txs-check{display:block;}
-
-.txs-info{flex:1;padding-top:2px;}
-.txs-label{font-size:13px;font-weight:600;color:var(--muted);transition:color 0.3s;margin-bottom:2px;}
-.tx-step.active .txs-label{color:var(--text);}
-.tx-step.done .txs-label{color:var(--ok);}
-.txs-desc{font-size:11px;color:rgba(90,122,153,0.7);font-family:var(--fm);}
-.tx-step.active .txs-desc{color:var(--muted);}
-.tx-step.done .txs-desc{color:rgba(0,229,160,0.5);}
-
-/* blinking badge on right */
-.txs-badge{
-  font-family:var(--fm);font-size:9px;letter-spacing:0.8px;
-  padding:3px 7px;border-radius:20px;white-space:nowrap;align-self:flex-start;margin-top:4px;
-  opacity:0;transition:opacity 0.3s;
-}
-.tx-step.active .txs-badge{
-  opacity:1;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);
-  color:var(--arc);animation:badgePulse 2s ease infinite;
-}
-.tx-step.done .txs-badge{
-  opacity:1;background:rgba(0,229,160,0.07);border:1px solid rgba(0,229,160,0.2);
-  color:var(--ok);animation:none;
-}
-@keyframes badgePulse{0%,100%{opacity:0.7;}50%{opacity:1;}}
-
-/* TX progress bar */
-.tx-progressbar{
-  height:2px;border-radius:1px;
-  background:rgba(0,212,255,0.06);
-  margin:12px 0 6px;overflow:hidden;position:relative;
-}
-.tx-progressfill{
-  height:100%;border-radius:1px;
-  background:linear-gradient(90deg,var(--arc2),var(--arc));
-  width:0%;transition:width 0.6s cubic-bezier(0.4,0,0.2,1);
-  box-shadow:0 0 8px rgba(0,212,255,0.4);
-}
-
-/* success */
-.success{display:none;text-align:center;padding:8px 0;}
-.success.on{display:block;}
-.success-ring{width:72px;height:72px;border-radius:50%;background:rgba(0,229,160,0.08);border:2px solid var(--ok);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(0,229,160,0.12);animation:pop 0.45s ease;}
-@keyframes pop{0%{transform:scale(0);opacity:0;}80%{transform:scale(1.08);}100%{transform:scale(1);opacity:1;}}
-.success-title{font-family:var(--fh);font-size:26px;color:var(--ok);letter-spacing:1px;margin-bottom:5px;}
-.success-sub{font-size:13px;color:var(--muted);margin-bottom:18px;}
-.btn-explorer{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:13px;border-radius:11px;background:rgba(0,212,255,0.06);border:1.5px solid rgba(0,212,255,0.18);color:var(--arc);font-family:var(--fm);font-size:13px;text-decoration:none;margin-bottom:9px;}
-.btn-dismiss{width:100%;padding:12px;border-radius:11px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--fb);font-size:14px;cursor:pointer;-webkit-appearance:none;}
-
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);z-index:300;background:var(--c2);border:1px solid var(--border);border-radius:11px;padding:10px 16px;font-size:12px;font-family:var(--fm);white-space:nowrap;opacity:0;transition:all 0.3s;max-width:90vw;text-align:center;}
-.toast.on{transform:translateX(-50%) translateY(0);opacity:1;}
-.toast.ok{border-color:var(--ok);color:var(--ok);}
-.toast.fail{border-color:var(--err);color:var(--err);}
-
-@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
-@keyframes spin{to{transform:rotate(360deg);}}
-@keyframes spinCW{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
 
-<div class="bg-layer">
-  <div class="bg-grad"></div>
-  <div class="bg-grid"></div>
-  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice">
-    <defs>
-      <radialGradient id="g1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00d4ff" stop-opacity="0.07"/><stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/></radialGradient>
-      <radialGradient id="g2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#0066cc" stop-opacity="0.05"/><stop offset="100%" stop-color="#0066cc" stop-opacity="0"/></radialGradient>
-    </defs>
-    <ellipse cx="200" cy="-20" rx="280" ry="180" fill="url(#g1)"><animate attributeName="cy" values="-20;20;-20" dur="9s" repeatCount="indefinite"/></ellipse>
-    <ellipse cx="360" cy="600" rx="180" ry="140" fill="url(#g2)"><animate attributeName="cx" values="360;320;360" dur="11s" repeatCount="indefinite"/></ellipse>
-  </svg>
-</div>
+<!-- HEADER -->
+<header id="header">
+  <div id="header-left">
+    <a href="#" id="header-logo">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" fill="#1A1A1A"/>
+        <path d="M6 20L14 8L22 20H6Z" fill="#E8460A"/>
+        <rect x="11" y="14" width="6" height="6" fill="#F2EDE3"/>
+      </svg>
+      <div class="header-brand">
+        <span class="header-brand-name">ARCLAUNCHPAD</span>
+        <span class="header-brand-sub">ARC://LAUNCHPAD.MAIN</span>
+      </div>
+    </a>
+  </div>
+  <div id="header-right">
+    <div class="balance-box" id="arc-balance-box">-- ARC</div>
+    <button id="connect-btn" onclick="openWalletModal()">CONNECT WALLET</button>
+    <div id="wallet-addr-box"></div>
+  </div>
+</header>
 
-<nav>
-  <a class="logo" href="#">
-    <div class="logo-img"><img src="https://i.postimg.cc/3xv4dzRw/20260603-214607.jpg" alt="Arc"></div>
-    <div class="logo-text">Arc<span>Domains</span></div>
-  </a>
-  <button class="btn-wallet" id="walletBtn" onclick="openWallet()">
-    <span class="w-dot"></span>
-    <span id="walletTxt">Connect</span>
-  </button>
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-top">
+    <div class="sidebar-brand">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect width="20" height="20" fill="#1A1A1A"/>
+        <path d="M4 15L10 5L16 15H4Z" fill="#E8460A"/>
+      </svg>
+      <span class="sidebar-brand-name">ARCLAUNCHPAD</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span class="sidebar-testnet">ARC://TESTNET</span>
+      <span class="live-badge">LIVE</span>
+    </div>
+  </div>
+  <nav id="sidebar-nav">
+    <a class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard');return false" href="#">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L1 6v9h5V10h4v5h5V6L8 1zm0 1.5L14 7v7h-3v-5H5v5H2V7l6-4.5z"/></svg>
+      DASHBOARD
+    </a>
+    <div class="sidebar-divider"></div>
+    <a class="nav-item" data-tab="create" onclick="switchTab('create');return false" href="#">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.5 4.5H14l-3.75 2.7 1.5 4.5L8 10.2 4.25 12.7l1.5-4.5L2 5.5h4.5L8 1z"/></svg>
+      CREATE TOKEN
+    </a>
+    <div class="sidebar-divider"></div>
+    <a class="nav-item" data-tab="trade" onclick="switchTab('trade');return false" href="#">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2 12h12M2 8h9M2 4h6M13 2v12M11 4l2-2 2 2M11 12l2 2 2-2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+      TRADE
+    </a>
+    <div class="sidebar-divider"></div>
+    <a class="nav-item" data-tab="bridge" onclick="switchTab('bridge');return false" href="#">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 8h14M5 5v6M11 5v6M2 5h12M2 11h12"/></svg>
+      BRIDGE
+    </a>
+    <div class="sidebar-divider"></div>
+    <a class="nav-item" data-tab="feedback" onclick="switchTab('feedback');return false" href="#">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.8 3.6L14 5.5l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1L2 5.5l4.2-.9L8 1z"/></svg>
+      FEEDBACK
+    </a>
+  </nav>
+  <div class="sidebar-bottom">V1.0.0</div>
+</aside>
+
+<!-- MAIN -->
+<main id="main">
+
+  <!-- DASHBOARD TAB -->
+  <div id="tab-dashboard" class="tab-content active">
+    <div class="breadcrumb">ARC://DASHBOARD.MAIN</div>
+    <div class="stat-grid" id="stat-grid">
+      <div class="stat-card"><div class="stat-path">ARC://STATS.TOKENS</div><div class="stat-value" id="stat-total-tokens">--</div><div class="stat-label">TOTAL TOKENS</div></div>
+      <div class="stat-card"><div class="stat-path">ARC://STATS.VOLUME</div><div class="stat-value" id="stat-total-volume">--</div><div class="stat-label">TOTAL VOLUME</div></div>
+      <div class="stat-card"><div class="stat-path">ARC://STATS.TRADERS</div><div class="stat-value" id="stat-traders">--</div><div class="stat-label">ACTIVE TRADERS</div></div>
+      <div class="stat-card" style="border-left-color:var(--success)"><div class="stat-path">ARC://STATS.FEE</div><div class="stat-value" style="color:var(--success)">1%</div><div class="stat-label">PLATFORM FEE</div></div>
+    </div>
+
+    <div class="top-strip">
+      <div class="section-header">TOP TRADED TOKENS</div>
+      <div class="top-strip-scroll" id="top-strip"></div>
+    </div>
+
+    <div class="sort-bar">
+      <span class="sort-label">SORT:</span>
+      <button class="sort-btn active" onclick="setSortOrder('newest')">NEWEST</button>
+      <button class="sort-btn" onclick="setSortOrder('volume')">TOP VOLUME</button>
+      <button class="sort-btn" onclick="setSortOrder('trending')">TRENDING</button>
+    </div>
+
+    <div id="notifications-dash"></div>
+    <div class="token-grid" id="token-grid">
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+    </div>
+    <div id="empty-state" style="display:none;padding:40px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;background:var(--card);border:1px solid var(--border)">
+      NO TOKENS FOUND — BE THE FIRST TO LAUNCH
+    </div>
+  </div>
+
+  <!-- CREATE TOKEN TAB -->
+  <div id="tab-create" class="tab-content">
+    <div class="breadcrumb">ARC://CREATE.TOKEN</div>
+    <div id="notifications-create"></div>
+    <div class="create-layout">
+      <div>
+        <div class="form-section">
+          <div class="form-path">ARC://CREATE.FORM</div>
+          <div class="form-title">LAUNCH NEW TOKEN</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">TOKEN NAME <span>*</span></label>
+              <input class="form-input" id="create-name" placeholder="MY AWESOME TOKEN" maxlength="50" oninput="updatePreview()">
+              <div class="char-count"><span id="name-count">0</span>/50</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">TOKEN SYMBOL <span>*</span></label>
+              <input class="form-input" id="create-symbol" placeholder="MAT" maxlength="10" oninput="this.value=this.value.toUpperCase();updatePreview()">
+              <div class="char-count"><span id="symbol-count">0</span>/10</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">DESCRIPTION</label>
+            <textarea class="form-textarea" id="create-desc" placeholder="Describe your token..." maxlength="300" oninput="updatePreview()" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">TOKEN LOGO</label>
+            <div class="file-upload-area" id="upload-area">
+              <input type="file" accept="image/*" id="logo-file" onchange="handleLogoUpload(event)">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#C8BFA8" stroke-width="2"><rect x="2" y="8" width="28" height="20" rx="1"/><path d="M20 2l4 6H8l4-6z"/><circle cx="16" cy="18" r="4"/></svg>
+              <div class="file-upload-text">CLICK TO UPLOAD IMAGE</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">WEBSITE URL</label>
+              <input class="form-input" id="create-website" placeholder="https://yoursite.com" oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">TWITTER/X URL</label>
+              <input class="form-input" id="create-twitter" placeholder="https://x.com/yourhandle" oninput="updatePreview()">
+            </div>
+          </div>
+          <button id="launch-btn" onclick="launchToken()">LAUNCH TOKEN</button>
+        </div>
+      </div>
+      <div>
+        <div class="preview-card">
+          <div class="preview-path">ARC://TOKEN.PREVIEW</div>
+          <div class="preview-title">LIVE PREVIEW</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div id="preview-logo-wrap">
+              <div style="width:64px;height:64px;border:1px solid var(--border);background:#F2EDE3;display:flex;align-items:center;justify-content:center">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" stroke="#C8BFA8" stroke-width="2"/><text x="14" y="18" text-anchor="middle" font-size="12" fill="#C8BFA8" font-family="Space Mono">?</text></svg>
+              </div>
+            </div>
+            <div>
+              <div class="preview-token-name" id="preview-name">TOKEN NAME</div>
+              <div class="preview-token-symbol" id="preview-symbol">SYMBOL</div>
+            </div>
+          </div>
+          <div class="preview-desc" id="preview-desc">Token description will appear here...</div>
+          <div class="preview-meta" id="preview-meta"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRADE TAB -->
+  <div id="tab-trade" class="tab-content">
+    <div class="breadcrumb">ARC://TRADE.MAIN</div>
+    <div id="notifications-trade"></div>
+    <div id="trade-no-wallet" style="display:none" class="no-wallet-msg">
+      <div class="icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#C8BFA8" stroke-width="2"><rect x="4" y="12" width="32" height="24" rx="1"/><path d="M4 18h32M28 26h4"/></svg></div>
+      <p>CONNECT WALLET TO TRADE</p>
+      <button style="margin-top:12px" class="trade-btn approve-btn" onclick="openWalletModal()">CONNECT WALLET</button>
+    </div>
+    <div id="trade-main" class="trade-layout">
+      <div class="trade-list-panel">
+        <div class="trade-list-header">ALL TOKENS</div>
+        <input class="trade-search" id="trade-search" placeholder="SEARCH NAME OR SYMBOL..." oninput="filterTradeList()">
+        <div class="trade-token-list" id="trade-token-list">
+          <div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:11px">LOADING...</div>
+        </div>
+      </div>
+      <div>
+        <div id="trade-detail-empty" style="padding:40px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;background:var(--card);border:1px solid var(--border)">
+          SELECT A TOKEN TO TRADE
+        </div>
+        <div class="trade-detail-panel" id="trade-detail" style="display:none">
+          <div class="trade-detail-header">
+            <div id="trade-detail-logo-wrap"></div>
+            <div class="trade-detail-info">
+              <div class="trade-detail-name" id="td-name">--</div>
+              <div class="trade-detail-symbol" id="td-symbol">--</div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:var(--text-secondary);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:2px">CURRENT PRICE</div>
+              <div style="font-size:16px;font-weight:700" id="td-price">-- ARC</div>
+            </div>
+          </div>
+          <div class="trade-detail-body">
+            <div style="margin-bottom:12px">
+              <div class="progress-label">BONDING CURVE — <span id="td-curve-pct">0</span>%</div>
+              <div class="progress-bar"><div class="progress-fill" id="td-curve-bar" style="width:0%"></div></div>
+            </div>
+            <div style="font-size:9px;color:var(--text-secondary);letter-spacing:0.05em;margin-bottom:4px">CREATOR: <span id="td-creator" style="color:var(--text)">--</span></div>
+            <div style="font-size:10px;color:var(--text-secondary);margin-top:8px;line-height:1.6" id="td-desc"></div>
+            <div class="trade-panels">
+              <div class="trade-panel-card">
+                <div class="trade-panel-title buy-title">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 2v10M2 7l5-5 5 5"/></svg>
+                  BUY TOKENS
+                </div>
+                <div class="trade-input-label">ARC AMOUNT</div>
+                <div class="trade-input-wrap">
+                  <input class="trade-input" id="buy-arc-input" type="number" placeholder="0.0000" min="0" step="0.001" oninput="updateBuyEstimate()">
+                </div>
+                <div class="trade-estimate">
+                  <div class="estimate-label">YOU RECEIVE (ESTIMATE)</div>
+                  <div class="estimate-value" id="buy-estimate">-- TOKENS</div>
+                </div>
+                <button class="trade-btn buy-btn" id="buy-btn" onclick="buyTokens()">BUY TOKENS</button>
+              </div>
+              <div class="trade-panel-card">
+                <div class="trade-panel-title sell-title">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 2v10M2 7l5 5 5-5"/></svg>
+                  SELL TOKENS
+                </div>
+                <div class="trade-input-label">TOKEN AMOUNT</div>
+                <div class="trade-input-wrap">
+                  <input class="trade-input" id="sell-token-input" type="number" placeholder="0.00" min="0" step="1" oninput="updateSellEstimate()">
+                </div>
+                <div class="trade-estimate">
+                  <div class="estimate-label">YOU RECEIVE (ESTIMATE)</div>
+                  <div class="estimate-value" id="sell-estimate">-- ARC</div>
+                </div>
+                <button class="trade-btn approve-btn" id="approve-btn" onclick="approveTokens()" style="margin-bottom:6px">APPROVE TOKENS</button>
+                <button class="trade-btn sell-btn" id="sell-btn" onclick="sellTokens()">SELL TOKENS</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BRIDGE TAB -->
+  <div id="tab-bridge" class="tab-content">
+    <div class="breadcrumb">ARC://BRIDGE.MAIN</div>
+    <div class="bridge-center">
+      <div class="bridge-icon-wrap">
+        <svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="#E8460A" stroke-width="2.5">
+          <path d="M4 32h44M12 22v14M40 22v14M8 22h36M10 22c0-8 12-12 16-12s16 4 16 12"/>
+        </svg>
+      </div>
+      <div class="bridge-title">BRIDGE</div>
+      <div class="bridge-badge">COMING SOON</div>
+      <div class="bridge-desc">Cross-chain bridging is under development. Stay tuned for seamless asset transfers across networks.</div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK TAB -->
+  <div id="tab-feedback" class="tab-content">
+    <div class="breadcrumb">ARC://FEEDBACK.MAIN</div>
+    <div id="notifications-feedback"></div>
+    <div class="feedback-layout">
+      <div class="form-section">
+        <div class="form-path">ARC://FEEDBACK.SUBMIT</div>
+        <div class="form-title">SUBMIT FEEDBACK</div>
+        <div class="form-group">
+          <label class="form-label">YOUR NAME</label>
+          <input class="form-input" id="fb-name" placeholder="SATOSHI NAKAMOTO">
+        </div>
+        <div class="form-group">
+          <label class="form-label">FEEDBACK</label>
+          <textarea class="form-textarea" id="fb-message" placeholder="Share your thoughts..." rows="4"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">RATING</label>
+          <div class="star-rating" id="star-rating">
+            <button class="star-btn" data-star="1" onclick="setStars(1)" type="button">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor"><path d="M14 2l2.9 8.9H26l-7.4 5.4 2.8 8.9L14 20l-7.4 5.2 2.8-8.9L2 10.9h9.1z"/></svg>
+            </button>
+            <button class="star-btn" data-star="2" onclick="setStars(2)" type="button">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor"><path d="M14 2l2.9 8.9H26l-7.4 5.4 2.8 8.9L14 20l-7.4 5.2 2.8-8.9L2 10.9h9.1z"/></svg>
+            </button>
+            <button class="star-btn" data-star="3" onclick="setStars(3)" type="button">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor"><path d="M14 2l2.9 8.9H26l-7.4 5.4 2.8 8.9L14 20l-7.4 5.2 2.8-8.9L2 10.9h9.1z"/></svg>
+            </button>
+            <button class="star-btn" data-star="4" onclick="setStars(4)" type="button">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor"><path d="M14 2l2.9 8.9H26l-7.4 5.4 2.8 8.9L14 20l-7.4 5.2 2.8-8.9L2 10.9h9.1z"/></svg>
+            </button>
+            <button class="star-btn" data-star="5" onclick="setStars(5)" type="button">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor"><path d="M14 2l2.9 8.9H26l-7.4 5.4 2.8 8.9L14 20l-7.4 5.2 2.8-8.9L2 10.9h9.1z"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="trade-btn approve-btn" id="fb-submit-btn" onclick="submitFeedback()" style="width:100%;margin-top:8px">SUBMIT FEEDBACK</button>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+          COMMUNITY FEEDBACK
+          <span style="height:1px;flex:1;background:var(--border);display:block"></span>
+        </div>
+        <div id="feedback-list">
+          <div style="padding:24px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;background:var(--card);border:1px solid var(--border)">LOADING FEEDBACK...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav id="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bottom-nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L1 6v9h5V10h4v5h5V6L8 1zm0 1.5L14 7v7h-3v-5H5v5H2V7l6-4.5z"/></svg>
+      DASH
+    </button>
+    <button class="bottom-nav-item" data-tab="create" onclick="switchTab('create')">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.5 4.5H14l-3.75 2.7 1.5 4.5L8 10.2 4.25 12.7l1.5-4.5L2 5.5h4.5L8 1z"/></svg>
+      CREATE
+    </button>
+    <button class="bottom-nav-item" data-tab="trade" onclick="switchTab('trade')">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M2 12h12M2 8h9M2 4h6M13 2v12M11 4l2-2 2 2M11 12l2 2 2-2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+      TRADE
+    </button>
+    <button class="bottom-nav-item" data-tab="bridge" onclick="switchTab('bridge')">
+      <svg width="20" height="20" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 32h44M12 22v14M40 22v14M8 22h36M10 22c0-8 12-12 16-12s16 4 16 12"/></svg>
+      BRIDGE
+    </button>
+    <button class="bottom-nav-item" data-tab="feedback" onclick="switchTab('feedback')">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.8 3.6L14 5.5l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1L2 5.5l4.2-.9L8 1z"/></svg>
+      FEEDBACK
+    </button>
+  </div>
 </nav>
 
-<div class="hero">
-  <div class="hero-chip">
-    <svg width="8" height="8" viewBox="0 0 8 8"><polygon points="4,0 8,8 0,8" fill="currentColor"/></svg>
-    Arc Network &middot; EVM Compatible
-  </div>
-  <h1>YOUR<br><em>IDENTITY</em><br>ON-CHAIN</h1>
-  <p class="hero-desc">Register Web3 domains on Arc Network. Own your name, link your wallet, build your presence.</p>
-</div>
-
-<div class="search-wrap">
-  <div class="search-card">
-    <div class="search-lbl">Search Domain</div>
-    <div class="search-row">
-      <input class="search-input" id="sinput" type="text" placeholder="yourname" autocomplete="off" spellcheck="false" onkeypress="if(event.key==='Enter')doSearch()">
-      <div class="search-tld">.arc</div>
-      <button class="btn-search" id="sbtn" onclick="doSearch()">Search</button>
-    </div>
-
-    <!-- PROFESSIONAL SEARCH LOADER -->
-    <div class="search-loader" id="sloader">
-      <div class="sl-top">
-        <div class="sl-spinner">
-          <svg viewBox="0 0 28 28" fill="none">
-            <circle cx="14" cy="14" r="11" stroke="rgba(0,212,255,0.1)" stroke-width="2.5"/>
-            <circle cx="14" cy="14" r="11" stroke="#00d4ff" stroke-width="2.5"
-              stroke-dasharray="14 55" stroke-linecap="round"/>
-          </svg>
-          <div class="sl-spinner-inner"></div>
-        </div>
-        <div class="sl-texts">
-          <div class="sl-title" id="slTitle">Scanning Arc blockchain...</div>
-          <div class="sl-sub" id="slSub">Querying registry contract</div>
-        </div>
-      </div>
-      <div class="sl-scan-bar"><div class="sl-scan-fill"></div></div>
-      <div class="sl-nodes">
-        <div class="sl-node"></div>
-        <div class="sl-node-line"></div>
-        <div class="sl-node"></div>
-        <div class="sl-node-line"></div>
-        <div class="sl-node"></div>
-        <div class="sl-node-line"></div>
-        <div class="sl-node"></div>
-        <div class="sl-node-line"></div>
-        <div class="sl-node"></div>
-        <div class="sl-node-line"></div>
-        <div class="sl-node"></div>
-        <div class="sl-node-line"></div>
-        <div class="sl-node"></div>
-      </div>
-      <div class="sl-status" id="slStatus">RPC: <span>testnet.arc.network</span> · Chain <span>5050122</span></div>
-    </div>
-
-    <div class="result-box" id="rbox"></div>
-    <div class="err-line" id="errline"></div>
-  </div>
-</div>
-
-<div class="stats">
-  <div class="stat"><div class="stat-v" id="sDomains">—</div><div class="stat-l">Domains</div></div>
-  <div class="stat"><div class="stat-v">5050122</div><div class="stat-l">Chain ID</div></div>
-  <div class="stat"><div class="stat-v">&lt;1s</div><div class="stat-l">Finality</div></div>
-  <div class="stat"><div class="stat-v">$1</div><div class="stat-l">Per Year</div></div>
-</div>
-
-<div class="sec">
-  <div class="sec-h">How it <span>Works</span></div>
-  <div class="steps">
-    <div class="step"><div class="step-n">1</div><div><div class="step-t">Connect Wallet</div><div class="step-d">Connect MetaMask or Rabby to Arc Testnet (Chain ID: 5050122)</div></div></div>
-    <div class="step"><div class="step-n">2</div><div><div class="step-t">Search Your Name</div><div class="step-d">Check real-time availability of your .arc domain on blockchain</div></div></div>
-    <div class="step"><div class="step-n">3</div><div><div class="step-t">Register Onchain</div><div class="step-d">Pay 1 USDC/year. Transaction confirmed on Arc Network instantly</div></div></div>
-    <div class="step"><div class="step-n">4</div><div><div class="step-t">Own &amp; Configure</div><div class="step-d">Link wallet address, IPFS website, social records — all onchain</div></div></div>
-  </div>
-</div>
-
-<div class="sec">
-  <div class="sec-h">Platform <span>Features</span></div>
-  <div class="feats">
-    <div class="feat">
-      <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      <div class="feat-t">Wallet Linking</div><div class="feat-d">Map your domain to any EVM address</div>
-    </div>
-    <div class="feat">
-      <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      <div class="feat-t">IPFS Hosting</div><div class="feat-d">Decentralized censorship-free websites</div>
-    </div>
-    <div class="feat">
-      <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-      <div class="feat-t">Subdomains</div><div class="feat-d">Create subdomains under your name</div>
-    </div>
-    <div class="feat">
-      <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-      <div class="feat-t">Transferable</div><div class="feat-d">Trade domains freely on Arc</div>
-    </div>
-    <div class="feat">
-      <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <div class="feat-t">Social Records</div><div class="feat-d">Store email, Twitter onchain</div>
-    </div>
-    <div class="feat">
-      <svg class="feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      <div class="feat-t">Instant Finality</div><div class="feat-d">Sub-second Arc confirmation</div>
-    </div>
-  </div>
-</div>
-
-<div class="sec">
-  <div class="sec-h">Meet the <span>Creator</span></div>
-  <div class="creator">
-    <div class="creator-glow"></div>
-    <div class="creator-top">
-      <img class="creator-av" src="https://i.postimg.cc/vZVgcCBH/IMG-20260603-214625-417.jpg" alt="Joynal" onerror="this.src='https://ui-avatars.com/api/?name=Joynal&background=00d4ff&color=020810&size=60'">
-      <div><div class="creator-by">Platform Creator</div><div class="creator-name">Joynal</div></div>
-    </div>
-    <div class="creator-desc">Built ArcDomains to bring decentralized domain registration to Arc Network — making Web3 identity accessible to everyone on Circle's stablecoin-native L1 blockchain.</div>
-    <div class="tags"><span class="tag ta">Arc Network</span><span class="tag tb">Solidity</span><span class="tag tc">Web3</span></div>
-  </div>
-</div>
-
-<footer>
-  <div class="foot-logo">Arc<span>Domains</span></div>
-  <div class="foot-sub">Built by Joynal &middot; Arc Testnet &middot; 2026</div>
-</footer>
-
-<!-- WALLET OVERLAY -->
-<div class="overlay" id="woverlay">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <button class="sheet-close" onclick="closeOv('woverlay')">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
-    </button>
-    <div class="sheet-title">Connect Wallet</div>
-    <div class="sheet-sub">Connect to Arc Network (Chain 5050122)</div>
-    <div class="wlist" id="wlist">
-      <button class="witem" onclick="connectW('MetaMask')">
-        <img class="wimg" src="https://i.postimg.cc/023K598J/download.png" alt="MetaMask">
-        <div class="winfo"><div class="wname">MetaMask</div><div class="wdesc">Browser &amp; mobile wallet</div></div>
-        <svg class="warrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-      </button>
-      <button class="witem" onclick="connectW('Rabby')">
-        <img class="wimg" src="https://i.postimg.cc/DyD4f72m/images.png" alt="Rabby">
-        <div class="winfo"><div class="wname">Rabby Wallet</div><div class="wdesc">Multi-chain smart wallet</div></div>
-        <svg class="warrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+<!-- WALLET MODAL -->
+<div id="wallet-modal">
+  <div class="wallet-modal-box">
+    <div class="wallet-modal-header">
+      <span class="wallet-modal-title">SELECT WALLET</span>
+      <button class="wallet-modal-close" onclick="closeWalletModal()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 2l12 12M14 2L2 14"/></svg>
       </button>
     </div>
-    <div class="connecting" id="connecting">
-      <svg width="56" height="56" viewBox="0 0 56 56" style="animation:spin 1.1s linear infinite;display:block;margin:0 auto 16px;">
-        <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="3.5"/>
-        <circle cx="28" cy="28" r="24" fill="none" stroke="#00d4ff" stroke-width="3.5" stroke-dasharray="38 112" stroke-linecap="round"/>
-      </svg>
-      <div class="conn-name" id="connName">Connecting...</div>
-      <div class="conn-sub">Approve in your wallet</div>
+    <div class="wallet-option" onclick="connectWallet('metamask')">
+      <img class="wallet-option-logo" src="https://i.postimg.cc/nzHmMSBM/images.png" alt="MetaMask" onerror="this.style.background='#F6851B'">
+      <span class="wallet-option-name">METAMASK</span>
+      <span class="wallet-option-arrow"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h8M8 4l3 3-3 3"/></svg></span>
+    </div>
+    <div class="wallet-option" onclick="connectWallet('rabby')">
+      <img class="wallet-option-logo" src="https://i.postimg.cc/XvMq8mTP/download-(1).jpg" alt="Rabby" onerror="this.style.background='#7B68EE'">
+      <span class="wallet-option-name">RABBY WALLET</span>
+      <span class="wallet-option-arrow"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h8M8 4l3 3-3 3"/></svg></span>
     </div>
   </div>
 </div>
 
-<!-- TX OVERLAY -->
-<div class="overlay" id="txoverlay">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" id="txTitle">Registering</div>
-    <div class="sheet-sub" id="txSub">Processing on Arc Network</div>
-
-    <div id="txProg">
-      <!-- progress bar -->
-      <div class="tx-progressbar"><div class="tx-progressfill" id="txBar"></div></div>
-
-      <!-- redesigned steps -->
-      <div class="tx-track">
-
-        <!-- Step 1 -->
-        <div class="tx-step" id="ts1">
-          <div class="txs-orb">
-            <div class="txs-ring"></div>
-            <svg class="txs-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
-            <svg class="txs-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-          <div class="txs-info">
-            <div class="txs-label">Preparing transaction</div>
-            <div class="txs-desc" id="ts1d">Fetching registry fee from contract</div>
-          </div>
-          <div class="txs-badge" id="ts1b">PENDING</div>
-        </div>
-
-        <!-- Step 2 -->
-        <div class="tx-step" id="ts2">
-          <div class="txs-orb">
-            <div class="txs-ring"></div>
-            <svg class="txs-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 20h9"/>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-            <svg class="txs-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-          <div class="txs-info">
-            <div class="txs-label">Wallet confirmation</div>
-            <div class="txs-desc" id="ts2d">Approve the transaction in your wallet</div>
-          </div>
-          <div class="txs-badge" id="ts2b">WAITING</div>
-        </div>
-
-        <!-- Step 3 -->
-        <div class="tx-step" id="ts3">
-          <div class="txs-orb">
-            <div class="txs-ring"></div>
-            <svg class="txs-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="7" width="20" height="14" rx="2"/>
-              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-            </svg>
-            <svg class="txs-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-          <div class="txs-info">
-            <div class="txs-label">On-chain confirmation</div>
-            <div class="txs-desc" id="ts3d">Broadcasting to Arc Network nodes</div>
-          </div>
-          <div class="txs-badge" id="ts3b">WAITING</div>
-        </div>
-
+<!-- TRANSACTION OVERLAY -->
+<div id="tx-overlay">
+  <div class="tx-card">
+    <div class="tx-card-header">PROCESSING TRANSACTION</div>
+    <div class="tx-steps" id="tx-steps">
+      <div class="tx-step pending" id="tx-step-1">
+        <div class="tx-step-num">1</div>
+        <div class="tx-step-label">UPLOADING METADATA</div>
+        <div class="tx-step-icon" id="tx-icon-1"></div>
+      </div>
+      <div class="tx-step pending" id="tx-step-2">
+        <div class="tx-step-num">2</div>
+        <div class="tx-step-label">DEPLOYING CONTRACT</div>
+        <div class="tx-step-icon" id="tx-icon-2"></div>
+      </div>
+      <div class="tx-step pending" id="tx-step-3">
+        <div class="tx-step-num">3</div>
+        <div class="tx-step-label">CONFIRMING TRANSACTION</div>
+        <div class="tx-step-icon" id="tx-icon-3"></div>
+      </div>
+      <div class="tx-step pending" id="tx-step-4">
+        <div class="tx-step-num">4</div>
+        <div class="tx-step-label">COMPLETE</div>
+        <div class="tx-step-icon" id="tx-icon-4"></div>
       </div>
     </div>
-
-    <div class="success" id="txSuccess">
-      <div class="success-ring">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#00e5a0" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
-      <div class="success-title">Registered!</div>
-      <div class="success-sub" id="successMsg"></div>
-      <a class="btn-explorer" id="explorerBtn" href="https://testnet.arcscan.app" target="_blank">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        View on Arc Explorer
-      </a>
-      <button class="btn-dismiss" onclick="closeOv('txoverlay')">Close</button>
-    </div>
+    <div id="tx-result" style="padding:12px 16px;border-top:1px solid var(--border);display:none"></div>
   </div>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-const CONTRACT = '0xA0DaaA42BE92949CDA01eb5980B679D88831b1e4';
-const CHAIN_ID  = '0x4D0F0A';
-const RPC       = 'https://rpc.testnet.arc.network';
-const EXPLORER  = 'https://testnet.arcscan.app';
-const ONE_USDC_NATIVE = ethers.parseUnits('1', 18);
+// ===================== CONFIG =====================
+const CONTRACT_ADDRESS = '0x21f8568baF84E4DC99C8e6Fd3474C00721ab2A46';
+const CHAIN_ID = 5050122;
+const CHAIN_HEX = '0x4CC57A';
+const EXPLORER = 'https://explorer.arc.io/tx/';
 
 const ABI = [
-  "function registerDomain(string,uint256) external payable",
-  "function renewDomain(string,uint256) external payable",
-  "function isAvailable(string) external view returns (bool)",
-  "function totalSupply() external view returns (uint256)",
-  "function registrationFee() external view returns (uint256)",
-  "function getDomainInfo(string) external view returns (address,uint256,bool)",
-  "function resolve(string) external view returns (address)",
-  "function getOwnerDomains(address) external view returns (string[])"
+  {"inputs":[{"components":[{"name":"name","type":"string"},{"name":"symbol","type":"string"},{"name":"description","type":"string"},{"name":"logoURI","type":"string"},{"name":"website","type":"string"},{"name":"twitter","type":"string"}],"name":"p","type":"tuple"}],"name":"createToken","outputs":[{"name":"","type":"address"}],"stateMutability":"payable","type":"function"},
+  {"inputs":[{"name":"token","type":"address"}],"name":"buyTokens","outputs":[],"stateMutability":"payable","type":"function"},
+  {"inputs":[{"name":"token","type":"address"},{"name":"amt","type":"uint256"}],"name":"sellTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"token","type":"address"}],"name":"getCurrentPrice","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"token","type":"address"},{"name":"arcIn","type":"uint256"}],"name":"getBuyQuote","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"token","type":"address"},{"name":"amt","type":"uint256"}],"name":"getSellQuote","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"getAllTokens","outputs":[{"name":"","type":"address[]"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"getTokenCount","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"token","type":"address"}],"name":"getTokenInfo","outputs":[{"components":[{"name":"tokenAddress","type":"address"},{"name":"name","type":"string"},{"name":"symbol","type":"string"},{"name":"description","type":"string"},{"name":"logoURI","type":"string"},{"name":"website","type":"string"},{"name":"twitter","type":"string"},{"name":"creator","type":"address"},{"name":"createdAt","type":"uint256"},{"name":"exists","type":"bool"}],"name":"","type":"tuple"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"token","type":"address"}],"name":"isListed","outputs":[{"name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"token","type":"address"}],"name":"poolARC","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
 ];
 
-let provider=null,signer=null,ctr=null,connected=false,addr='',pendingDomain='';
+const ERC20_ABI = [
+  {"inputs":[{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+];
 
-window.addEventListener('load', async () => {
+const FIREBASE_CONFIG = {
+  apiKey:"AIzaSyACFXDHuSsD7Uw-TP3AYLs32KqVu6Jes5o",
+  authDomain:"arclaunchpad-10782.firebaseapp.com",
+  projectId:"arclaunchpad-10782",
+  storageBucket:"arclaunchpad-10782.firebasestorage.app",
+  messagingSenderId:"626926030793",
+  appId:"1:626926030793:web:da37484e12986bd3a92218"
+};
+
+// ===================== GLOBALS =====================
+let provider = null, signer = null, contract = null;
+let walletAddress = null;
+let allTokens = [];
+let allTokenInfos = [];
+let sortOrder = 'newest';
+let selectedToken = null;
+let logoBase64 = '';
+let selectedStars = 0;
+let autoRefreshInterval = null;
+
+// ===================== FIREBASE =====================
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+
+// ===================== UTILS =====================
+function shortAddr(addr) {
+  if(!addr) return '--';
+  return addr.slice(0,6)+'...'+addr.slice(-4);
+}
+
+function fmtARC(val) {
+  if(val === undefined || val === null) return '--';
   try {
-    const rpc = new ethers.JsonRpcProvider(RPC);
-    const rc  = new ethers.Contract(CONTRACT, ABI, rpc);
-    const s   = await rc.totalSupply();
-    animN(document.getElementById('sDomains'), Number(s), 1200);
+    const n = parseFloat(ethers.utils.formatEther(val));
+    return n.toFixed(4) + ' ARC';
+  } catch { return '--'; }
+}
+
+function fmtTokenAmt(val) {
+  if(val === undefined || val === null) return '--';
+  try {
+    const n = parseFloat(ethers.utils.formatEther(val));
+    return n.toFixed(2);
+  } catch { return '--'; }
+}
+
+function timeAgo(ts) {
+  const now = Date.now();
+  const t = typeof ts === 'object' && ts.seconds ? ts.seconds * 1000 : Number(ts) * 1000;
+  const diff = Math.floor((now - t) / 1000);
+  if(diff < 60) return diff + 's ago';
+  if(diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if(diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return Math.floor(diff/86400) + 'd ago';
+}
+
+function curvePct(poolARC) {
+  // Target: 69 ARC to graduate
+  try {
+    const pool = parseFloat(ethers.utils.formatEther(poolARC || '0'));
+    return Math.min(100, Math.floor((pool / 69) * 100));
+  } catch { return 0; }
+}
+
+function tokenLogoHTML(logoURI, size=40, cls='token-logo') {
+  if(logoURI && logoURI.length > 10) {
+    return `<img class="${cls}" src="${logoURI}" width="${size}" height="${size}" onerror="this.style.display='none';this.nextSibling.style.display='flex'" style="display:block">
+    <div class="token-logo-placeholder" style="width:${size}px;height:${size}px;display:none">
+      <svg width="${size*0.6}" height="${size*0.6}" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#C8BFA8" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="10" fill="#C8BFA8" font-family="Space Mono">${''}</text></svg>
+    </div>`;
+  }
+  return `<div class="token-logo-placeholder" style="width:${size}px;height:${size}px">
+    <svg width="${size*0.55}" height="${size*0.55}" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#C8BFA8" stroke-width="1.5"/></svg>
+  </div>`;
+}
+
+function showNotification(containerId, type, title, msg, txHash=null) {
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  const link = txHash ? `<a class="notification-link" href="${EXPLORER}${txHash}" target="_blank">VIEW ON EXPLORER</a>` : '';
+  el.innerHTML = `<div class="notification ${type}">
+    <div class="notification-title">${title}</div>
+    <div class="notification-msg">${msg}</div>
+    ${link}
+  </div>`;
+  setTimeout(()=>{ if(el.firstChild) el.innerHTML=''; }, 8000);
+}
+
+// ===================== WALLET =====================
+function openWalletModal() {
+  document.getElementById('wallet-modal').classList.add('open');
+}
+function closeWalletModal() {
+  document.getElementById('wallet-modal').classList.remove('open');
+}
+
+async function connectWallet(type) {
+  closeWalletModal();
+  if(!window.ethereum) {
+    alert('No wallet detected. Please install MetaMask or Rabby Wallet.');
+    return;
+  }
+  try {
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    await switchToArcNetwork();
+    signer = provider.getSigner();
+    walletAddress = await signer.getAddress();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+    localStorage.setItem('arclaunchpad_wallet', walletAddress);
+    updateWalletUI();
+    await refreshData();
   } catch(e) {
-    document.getElementById('sDomains').textContent = '0';
+    console.error(e);
+    showNotification('notifications-dash','error','WALLET ERROR', e.message || 'Failed to connect wallet');
   }
-});
-
-function openWallet() {
-  if (connected) { showToast('Already connected', 'ok'); return; }
-  document.getElementById('wlist').classList.remove('hide');
-  document.getElementById('connecting').classList.remove('on');
-  showOv('woverlay');
 }
 
-async function connectW(name) {
-  if (!window.ethereum) { showToast(name + ' not installed', 'fail'); closeOv('woverlay'); return; }
-  document.getElementById('wlist').classList.add('hide');
-  document.getElementById('connecting').classList.add('on');
-  document.getElementById('connName').textContent = name + ' connecting...';
+async function switchToArcNetwork() {
   try {
-    let actualChainId = CHAIN_ID;
-    try {
-      const rpcResp = await fetch(RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'eth_chainId',params:[],id:1})});
-      const rpcData = await rpcResp.json();
-      if (rpcData.result) actualChainId = rpcData.result;
-    } catch(e){}
-    try {
-      await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:actualChainId}]});
-    } catch(e) {
-      if (e.code===4902||e.code===-32603) {
-        await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:actualChainId,chainName:'Arc Network Testnet',nativeCurrency:{name:'USDC',symbol:'USDC',decimals:18},rpcUrls:[RPC],blockExplorerUrls:[EXPLORER]}]});
-      } else throw e;
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: CHAIN_HEX }]
+    });
+  } catch(e) {
+    if(e.code === 4902) {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: CHAIN_HEX,
+          chainName: 'Arc Network Testnet',
+          nativeCurrency: { name: 'ARC', symbol: 'ARC', decimals: 18 },
+          rpcUrls: ['https://rpc-testnet.arc.io'],
+          blockExplorerUrls: ['https://explorer.arc.io']
+        }]
+      });
     }
-    provider = new ethers.BrowserProvider(window.ethereum);
-    const accs = await provider.send('eth_requestAccounts',[]);
-    signer = await provider.getSigner();
-    ctr    = new ethers.Contract(CONTRACT, ABI, signer);
-    addr   = accs[0];
-    connected = true;
-    closeOv('woverlay');
-    document.getElementById('walletBtn').classList.add('connected');
-    document.getElementById('walletTxt').textContent = addr.slice(0,6)+'...'+addr.slice(-4);
-    showToast(name+' connected ✓','ok');
-    try { const s=await ctr.totalSupply(); animN(document.getElementById('sDomains'),Number(s),600); } catch(e){}
-    if (pendingDomain) { startReg(pendingDomain); pendingDomain=''; }
-  } catch(err) {
-    document.getElementById('wlist').classList.remove('hide');
-    document.getElementById('connecting').classList.remove('on');
-    const m=err?.message||'';
-    if (err.code===4001||m.includes('rejected')||m.includes('denied')) showToast('Cancelled','fail');
-    else showToast('Error: '+m.slice(0,55),'fail');
   }
 }
 
-// ── SEARCH with professional delay & animated status messages ──
-const slMessages = [
-  ['Scanning Arc blockchain...','Querying registry contract'],
-  ['Checking name availability...','Resolving domain hash'],
-  ['Verifying on-chain state...','Cross-referencing registry'],
-  ['Almost done...','Finalizing result'],
-];
+function updateWalletUI() {
+  const btn = document.getElementById('connect-btn');
+  const addrBox = document.getElementById('wallet-addr-box');
+  const balBox = document.getElementById('arc-balance-box');
+  if(walletAddress) {
+    btn.textContent = 'CONNECTED';
+    btn.style.background = 'var(--success)';
+    btn.style.borderColor = '#1f5c1f';
+    addrBox.textContent = shortAddr(walletAddress);
+    addrBox.style.display = 'block';
+    balBox.style.display = 'block';
+    updateBalance();
+    document.getElementById('trade-no-wallet').style.display = 'none';
+    document.getElementById('trade-main').style.display = 'grid';
+  }
+}
 
-async function doSearch() {
-  const raw = document.getElementById('sinput').value.trim();
-  const v   = raw.toLowerCase().replace(/\s+/g,'');
-  const el  = document.getElementById('errline');
-  el.classList.remove('on');
+async function updateBalance() {
+  if(!provider || !walletAddress) return;
+  try {
+    const bal = await provider.getBalance(walletAddress);
+    document.getElementById('arc-balance-box').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ARC';
+  } catch(e) {}
+}
 
-  if (!v)          { showErr('Domain name লেখো'); return; }
-  if (v.length < 3){ showErr('কমপক্ষে ৩ অক্ষর লাগবে'); return; }
-  if (!/^[a-z0-9-]+$/.test(v)) { showErr('শুধু a-z, 0-9 এবং hyphen (-) ব্যবহার করো'); return; }
+async function tryAutoReconnect() {
+  const saved = localStorage.getItem('arclaunchpad_wallet');
+  if(!saved || !window.ethereum) return;
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+    if(accounts && accounts.length > 0) {
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      signer = provider.getSigner();
+      walletAddress = await signer.getAddress();
+      contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+      updateWalletUI();
+    }
+  } catch(e) {}
+}
 
-  const loader = document.getElementById('sloader');
-  const rbox   = document.getElementById('rbox');
-  const sbtn   = document.getElementById('sbtn');
-  rbox.classList.remove('on');
-  loader.classList.add('on');
-  sbtn.disabled = true;
+// ===================== NAVIGATION =====================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('[data-tab="'+tab+'"]').forEach(n=>n.classList.add('active'));
+  const breadcrumbs = {
+    dashboard:'ARC://DASHBOARD.MAIN',
+    create:'ARC://CREATE.TOKEN',
+    trade:'ARC://TRADE.MAIN',
+    bridge:'ARC://BRIDGE.MAIN',
+    feedback:'ARC://FEEDBACK.MAIN'
+  };
+  // update breadcrumbs (each tab has its own)
+  if(tab === 'trade') {
+    if(!walletAddress) {
+      document.getElementById('trade-no-wallet').style.display='block';
+      document.getElementById('trade-main').style.display='none';
+    } else {
+      document.getElementById('trade-no-wallet').style.display='none';
+      document.getElementById('trade-main').style.display='grid';
+    }
+    loadTradeList();
+  }
+  if(tab === 'feedback') loadFeedback();
+  if(tab === 'dashboard') refreshData();
+}
 
-  // Cycle status messages every 800ms
-  let msgIdx = 0;
-  const cycleMsgs = setInterval(() => {
-    msgIdx = (msgIdx + 1) % slMessages.length;
-    document.getElementById('slTitle').textContent  = slMessages[msgIdx][0];
-    document.getElementById('slSub').textContent    = slMessages[msgIdx][1];
-  }, 800);
+// ===================== READ CONTRACT =====================
+async function getReadContract() {
+  if(contract) return contract;
+  const rpcProvider = new ethers.providers.JsonRpcProvider('https://rpc-testnet.arc.io');
+  return new ethers.Contract(CONTRACT_ADDRESS, ABI, rpcProvider);
+}
 
-  // Run actual RPC call + minimum 2.8s visual delay in parallel
-  let avail = true;
-  const [result] = await Promise.allSettled([
-    (async () => {
+async function refreshData() {
+  try {
+    const c = await getReadContract();
+    const [count, addresses] = await Promise.all([
+      c.getTokenCount(),
+      c.getAllTokens()
+    ]);
+
+    document.getElementById('stat-total-tokens').textContent = count.toString();
+
+    if(!addresses || addresses.length === 0) {
+      document.getElementById('token-grid').innerHTML = '';
+      document.getElementById('empty-state').style.display = 'block';
+      document.getElementById('stat-total-volume').textContent = '0.0000';
+      document.getElementById('stat-traders').textContent = '0';
+      return;
+    }
+    document.getElementById('empty-state').style.display = 'none';
+
+    // Fetch info + price + pool for each token
+    const infos = await Promise.all(addresses.map(async addr => {
       try {
-        const rpc = new ethers.JsonRpcProvider(RPC);
-        const rc  = new ethers.Contract(CONTRACT, ABI, rpc);
-        avail = await rc.isAvailable(v);
-      } catch(e) {
-        console.warn('isAvailable:', e.message);
-        showToast('RPC connection error','fail');
-      }
-    })(),
-    new Promise(r => setTimeout(r, 2800))
-  ]);
+        const [info, price, pool] = await Promise.all([
+          c.getTokenInfo(addr),
+          c.getCurrentPrice(addr),
+          c.poolARC(addr)
+        ]);
+        return { ...info, price, pool };
+      } catch(e) { return null; }
+    }));
 
-  clearInterval(cycleMsgs);
-  loader.classList.remove('on');
-  sbtn.disabled = false;
+    allTokenInfos = infos.filter(Boolean);
 
-  // Reset loader text for next search
-  document.getElementById('slTitle').textContent = slMessages[0][0];
-  document.getElementById('slSub').textContent   = slMessages[0][1];
+    // Stats
+    let totalVol = ethers.BigNumber.from(0);
+    const creators = new Set();
+    allTokenInfos.forEach(t => {
+      try { totalVol = totalVol.add(t.pool || 0); } catch {}
+      if(t.creator) creators.add(t.creator.toLowerCase());
+    });
+    document.getElementById('stat-total-volume').textContent = parseFloat(ethers.utils.formatEther(totalVol)).toFixed(4);
+    document.getElementById('stat-traders').textContent = creators.size;
 
-  rbox.innerHTML = `
-    <div class="result-row">
-      <div>
-        <div class="r-name">${v}.arc</div>
-        <div class="r-price">1 USDC/yr &middot; Arc Network</div>
+    renderTokenGrid();
+    renderTopStrip();
+    if(document.getElementById('tab-trade').classList.contains('active')) loadTradeList();
+  } catch(e) {
+    console.error('refreshData error:', e);
+    showNotification('notifications-dash','error','DATA ERROR','Failed to load token data. Check RPC connection.');
+  }
+}
+
+function getSortedTokens() {
+  let tokens = [...allTokenInfos];
+  if(sortOrder === 'newest') {
+    tokens.sort((a,b) => Number(b.createdAt||0) - Number(a.createdAt||0));
+  } else if(sortOrder === 'volume') {
+    tokens.sort((a,b) => {
+      try { return b.pool.gt(a.pool) ? 1 : -1; } catch { return 0; }
+    });
+  } else if(sortOrder === 'trending') {
+    tokens.sort((a,b) => {
+      try { return b.price.gt(a.price) ? 1 : -1; } catch { return 0; }
+    });
+  }
+  return tokens;
+}
+
+function setSortOrder(order) {
+  sortOrder = order;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderTokenGrid();
+}
+
+function renderTokenGrid() {
+  const grid = document.getElementById('token-grid');
+  const tokens = getSortedTokens();
+  if(!tokens.length) {
+    grid.innerHTML = '';
+    document.getElementById('empty-state').style.display = 'block';
+    return;
+  }
+  grid.innerHTML = tokens.map(t => renderTokenCard(t)).join('');
+}
+
+function renderTokenCard(t) {
+  const pct = curvePct(t.pool);
+  const priceStr = t.price ? parseFloat(ethers.utils.formatEther(t.price)).toFixed(6)+' ARC' : '-- ARC';
+  const addr = t.tokenAddress || t[0];
+  return `<div class="token-card" onclick="goToTrade('${addr}')">
+    <div class="token-card-path">ARC://TOKEN.INFO</div>
+    <div class="token-card-header">
+      ${tokenLogoHTML(t.logoURI, 40)}
+      <div style="min-width:0">
+        <div class="token-name">${escHtml(t.name||'--')}</div>
+        <div class="token-symbol">${escHtml(t.symbol||'--')}</div>
       </div>
-      <div class="r-right">
-        <div class="chain-pill">
-          <img src="https://i.postimg.cc/3xv4dzRw/20260603-214607.jpg" alt="Arc" onerror="this.style.display='none'">
-          Arc
+    </div>
+    <div class="token-price-label">CURRENT PRICE</div>
+    <div class="token-price">${priceStr}</div>
+    <div class="progress-wrap">
+      <div class="progress-label">BONDING CURVE — ${pct}%</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="token-creator">CREATOR: ${shortAddr(t.creator)}</div>
+    <button class="token-trade-btn" onclick="event.stopPropagation();goToTrade('${addr}')">TRADE</button>
+  </div>`;
+}
+
+function renderTopStrip() {
+  const strip = document.getElementById('top-strip');
+  const top10 = [...allTokenInfos]
+    .sort((a,b) => { try { return b.pool.gt(a.pool)?1:-1; } catch { return 0; } })
+    .slice(0,10);
+  if(!top10.length) { strip.innerHTML = '<div style="font-size:10px;color:var(--text-secondary);letter-spacing:0.05em;text-transform:uppercase;padding:8px">NO TOKENS YET</div>'; return; }
+  strip.innerHTML = top10.map(t => {
+    const priceStr = t.price ? parseFloat(ethers.utils.formatEther(t.price)).toFixed(6)+' ARC' : '-- ARC';
+    const addr = t.tokenAddress || t[0];
+    return `<div class="mini-token-card" onclick="goToTrade('${addr}')">
+      <div style="display:flex;align-items:center;gap:8px">
+        ${tokenLogoHTML(t.logoURI,28,'mini-token-logo')}
+        <div class="mini-token-info">
+          <div class="mini-token-name">${escHtml(t.symbol||'--')}</div>
+          <div class="mini-token-price">${priceStr}</div>
         </div>
-        <div class="${avail?'avail':'taken'}">
-          <svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="currentColor"/></svg>
-          ${avail?'Available':'Taken'}
-        </div>
-        ${avail?`<button class="btn-reg" onclick="startReg('${v}')">Register</button>`:''}
       </div>
     </div>`;
-  rbox.classList.add('on');
+  }).join('');
 }
 
-function showErr(m) {
-  const e = document.getElementById('errline');
-  e.textContent = m; e.classList.add('on');
+function escHtml(str) {
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function startReg(domain) {
-  if (!connected) { pendingDomain=domain; openWallet(); return; }
-  openTx(domain);
+// ===================== CREATE TOKEN =====================
+function updatePreview() {
+  const name = document.getElementById('create-name').value || 'TOKEN NAME';
+  const symbol = document.getElementById('create-symbol').value || 'SYMBOL';
+  const desc = document.getElementById('create-desc').value || 'Token description will appear here...';
+  const website = document.getElementById('create-website').value;
+  const twitter = document.getElementById('create-twitter').value;
+
+  document.getElementById('preview-name').textContent = name.toUpperCase();
+  document.getElementById('preview-symbol').textContent = symbol;
+  document.getElementById('preview-desc').textContent = desc;
+  document.getElementById('name-count').textContent = document.getElementById('create-name').value.length;
+  document.getElementById('symbol-count').textContent = document.getElementById('create-symbol').value.length;
+
+  let meta = '';
+  if(website) meta += `<div>WEBSITE: <a href="${escHtml(website)}" target="_blank" rel="noopener">${escHtml(website)}</a></div>`;
+  if(twitter) meta += `<div>TWITTER: <a href="${escHtml(twitter)}" target="_blank" rel="noopener">${escHtml(twitter)}</a></div>`;
+  document.getElementById('preview-meta').innerHTML = meta;
 }
 
-// ── TX step helper ──
-function setTS(id, state, badgeText, descText) {
-  const el = document.getElementById(id);
-  el.className = 'tx-step ' + state;
-  if (badgeText) document.getElementById(id+'b').textContent = badgeText;
-  if (descText)  document.getElementById(id+'d').textContent = descText;
+function handleLogoUpload(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  if(file.size > 2*1024*1024) { alert('Image must be under 2MB'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    logoBase64 = e.target.result;
+    const wrap = document.getElementById('preview-logo-wrap');
+    wrap.innerHTML = `<img src="${logoBase64}" style="width:64px;height:64px;border:1px solid var(--border);object-fit:cover">`;
+    const uploadArea = document.getElementById('upload-area');
+    uploadArea.innerHTML = `<img class="upload-preview" src="${logoBase64}"><div class="file-upload-text">LOGO SELECTED</div><input type="file" accept="image/*" id="logo-file" onchange="handleLogoUpload(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">`;
+  };
+  reader.readAsDataURL(file);
 }
 
-function setBar(pct) {
-  document.getElementById('txBar').style.width = pct + '%';
-}
-
-async function openTx(domain) {
-  document.getElementById('txTitle').textContent = domain+'.arc';
-  document.getElementById('txSub').textContent   = 'Arc Network এ পাঠানো হচ্ছে';
-  document.getElementById('txProg').style.display='block';
-  document.getElementById('txSuccess').classList.remove('on');
-
-  // reset all steps
-  ['ts1','ts2','ts3'].forEach(id => {
-    document.getElementById(id).className='tx-step';
-    document.getElementById(id+'b').textContent='WAITING';
-  });
-  document.getElementById('ts1d').textContent='Fetching registry fee from contract';
-  document.getElementById('ts2d').textContent='Approve the transaction in your wallet';
-  document.getElementById('ts3d').textContent='Broadcasting to Arc Network nodes';
-  setBar(0);
-
-  showOv('txoverlay');
-
-  try {
-    setTS('ts1','active','IN PROGRESS','Calling registrationFee()...');
-    setBar(8);
-
-    let fee = ONE_USDC_NATIVE;
-    try {
-      const contractFee = await ctr.registrationFee();
-      if (contractFee && contractFee > 0n) fee = contractFee;
-    } catch(e) {
-      console.warn('registrationFee() failed, using fallback');
-    }
-
-    setTS('ts1','done','DONE','Fee loaded — 1 USDC');
-    setBar(33);
-    await new Promise(r => setTimeout(r, 320));
-
-    setTS('ts2','active','SIGN NOW','Open your wallet and confirm');
-    setBar(40);
-
-    const tx = await ctr.registerDomain(domain, 1, { value: fee });
-
-    setTS('ts2','done','SIGNED','Transaction submitted to mempool');
-    setBar(66);
-    await new Promise(r => setTimeout(r, 280));
-
-    setTS('ts3','active','CONFIRMING','Waiting for block finality...');
-    setBar(75);
-
-    const receipt = await tx.wait();
-
-    setTS('ts3','done','CONFIRMED','Included in block #'+receipt.blockNumber);
-    setBar(100);
-
-    await new Promise(r => setTimeout(r, 500));
-
-    document.getElementById('txProg').style.display='none';
-    document.getElementById('txSuccess').classList.add('on');
-    document.getElementById('successMsg').textContent = domain+'.arc তোমার হয়ে গেছে!';
-    document.getElementById('explorerBtn').href = EXPLORER+'/tx/'+receipt.hash;
-    showToast(domain+'.arc registered!','ok');
-
-    try { const s=await ctr.totalSupply(); animN(document.getElementById('sDomains'),Number(s),600); } catch(e){}
-
-  } catch(err) {
-    closeOv('txoverlay');
-    const m=err?.reason||err?.data?.message||err?.message||'';
-    const cancelled=m.toLowerCase().includes('rejected')||m.toLowerCase().includes('denied')||m.toLowerCase().includes('cancelled')||err.code===4001;
-    if (cancelled) showToast('Transaction cancelled','fail');
-    else showToast('Error: '+m.slice(0,65),'fail');
+function setTxStep(step, state) {
+  const el = document.getElementById('tx-step-'+step);
+  const icon = document.getElementById('tx-icon-'+step);
+  el.className = 'tx-step '+state;
+  if(state==='active') {
+    icon.innerHTML = `<svg class="spinner" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="7" stroke-dasharray="30 10"/></svg>`;
+  } else if(state==='done') {
+    icon.innerHTML = `<svg class="check-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--success)" stroke-width="2.5"><path d="M3 9l4.5 4.5L15 5"/></svg>`;
+  } else {
+    icon.innerHTML = '';
   }
 }
 
-function showOv(id)  { document.getElementById(id).classList.add('on'); }
-function closeOv(id) { document.getElementById(id).classList.remove('on'); }
+async function launchToken() {
+  if(!walletAddress) { openWalletModal(); return; }
+  const name = document.getElementById('create-name').value.trim();
+  const symbol = document.getElementById('create-symbol').value.trim();
+  if(!name || !symbol) {
+    showNotification('notifications-create','error','VALIDATION ERROR','Token name and symbol are required.');
+    return;
+  }
 
-document.querySelectorAll('.overlay').forEach(o =>
-  o.addEventListener('click', e => { if(e.target===o) o.classList.remove('on'); })
-);
+  const overlay = document.getElementById('tx-overlay');
+  const resultDiv = document.getElementById('tx-result');
+  overlay.classList.add('open');
+  resultDiv.style.display='none';
+  [1,2,3,4].forEach(i=>setTxStep(i,'pending'));
 
-function showToast(msg, type) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast on '+type;
-  setTimeout(()=>t.classList.remove('on'),3500);
+  try {
+    // Step 1: Upload metadata (Firestore)
+    setTxStep(1,'active');
+    const desc = document.getElementById('create-desc').value.trim();
+    const website = document.getElementById('create-website').value.trim();
+    const twitter = document.getElementById('create-twitter').value.trim();
+    const logoURI = logoBase64 || '';
+    await new Promise(r=>setTimeout(r,600));
+    setTxStep(1,'done');
+
+    // Step 2: Deploy contract
+    setTxStep(2,'active');
+    const tx = await contract.createToken({
+      name, symbol, description: desc,
+      logoURI, website, twitter
+    }, { value: ethers.utils.parseEther('0.01') });
+    setTxStep(2,'done');
+
+    // Step 3: Confirm
+    setTxStep(3,'active');
+    const receipt = await tx.wait();
+    setTxStep(3,'done');
+
+    // Step 4: Complete
+    setTxStep(4,'active');
+    // Save to Firestore
+    try {
+      const tokenAddr = receipt.events && receipt.events[0] ? receipt.events[0].address : receipt.contractAddress || '';
+      await db.collection('tokens').add({
+        tokenAddress: tokenAddr,
+        name, symbol, description: desc,
+        logoURI, website, twitter,
+        creator: walletAddress,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        chainId: CHAIN_ID
+      });
+    } catch(fe) { console.warn('Firestore save failed:', fe); }
+    setTxStep(4,'done');
+
+    resultDiv.style.display='block';
+    resultDiv.innerHTML = `<div class="notification success">
+      <div class="notification-title">TOKEN LAUNCHED SUCCESSFULLY</div>
+      <div class="notification-msg">TX: ${shortAddr(receipt.transactionHash)}</div>
+      <a class="notification-link" href="${EXPLORER}${receipt.transactionHash}" target="_blank">VIEW ON EXPLORER</a>
+    </div>`;
+
+    setTimeout(()=>{
+      overlay.classList.remove('open');
+      // Reset form
+      ['create-name','create-symbol','create-desc','create-website','create-twitter'].forEach(id=>{
+        const el=document.getElementById(id); if(el) el.value='';
+      });
+      logoBase64='';
+      updatePreview();
+      refreshData();
+    }, 3000);
+
+  } catch(e) {
+    setTxStep(2,'pending');setTxStep(3,'pending');setTxStep(4,'pending');
+    resultDiv.style.display='block';
+    resultDiv.innerHTML = `<div class="notification error">
+      <div class="notification-title">TRANSACTION FAILED</div>
+      <div class="notification-msg">${escHtml(e.reason||e.message||'Unknown error')}</div>
+    </div>`;
+    setTimeout(()=>overlay.classList.remove('open'), 3000);
+  }
 }
 
-function animN(el, target, dur) {
-  const s=performance.now();
-  const tick=now=>{
-    const p=Math.min((now-s)/dur,1);
-    const e=1-Math.pow(1-p,3);
-    el.textContent=Math.floor(e*target).toLocaleString();
-    if(p<1) requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
+// ===================== TRADE =====================
+function goToTrade(addr) {
+  switchTab('trade');
+  selectTradeToken(addr);
 }
 
-const io=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){e.target.style.animation='fadeUp 0.45s ease both';io.unobserve(e.target);}
+function loadTradeList() {
+  const list = document.getElementById('trade-token-list');
+  if(!allTokenInfos.length) {
+    list.innerHTML='<div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.05em;text-transform:uppercase">NO TOKENS</div>';
+    return;
+  }
+  renderTradeList(allTokenInfos);
+}
+
+function renderTradeList(tokens) {
+  const list = document.getElementById('trade-token-list');
+  if(!tokens.length) {
+    list.innerHTML='<div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.05em;text-transform:uppercase">NO RESULTS</div>';
+    return;
+  }
+  list.innerHTML = tokens.map(t => {
+    const addr = t.tokenAddress||t[0];
+    const priceStr = t.price ? parseFloat(ethers.utils.formatEther(t.price)).toFixed(6) : '--';
+    const active = selectedToken && selectedToken.tokenAddress === addr ? 'active' : '';
+    return `<div class="trade-token-row ${active}" onclick="selectTradeToken('${addr}')">
+      ${tokenLogoHTML(t.logoURI,32,'trade-token-row-logo')}
+      <div style="min-width:0;flex:1">
+        <div class="trade-token-row-name">${escHtml(t.symbol||'--')}</div>
+        <div class="trade-token-row-price">${priceStr} ARC</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterTradeList() {
+  const q = document.getElementById('trade-search').value.toLowerCase();
+  const filtered = allTokenInfos.filter(t =>
+    (t.name||'').toLowerCase().includes(q) ||
+    (t.symbol||'').toLowerCase().includes(q)
+  );
+  renderTradeList(filtered);
+}
+
+async function selectTradeToken(addr) {
+  const token = allTokenInfos.find(t => (t.tokenAddress||t[0]).toLowerCase() === addr.toLowerCase());
+  if(!token) return;
+  selectedToken = token;
+
+  // Mark active
+  document.querySelectorAll('.trade-token-row').forEach(r=>r.classList.remove('active'));
+  const rows = document.querySelectorAll('.trade-token-row');
+  rows.forEach(r => {
+    if(r.getAttribute('onclick') && r.getAttribute('onclick').includes(addr)) r.classList.add('active');
   });
-},{threshold:0.08});
-document.querySelectorAll('.step,.feat,.creator').forEach(el=>{el.style.opacity='0';io.observe(el);});
+
+  document.getElementById('trade-detail').style.display='block';
+  document.getElementById('trade-detail-empty').style.display='none';
+
+  const pct = curvePct(token.pool);
+  const priceStr = token.price ? parseFloat(ethers.utils.formatEther(token.price)).toFixed(6)+' ARC' : '-- ARC';
+
+  document.getElementById('td-name').textContent = (token.name||'--').toUpperCase();
+  document.getElementById('td-symbol').textContent = token.symbol||'--';
+  document.getElementById('td-price').textContent = priceStr;
+  document.getElementById('td-curve-pct').textContent = pct;
+  document.getElementById('td-curve-bar').style.width = pct+'%';
+  document.getElementById('td-creator').textContent = shortAddr(token.creator);
+  document.getElementById('td-desc').textContent = token.description||'';
+
+  const logoWrap = document.getElementById('trade-detail-logo-wrap');
+  logoWrap.innerHTML = tokenLogoHTML(token.logoURI, 48, 'trade-detail-logo');
+
+  // Clear inputs
+  document.getElementById('buy-arc-input').value='';
+  document.getElementById('sell-token-input').value='';
+  document.getElementById('buy-estimate').textContent='-- TOKENS';
+  document.getElementById('sell-estimate').textContent='-- ARC';
+}
+
+async function updateBuyEstimate() {
+  if(!selectedToken) return;
+  const val = document.getElementById('buy-arc-input').value;
+  if(!val || isNaN(val) || parseFloat(val)<=0) {
+    document.getElementById('buy-estimate').textContent='-- TOKENS';
+    return;
+  }
+  try {
+    const c = await getReadContract();
+    const arcIn = ethers.utils.parseEther(val);
+    const out = await c.getBuyQuote(selectedToken.tokenAddress, arcIn);
+    document.getElementById('buy-estimate').textContent = fmtTokenAmt(out)+' '+selectedToken.symbol;
+  } catch(e) {
+    document.getElementById('buy-estimate').textContent='-- TOKENS';
+  }
+}
+
+async function updateSellEstimate() {
+  if(!selectedToken) return;
+  const val = document.getElementById('sell-token-input').value;
+  if(!val || isNaN(val) || parseFloat(val)<=0) {
+    document.getElementById('sell-estimate').textContent='-- ARC';
+    return;
+  }
+  try {
+    const c = await getReadContract();
+    const amt = ethers.utils.parseEther(val);
+    const out = await c.getSellQuote(selectedToken.tokenAddress, amt);
+    document.getElementById('sell-estimate').textContent = fmtARC(out);
+  } catch(e) {
+    document.getElementById('sell-estimate').textContent='-- ARC';
+  }
+}
+
+async function buyTokens() {
+  if(!walletAddress) { openWalletModal(); return; }
+  if(!selectedToken) return;
+  const val = document.getElementById('buy-arc-input').value;
+  if(!val || isNaN(val) || parseFloat(val)<=0) {
+    showNotification('notifications-trade','error','INPUT ERROR','Enter a valid ARC amount');
+    return;
+  }
+  const btn = document.getElementById('buy-btn');
+  btn.disabled=true;btn.textContent='PROCESSING...';
+  try {
+    const arcIn = ethers.utils.parseEther(val);
+    const tx = await contract.buyTokens(selectedToken.tokenAddress, { value: arcIn });
+    showNotification('notifications-trade','success','TRANSACTION SENT','Waiting for confirmation...');
+    const receipt = await tx.wait();
+    showNotification('notifications-trade','success','TRANSACTION CONFIRMED','Tokens purchased successfully.', receipt.transactionHash);
+    document.getElementById('buy-arc-input').value='';
+    document.getElementById('buy-estimate').textContent='-- TOKENS';
+    await refreshData();
+    selectTradeToken(selectedToken.tokenAddress);
+    updateBalance();
+  } catch(e) {
+    showNotification('notifications-trade','error','TRANSACTION FAILED', e.reason||e.message||'Unknown error');
+  }
+  btn.disabled=false;btn.textContent='BUY TOKENS';
+}
+
+async function approveTokens() {
+  if(!walletAddress) { openWalletModal(); return; }
+  if(!selectedToken) return;
+  const val = document.getElementById('sell-token-input').value;
+  if(!val || isNaN(val) || parseFloat(val)<=0) {
+    showNotification('notifications-trade','error','INPUT ERROR','Enter token amount first');
+    return;
+  }
+  const btn = document.getElementById('approve-btn');
+  btn.disabled=true;btn.textContent='APPROVING...';
+  try {
+    const tokenContract = new ethers.Contract(selectedToken.tokenAddress, ERC20_ABI, signer);
+    const amt = ethers.utils.parseEther(val);
+    const tx = await tokenContract.approve(CONTRACT_ADDRESS, amt);
+    await tx.wait();
+    showNotification('notifications-trade','success','APPROVED','Tokens approved. You can now sell.');
+  } catch(e) {
+    showNotification('notifications-trade','error','APPROVAL FAILED', e.reason||e.message||'Unknown error');
+  }
+  btn.disabled=false;btn.textContent='APPROVE TOKENS';
+}
+
+async function sellTokens() {
+  if(!walletAddress) { openWalletModal(); return; }
+  if(!selectedToken) return;
+  const val = document.getElementById('sell-token-input').value;
+  if(!val || isNaN(val) || parseFloat(val)<=0) {
+    showNotification('notifications-trade','error','INPUT ERROR','Enter a valid token amount');
+    return;
+  }
+  const btn = document.getElementById('sell-btn');
+  btn.disabled=true;btn.textContent='PROCESSING...';
+  try {
+    const amt = ethers.utils.parseEther(val);
+    const tx = await contract.sellTokens(selectedToken.tokenAddress, amt);
+    showNotification('notifications-trade','success','TRANSACTION SENT','Waiting for confirmation...');
+    const receipt = await tx.wait();
+    showNotification('notifications-trade','success','TRANSACTION CONFIRMED','Tokens sold successfully.', receipt.transactionHash);
+    document.getElementById('sell-token-input').value='';
+    document.getElementById('sell-estimate').textContent='-- ARC';
+    await refreshData();
+    selectTradeToken(selectedToken.tokenAddress);
+    updateBalance();
+  } catch(e) {
+    showNotification('notifications-trade','error','TRANSACTION FAILED', e.reason||e.message||'Unknown error');
+  }
+  btn.disabled=false;btn.textContent='SELL TOKENS';
+}
+
+// ===================== FEEDBACK =====================
+function setStars(n) {
+  selectedStars = n;
+  document.querySelectorAll('.star-btn').forEach(btn => {
+    const s = parseInt(btn.getAttribute('data-star'));
+    btn.classList.toggle('active', s <= n);
+  });
+}
+
+async function submitFeedback() {
+  const name = document.getElementById('fb-name').value.trim();
+  const msg = document.getElementById('fb-message').value.trim();
+  if(!name || !msg) {
+    showNotification('notifications-feedback','error','VALIDATION ERROR','Name and message are required.');
+    return;
+  }
+  if(!selectedStars) {
+    showNotification('notifications-feedback','error','VALIDATION ERROR','Please select a star rating.');
+    return;
+  }
+  const btn = document.getElementById('fb-submit-btn');
+  btn.disabled=true;btn.textContent='SUBMITTING...';
+  try {
+    await db.collection('feedback').add({
+      name, message: msg, stars: selectedStars,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showNotification('notifications-feedback','success','FEEDBACK SUBMITTED','Thank you for your feedback!');
+    document.getElementById('fb-name').value='';
+    document.getElementById('fb-message').value='';
+    setStars(0);
+    selectedStars=0;
+    loadFeedback();
+  } catch(e) {
+    showNotification('notifications-feedback','error','SUBMIT FAILED', e.message||'Unknown error');
+  }
+  btn.disabled=false;btn.textContent='SUBMIT FEEDBACK';
+}
+
+async function loadFeedback() {
+  const list = document.getElementById('feedback-list');
+  try {
+    const snap = await db.collection('feedback').orderBy('createdAt','desc').limit(20).get();
+    if(snap.empty) {
+      list.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;background:var(--card);border:1px solid var(--border)">NO FEEDBACK YET — BE THE FIRST</div>';
+      return;
+    }
+    list.innerHTML = snap.docs.map(doc => {
+      const d = doc.data();
+      const stars = d.stars||0;
+      const starsHtml = [1,2,3,4,5].map(i=>
+        `<span class="${i<=stars?'feedback-star-filled':'feedback-star-empty'}">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.5 3.9H13l-3.3 2.4 1.3 3.9L7 9.1 3 11.2l1.3-3.9L1 4.9h4.5L7 1z"/></svg>
+        </span>`
+      ).join('');
+      const ts = d.createdAt ? timeAgo(d.createdAt) : 'recently';
+      return `<div class="feedback-card">
+        <div class="feedback-card-header">
+          <span class="feedback-name">${escHtml(d.name||'ANON')}</span>
+          <div class="feedback-stars">${starsHtml}</div>
+        </div>
+        <div class="feedback-msg">${escHtml(d.message||'')}</div>
+        <div class="feedback-time">${ts}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML='<div style="padding:16px;color:#CC0000;font-size:11px;letter-spacing:0.05em;text-transform:uppercase">FAILED TO LOAD FEEDBACK</div>';
+  }
+}
+
+// ===================== INIT =====================
+async function init() {
+  await tryAutoReconnect();
+  await refreshData();
+  autoRefreshInterval = setInterval(refreshData, 30000);
+
+  // Trade tab wallet check
+  if(!walletAddress) {
+    document.getElementById('trade-no-wallet').style.display='block';
+    document.getElementById('trade-main').style.display='none';
+  }
+
+  // Listen for account/chain changes
+  if(window.ethereum) {
+    window.ethereum.on('accountsChanged', async (accounts) => {
+      if(accounts.length === 0) {
+        walletAddress=null;signer=null;contract=null;
+        document.getElementById('connect-btn').textContent='CONNECT WALLET';
+        document.getElementById('connect-btn').style.background='var(--accent)';
+        document.getElementById('connect-btn').style.borderColor='var(--accent-dark)';
+        document.getElementById('wallet-addr-box').style.display='none';
+        document.getElementById('arc-balance-box').style.display='none';
+        localStorage.removeItem('arclaunchpad_wallet');
+        document.getElementById('trade-no-wallet').style.display='block';
+        document.getElementById('trade-main').style.display='none';
+      } else {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer = provider.getSigner();
+        walletAddress = await signer.getAddress();
+        contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+        updateWalletUI();
+      }
+    });
+    window.ethereum.on('chainChanged', () => window.location.reload());
+  }
+}
+
+window.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
