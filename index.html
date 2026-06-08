@@ -4,753 +4,573 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ARCLAUNCHPAD</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#F2EDE3;
-  --card:#FFFFFF;
-  --border:#C8BFA8;
-  --accent:#E8460A;
-  --accent-dark:#C23608;
-  --success:#2D7A2D;
-  --text:#1A1A1A;
-  --text-secondary:#6B6560;
-  --sidebar-w:200px;
-  --header-h:56px;
-  --bottom-nav-h:60px;
-}
+:root{--bg:#F2EDE3;--card:#fff;--border:#C8BFA8;--accent:#E8460A;--adark:#C23608;--ok:#2D7A2D;--text:#1A1A1A;--muted:#6B6560;--sw:200px;--hh:56px;--bnh:60px}
 html,body{height:100%;font-family:'Space Mono',monospace;background:var(--bg);color:var(--text);font-size:13px;overflow-x:hidden}
-body{
-  background-color:var(--bg);
-  background-image:linear-gradient(#C8BFA820 1px,transparent 1px),linear-gradient(90deg,#C8BFA820 1px,transparent 1px);
-  background-size:24px 24px;
-}
+body{background-image:linear-gradient(#C8BFA820 1px,transparent 1px),linear-gradient(90deg,#C8BFA820 1px,transparent 1px);background-size:24px 24px}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border)}
 
-/* SCROLLBAR */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:#F2EDE3}
-::-webkit-scrollbar-thumb{background:#C8BFA8}
-
-/* KEYFRAMES */
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes scaleIn{0%{transform:scale(0)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
-@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(232,70,10,0.4)}50%{box-shadow:0 0 0 8px rgba(232,70,10,0)}}
-
-/* LAYOUT */
-#app{display:flex;flex-direction:column;min-height:100vh}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes scaleIn{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,70,10,.4)}50%{box-shadow:0 0 0 8px rgba(232,70,10,0)}}
+@keyframes checkDraw{from{stroke-dashoffset:30}to{stroke-dashoffset:0}}
+@keyframes dot{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
 
 /* HEADER */
-#header{
-  position:fixed;top:0;left:0;right:0;height:var(--header-h);
-  background:var(--card);border-bottom:2px solid var(--text);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;z-index:100;gap:12px;
-}
-#header-left{display:flex;align-items:center;gap:10px;min-width:0}
-#header-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
-#header-logo svg{flex-shrink:0}
-.header-brand{display:flex;flex-direction:column}
-.header-brand-name{font-weight:700;font-size:14px;letter-spacing:0.1em;color:var(--text);line-height:1}
-.header-brand-sub{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;margin-top:2px}
-#header-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.balance-box{border:1px solid var(--border);padding:4px 10px;font-size:11px;color:var(--text-secondary);letter-spacing:0.05em;white-space:nowrap;display:none}
-#connect-btn{background:var(--accent);color:#fff;border:2px solid var(--accent-dark);padding:8px 14px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;transition:all 0.1s;white-space:nowrap}
-#connect-btn:hover{background:var(--accent-dark);transform:translateY(-1px)}
-#connect-btn:active{transform:translateY(1px)}
-#wallet-addr-box{border:1px solid var(--border);padding:4px 10px;font-size:11px;letter-spacing:0.05em;display:none}
+#hdr{position:fixed;top:0;left:0;right:0;height:var(--hh);background:var(--card);border-bottom:2px solid var(--text);display:flex;align-items:center;padding:0 12px;z-index:200;gap:8px}
+#hdr-l{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+#hdr-logo{display:flex;align-items:center;gap:7px;text-decoration:none;flex-shrink:0}
+.hbn{font-weight:700;font-size:13px;letter-spacing:.1em;white-space:nowrap}
+.hbs{font-size:9px;color:var(--muted);letter-spacing:.07em}
+#hdr-r{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.bal-box{border:1px solid var(--border);padding:5px 8px;font-size:10px;color:var(--muted);white-space:nowrap;display:none}
+#cbtn{background:var(--accent);color:#fff;border:2px solid var(--adark);padding:7px 11px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .1s;white-space:nowrap;flex-shrink:0}
+#cbtn:hover{background:var(--adark)}
+#cbtn.conn{background:var(--ok);border-color:#1f5c1f}
+#abox{border:1px solid var(--border);padding:5px 8px;font-size:10px;display:none;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis}
 
 /* SIDEBAR */
-#sidebar{
-  position:fixed;top:var(--header-h);left:0;bottom:0;
-  width:var(--sidebar-w);background:var(--card);
-  border-right:2px solid var(--text);
-  display:flex;flex-direction:column;z-index:90;overflow-y:auto;
-}
-.sidebar-top{padding:16px;border-bottom:1px solid var(--border)}
-.sidebar-brand{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.sidebar-brand-name{font-weight:700;font-size:12px;letter-spacing:0.1em}
-.sidebar-testnet{font-size:9px;color:var(--success);letter-spacing:0.08em;text-transform:uppercase}
-.live-badge{display:inline-block;background:#00AA00;color:#fff;font-size:9px;padding:2px 6px;letter-spacing:0.05em;margin-left:6px;animation:blink 1.5s step-end infinite}
-nav{flex:1;padding:8px 0}
-.nav-item{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;color:var(--text-secondary);text-transform:uppercase;font-size:11px;letter-spacing:0.08em;font-weight:700;border-left:4px solid transparent;transition:all 0.1s;text-decoration:none;border-bottom:1px solid transparent}
-.nav-item:hover{background:#F5EFE6;color:var(--text)}
-.nav-item.active{border-left-color:var(--accent);background:#FFF5F0;color:var(--text)}
-.nav-item svg{flex-shrink:0;opacity:0.7}
-.nav-item.active svg{opacity:1}
-.sidebar-divider{height:1px;background:var(--border);margin:4px 0}
-.sidebar-bottom{padding:12px 16px;border-top:1px solid var(--border);font-size:9px;color:var(--text-secondary);letter-spacing:0.05em}
+#sb{position:fixed;top:var(--hh);left:0;bottom:0;width:var(--sw);background:var(--card);border-right:2px solid var(--text);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sb-top{padding:13px;border-bottom:1px solid var(--border)}
+.sb-bn{font-weight:700;font-size:11px;letter-spacing:.1em;display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.sb-net{font-size:9px;color:var(--ok);letter-spacing:.07em;display:flex;align-items:center}
+.live{display:inline-block;background:#00AA00;color:#fff;font-size:8px;padding:1px 5px;letter-spacing:.05em;margin-left:6px;animation:blink 1.5s step-end infinite}
+nav{flex:1;padding:5px 0}
+.ni{display:flex;align-items:center;gap:8px;padding:11px 13px;cursor:pointer;color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:.07em;font-weight:700;border-left:4px solid transparent;transition:all .1s;border:none;background:none;font-family:'Space Mono',monospace;width:100%;text-align:left}
+.ni:hover{background:#F5EFE6;color:var(--text)}
+.ni.active{border-left:4px solid var(--accent);background:#FFF5F0;color:var(--text)}
+.ni svg{flex-shrink:0}
+.sdiv{height:1px;background:var(--border);margin:2px 0}
+.sb-bot{padding:9px 13px;border-top:1px solid var(--border);font-size:9px;color:var(--muted)}
 
-/* MAIN CONTENT */
-#main{margin-left:var(--sidebar-w);margin-top:var(--header-h);padding:20px;min-height:calc(100vh - var(--header-h));animation:fadeIn 0.15s ease}
-.breadcrumb{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+/* MAIN */
+#main{margin-left:var(--sw);margin-top:var(--hh);padding:18px;min-height:calc(100vh - var(--hh))}
+.bc{font-size:9px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:13px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.tc{display:none}.tc.active{display:block;animation:fadeIn .15s ease}
 
-/* BOTTOM NAV (mobile) */
-#bottom-nav{
-  display:none;position:fixed;bottom:0;left:0;right:0;height:var(--bottom-nav-h);
-  background:var(--card);border-top:2px solid var(--text);z-index:100;
-}
-.bottom-nav-inner{display:flex;height:100%}
-.bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text-secondary);font-size:9px;letter-spacing:0.05em;text-transform:uppercase;font-weight:700;border:none;background:none;font-family:'Space Mono',monospace;transition:color 0.1s}
-.bottom-nav-item.active{color:var(--accent)}
-.bottom-nav-item svg{flex-shrink:0}
+/* BOTTOM NAV */
+#bnav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--bnh);background:var(--card);border-top:2px solid var(--text);z-index:200}
+.bni-wrap{display:flex;height:100%}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--muted);font-size:8px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;border:none;background:none;font-family:'Space Mono',monospace;transition:color .1s}
+.bni.active{color:var(--accent)}
 
-/* TABS */
-.tab-content{display:none}
-.tab-content.active{display:block;animation:fadeIn 0.15s ease}
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.sc{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);padding:13px}
+.sc:hover{box-shadow:0 2px 8px rgba(232,70,10,.1)}
+.sp{font-size:9px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px}
+.sv{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:2px}
+.sl{font-size:9px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}
 
-/* STAT CARDS */
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.stat-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);padding:14px;position:relative;transition:border-color 0.1s}
-.stat-card:hover{border-color:var(--accent)}
-.stat-path{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
-.stat-value{font-size:22px;font-weight:700;letter-spacing:-0.02em;line-height:1}
-.stat-label{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
-
-/* SORT BAR */
-.sort-bar{display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap}
-.sort-label{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-right:4px}
-.sort-btn{background:transparent;border:1px solid var(--border);padding:6px 12px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;color:var(--text-secondary);transition:all 0.1s}
-.sort-btn:hover{border-color:var(--accent);color:var(--accent)}
-.sort-btn.active{background:var(--accent);color:#fff;border-color:var(--accent-dark)}
+/* SORT */
+.sort-bar{display:flex;gap:6px;margin-bottom:13px;align-items:center;flex-wrap:wrap}
+.slbl{font-size:9px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-right:2px}
+.sbtn{background:transparent;border:1px solid var(--border);padding:5px 9px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;color:var(--muted);transition:all .1s}
+.sbtn:hover{border-color:var(--accent);color:var(--accent)}
+.sbtn.active{background:var(--accent);color:#fff;border-color:var(--adark)}
 
 /* TOP STRIP */
-.top-strip{margin-bottom:20px}
-.section-header{font-size:10px;color:var(--text-secondary);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.section-header::after{content:'';flex:1;height:1px;background:var(--border)}
-.top-strip-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px}
-.top-strip-scroll::-webkit-scrollbar{height:3px}
-.mini-token-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);padding:10px 14px;min-width:160px;cursor:pointer;transition:all 0.1s;flex-shrink:0}
-.mini-token-card:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(232,70,10,0.2)}
-.mini-token-logo{width:28px;height:28px;border:1px solid var(--border);object-fit:cover;flex-shrink:0}
-.mini-token-info{min-width:0}
-.mini-token-name{font-size:11px;font-weight:700;letter-spacing:0.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mini-token-price{font-size:10px;color:var(--text-secondary)}
+.sec-hdr{font-size:10px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.sec-hdr::after{content:'';flex:1;height:1px;background:var(--border)}
+.tscroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:5px;margin-bottom:14px}
+.tscroll::-webkit-scrollbar{height:3px}
+.mc{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);padding:8px 11px;min-width:145px;cursor:pointer;transition:all .1s;flex-shrink:0}
+.mc:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(232,70,10,.12)}
 
 /* TOKEN GRID */
-.token-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.token-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);padding:14px;cursor:pointer;transition:all 0.1s;position:relative}
-.token-card:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(232,70,10,0.2)}
-.token-card-path{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
-.token-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.token-logo{width:40px;height:40px;border:1px solid var(--border);object-fit:cover;flex-shrink:0;background:#F2EDE3}
-.token-logo-placeholder{width:40px;height:40px;border:1px solid var(--border);background:#F2EDE3;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.token-name{font-weight:700;font-size:12px;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.token-symbol{font-size:10px;color:var(--text-secondary);letter-spacing:0.08em}
-.token-price{font-size:14px;font-weight:700;letter-spacing:-0.01em;margin-bottom:8px}
-.token-price-label{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px}
-.token-creator{font-size:9px;color:var(--text-secondary);letter-spacing:0.05em;margin-top:8px}
-.token-trade-btn{background:var(--accent);color:#fff;border:2px solid var(--accent-dark);padding:7px 12px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;width:100%;margin-top:10px;transition:all 0.1s}
-.token-trade-btn:hover{background:var(--accent-dark);transform:translateY(-1px)}
-.token-trade-btn:active{transform:translateY(1px)}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tkc{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);padding:13px;cursor:pointer;transition:all .1s}
+.tkc:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(232,70,10,.12);transform:translateY(-1px)}
+.tlogo{width:40px;height:40px;border:1px solid var(--border);object-fit:cover;flex-shrink:0;background:#F2EDE3}
+.tlogoph{width:40px;height:40px;border:1px solid var(--border);background:#F2EDE3;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
-/* PROGRESS BAR */
-.progress-wrap{margin-bottom:4px}
-.progress-label{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px}
-.progress-bar{height:6px;background:#D4C9B0;position:relative;overflow:hidden}
-.progress-fill{height:100%;background:var(--accent);transition:width 0.3s ease}
+/* PROGRESS */
+.prog-l{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
+.prog-b{height:5px;background:#D4C9B0;overflow:hidden;margin-bottom:6px}
+.prog-f{height:100%;background:var(--accent);transition:width .4s ease}
 
-/* SKELETON */
-.skeleton{background:linear-gradient(90deg,#EDE8DF 25%,#F5F0E8 50%,#EDE8DF 75%);background-size:400px 100%;animation:shimmer 1.2s infinite linear;border:1px solid var(--border)}
-.skeleton-card{height:160px;margin-bottom:8px}
+/* BUTTONS */
+.btn-p{background:var(--accent);color:#fff;border:2px solid var(--adark);padding:10px 16px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .1s;width:100%}
+.btn-p:hover{background:var(--adark);transform:translateY(-1px)}.btn-p:active{transform:translateY(1px)}.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-s{background:transparent;border:2px solid var(--text);color:var(--text);padding:10px 16px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .1s;width:100%}
+.btn-s:hover{background:#F5EFE6}.btn-s:disabled{opacity:.5;cursor:not-allowed}
+.btn-ok{background:var(--ok);color:#fff;border:2px solid #1f5c1f;padding:10px 16px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .1s;width:100%}
+.btn-ok:hover{background:#1f5c1f}.btn-ok:disabled{opacity:.5;cursor:not-allowed}
+.btn-err{background:#CC0000;color:#fff;border:2px solid #990000;padding:10px 16px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .1s;width:100%}
+.btn-err:hover{background:#990000}.btn-err:disabled{opacity:.5;cursor:not-allowed}
 
-/* FORM STYLES */
-.form-section{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);padding:20px;margin-bottom:16px}
-.form-path{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px}
-.form-title{font-size:14px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
-.form-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-secondary)}
-.form-label span{color:var(--accent)}
-.form-input,.form-textarea,.form-select{background:var(--bg);border:2px solid var(--border);padding:10px 12px;font-family:'Space Mono',monospace;font-size:12px;color:var(--text);width:100%;transition:border-color 0.1s;outline:none;-webkit-appearance:none}
-.form-input:focus,.form-textarea:focus{border-color:var(--accent)}
-.form-textarea{resize:vertical;min-height:80px}
-.char-count{font-size:9px;color:var(--text-secondary);text-align:right;margin-top:2px}
-.form-hint{font-size:9px;color:var(--text-secondary);letter-spacing:0.05em;margin-top:3px}
+/* FORM */
+.fw{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);padding:16px}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fl{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.fl span{color:var(--accent)}
+.fi,.fta{background:var(--bg);border:2px solid var(--border);padding:9px 11px;font-family:'Space Mono',monospace;font-size:12px;color:var(--text);width:100%;outline:none;transition:border-color .1s;-webkit-appearance:none}
+.fi:focus,.fta:focus{border-color:var(--accent)}
+.fta{resize:vertical;min-height:70px}
+.cc{font-size:9px;color:var(--muted);text-align:right;margin-top:2px}
 
-/* FILE UPLOAD */
-.file-upload-area{border:2px dashed var(--border);background:var(--bg);padding:20px;text-align:center;cursor:pointer;transition:all 0.1s;position:relative}
-.file-upload-area:hover{border-color:var(--accent);background:#FFF5F0}
-.file-upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.file-upload-text{font-size:10px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-top:8px}
-.upload-preview{width:60px;height:60px;object-fit:cover;border:1px solid var(--border);margin:0 auto 8px;display:block}
-
-/* PREVIEW CARD */
-.preview-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--success);padding:16px;position:sticky;top:80px}
-.preview-path{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px}
-.preview-title{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
-.preview-logo{width:64px;height:64px;border:1px solid var(--border);object-fit:cover;margin-bottom:10px;background:#F2EDE3}
-.preview-token-name{font-size:16px;font-weight:700;letter-spacing:0.05em}
-.preview-token-symbol{font-size:11px;color:var(--text-secondary);letter-spacing:0.08em;margin-bottom:8px}
-.preview-desc{font-size:11px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px}
-.preview-meta{font-size:9px;color:var(--text-secondary);letter-spacing:0.05em;border-top:1px solid var(--border);padding-top:8px;margin-top:8px}
-.preview-meta a{color:var(--accent);text-decoration:none}
+/* UPLOAD */
+.upa{border:2px dashed var(--border);background:var(--bg);padding:16px;text-align:center;cursor:pointer;transition:all .1s;position:relative;overflow:hidden}
+.upa:hover{border-color:var(--accent);background:#FFF5F0}
+.upa input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uptxt{font-size:9px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-top:5px}
 
 /* CREATE LAYOUT */
-.create-layout{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+.cl{display:grid;grid-template-columns:1fr 290px;gap:13px;align-items:start}
+.pcard{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--ok);padding:13px;position:sticky;top:74px}
+.plbl{font-size:9px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px}
+.ptitle{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding-bottom:9px;border-bottom:1px solid var(--border);margin-bottom:12px}
 
-/* LAUNCH BTN */
-#launch-btn{background:var(--accent);color:#fff;border:2px solid var(--accent-dark);padding:12px 24px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;width:100%;transition:all 0.1s;margin-top:4px}
-#launch-btn:hover{background:var(--accent-dark);transform:translateY(-1px)}
-#launch-btn:active{transform:translateY(1px)}
-#launch-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+/* SWAP CARD */
+.trade-layout{display:grid;grid-template-columns:280px 1fr;gap:13px;align-items:start}
+.tlp{background:var(--card);border:1px solid var(--border);max-height:calc(100vh - 130px);display:flex;flex-direction:column}
+.tlh{padding:10px 11px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.tls{border:none;border-bottom:2px solid var(--border);background:var(--bg);padding:9px 11px;font-family:'Space Mono',monospace;font-size:11px;width:100%;outline:none;transition:border-color .1s}
+.tls:focus{border-bottom-color:var(--accent)}
+.tll{overflow-y:auto;flex:1}
+.tlr{display:flex;align-items:center;gap:8px;padding:9px 11px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}
+.tlr:hover{background:#F5EFE6}
+.tlr.active{background:#FFF5F0;border-left:3px solid var(--accent)}
+.tlrl{width:30px;height:30px;border:1px solid var(--border);object-fit:cover;flex-shrink:0;background:#F2EDE3}
 
-/* TRADE TAB */
-.trade-layout{display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start}
-.trade-list-panel{background:var(--card);border:1px solid var(--border);max-height:calc(100vh - 160px);display:flex;flex-direction:column}
-.trade-list-header{padding:12px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase}
-.trade-search{border:none;border-bottom:2px solid var(--border);background:var(--bg);padding:10px 12px;font-family:'Space Mono',monospace;font-size:11px;width:100%;outline:none;transition:border-color 0.1s}
-.trade-search:focus{border-bottom-color:var(--accent)}
-.trade-token-list{overflow-y:auto;flex:1}
-.trade-token-row{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.1s}
-.trade-token-row:hover{background:#F5EFE6}
-.trade-token-row.active{background:#FFF5F0;border-left:3px solid var(--accent)}
-.trade-token-row-logo{width:32px;height:32px;border:1px solid var(--border);object-fit:cover;flex-shrink:0;background:#F2EDE3}
-.trade-token-row-name{font-size:11px;font-weight:700;letter-spacing:0.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.trade-token-row-price{font-size:9px;color:var(--text-secondary)}
-.trade-detail-panel{background:var(--card);border:1px solid var(--border)}
-.trade-detail-header{padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
-.trade-detail-logo{width:48px;height:48px;border:1px solid var(--border);object-fit:cover;background:#F2EDE3}
-.trade-detail-info{flex:1;min-width:0}
-.trade-detail-name{font-size:15px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
-.trade-detail-symbol{font-size:10px;color:var(--text-secondary);letter-spacing:0.08em}
-.trade-detail-body{padding:14px}
-.trade-panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.trade-panel-card{border:1px solid var(--border);padding:14px}
-.trade-panel-title{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
-.trade-panel-title.buy-title{color:var(--success);border-bottom-color:var(--success)}
-.trade-panel-title.sell-title{color:#CC0000;border-bottom-color:#CC0000}
-.trade-input-wrap{position:relative;margin-bottom:10px}
-.trade-input{border:2px solid var(--border);background:var(--bg);padding:10px 12px;font-family:'Space Mono',monospace;font-size:13px;width:100%;outline:none;transition:border-color 0.1s}
-.trade-input:focus{border-color:var(--accent)}
-.trade-input-label{font-size:9px;color:var(--text-secondary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px}
-.trade-estimate{background:#F5EFE6;border:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text-secondary);margin-bottom:10px}
-.estimate-label{font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px}
-.estimate-value{font-weight:700;color:var(--text);font-size:13px}
-.trade-btn{border:2px solid;padding:10px 16px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;width:100%;transition:all 0.1s;margin-top:4px}
-.buy-btn{background:var(--success);color:#fff;border-color:#1f5c1f}
-.buy-btn:hover{background:#1f5c1f;transform:translateY(-1px)}
-.approve-btn{background:transparent;color:var(--text);border-color:var(--text)}
-.approve-btn:hover{background:#F5EFE6;transform:translateY(-1px)}
-.sell-btn{background:#CC0000;color:#fff;border-color:#990000}
-.sell-btn:hover{background:#990000;transform:translateY(-1px)}
-.trade-btn:active{transform:translateY(1px)}
-.trade-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-.no-wallet-msg{padding:40px;text-align:center;color:var(--text-secondary)}
-.no-wallet-msg .icon{margin-bottom:12px}
-.no-wallet-msg p{font-size:11px;letter-spacing:0.05em;text-transform:uppercase;margin-top:8px}
+/* SWAP UI */
+.swap-card{background:var(--card);border:1px solid var(--border)}
+.sw-info{padding:13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sw-tlogo{width:42px;height:42px;border:1px solid var(--border);object-fit:cover;background:#F2EDE3;flex-shrink:0}
+.sw-tname{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.sw-tsym{font-size:10px;color:var(--muted)}
+.sw-tprice{text-align:right;flex-shrink:0}
+.sw-tpv{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.sw-tpl{font-size:9px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+
+/* SWAP TABS */
+.stabs{display:flex;border-bottom:2px solid var(--border)}
+.stab{flex:1;padding:10px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;color:var(--muted);border:none;background:none;font-family:'Space Mono',monospace;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .1s}
+.stab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* SWAP BOXES */
+.sbody{padding:13px}
+.sbox{border:2px solid var(--border);background:var(--bg);margin-bottom:4px;transition:border-color .1s}
+.sbox:focus-within{border-color:var(--accent)}
+.sbox-top{padding:7px 11px 0;font-size:9px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;display:flex;justify-content:space-between}
+.sbox-inner{display:flex;align-items:center;gap:7px;padding:6px 11px 9px}
+.stbtn{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border);padding:4px 7px;cursor:default;flex-shrink:0;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.sai{flex:1;background:transparent;border:none;outline:none;font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--text);text-align:right;min-width:0}
+.sai::placeholder{color:#C8BFA8}
+.sarrow{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--card);border:2px solid var(--border);margin:0 auto;position:relative;z-index:1}
+.sinfo{background:#F5EFE6;border:1px solid var(--border);padding:7px 11px;margin:9px 0 0}
+.sinfo-row{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);padding:3px 0}
+.sinfo-row+.sinfo-row{border-top:1px solid var(--border)}
 
 /* WALLET MODAL */
-#wallet-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center}
-#wallet-modal.open{display:flex}
-.wallet-modal-box{background:var(--card);border:2px solid var(--text);width:340px;max-width:calc(100vw - 32px)}
-.wallet-modal-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.wallet-modal-title{font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase}
-.wallet-modal-close{background:none;border:none;cursor:pointer;color:var(--text);padding:2px;display:flex;align-items:center;justify-content:center}
-.wallet-option{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.1s}
-.wallet-option:hover{background:#F5EFE6}
-.wallet-option:last-child{border-bottom:none}
-.wallet-option-logo{width:32px;height:32px;object-fit:contain;border:1px solid var(--border)}
-.wallet-option-name{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;flex:1}
-.wallet-option-arrow{color:var(--text-secondary)}
+#wmodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:1000;align-items:center;justify-content:center}
+#wmodal.open{display:flex}
+.wmbox{background:var(--card);border:2px solid var(--text);width:330px;max-width:calc(100vw - 28px);animation:slideUp .2s ease}
+.wmhdr{padding:13px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.wmtitle{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.wmclose{background:none;border:none;cursor:pointer;color:var(--text);padding:2px;display:flex}
+.wopt{display:flex;align-items:center;gap:11px;padding:13px 15px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}
+.wopt:hover{background:#F5EFE6}
+.wopt:last-child{border-bottom:none}
+.woptlogo{width:30px;height:30px;object-fit:contain;border:1px solid var(--border)}
+.woptname{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;flex:1}
 
-/* TRANSACTION OVERLAY */
-#tx-overlay{display:none;position:fixed;inset:0;background:rgba(242,237,227,0.96);z-index:2000;align-items:center;justify-content:center}
-#tx-overlay.open{display:flex}
-.tx-card{background:var(--card);border:2px solid var(--text);width:320px;max-width:calc(100vw - 32px)}
-.tx-card-header{padding:14px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase}
-.tx-steps{padding:16px}
-.tx-step{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
-.tx-step:last-child{border-bottom:none}
-.tx-step-num{width:24px;height:24px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
-.tx-step-label{font-size:11px;letter-spacing:0.05em;text-transform:uppercase;flex:1}
-.tx-step-icon{flex-shrink:0}
-.tx-step.pending .tx-step-num{border-color:var(--border);color:var(--text-secondary)}
-.tx-step.pending .tx-step-label{color:var(--text-secondary)}
-.tx-step.active .tx-step-num{border-color:var(--accent);color:var(--accent)}
-.tx-step.active .tx-step-label{color:var(--accent)}
-.tx-step.done .tx-step-num{border-color:var(--success);background:var(--success);color:#fff}
-.tx-step.done .tx-step-label{color:var(--success)}
-.spinner{animation:spin 0.8s linear infinite}
-.check-icon{animation:scaleIn 0.3s ease forwards}
+/* TX OVERLAY */
+#txov{display:none;position:fixed;inset:0;background:rgba(242,237,227,.97);z-index:2000;align-items:center;justify-content:center}
+#txov.open{display:flex}
+.txcard{background:var(--card);border:2px solid var(--text);width:330px;max-width:calc(100vw - 28px);animation:slideUp .25s ease}
+.txtitle{padding:13px 15px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.txsteps{padding:13px 15px}
+.txstep{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--border)}
+.txstep:last-child{border-bottom:none}
+.txsnum{width:25px;height:25px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;transition:all .3s}
+.txslbl{font-size:11px;letter-spacing:.04em;text-transform:uppercase;flex:1}
+.txstep.pending .txsnum{border-color:var(--border);color:var(--muted)}
+.txstep.pending .txslbl{color:var(--muted)}
+.txstep.active .txsnum{border-color:var(--accent);color:var(--accent);animation:pulse .9s infinite}
+.txstep.active .txslbl{color:var(--accent)}
+.txstep.done .txsnum{border-color:var(--ok);background:var(--ok);color:#fff}
+.txstep.done .txslbl{color:var(--ok)}
+.txsp{width:17px;height:17px;border:2px solid rgba(232,70,10,.25);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.txres{padding:13px 15px;border-top:1px solid var(--border)}
 
-/* NOTIFICATIONS */
-.notification{border-left:4px solid var(--success);background:var(--card);border:1px solid var(--border);border-left-width:4px;padding:12px 14px;margin-bottom:12px;animation:fadeIn 0.2s ease}
-.notification.error{border-left-color:#CC0000}
-.notification.success{border-left-color:var(--success)}
-.notification-title{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px}
-.notification.success .notification-title{color:var(--success)}
-.notification.error .notification-title{color:#CC0000}
-.notification-msg{font-size:11px;color:var(--text-secondary)}
-.notification-link{color:var(--accent);text-decoration:none;font-size:10px;letter-spacing:0.05em;text-transform:uppercase;display:inline-block;margin-top:6px}
-.notification-link:hover{text-decoration:underline}
+/* DOTS */
+.dots{display:flex;gap:4px;align-items:center;justify-content:center}
+.dot{width:6px;height:6px;background:var(--accent);animation:dot 1.2s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
 
-/* BRIDGE TAB */
-.bridge-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center}
-.bridge-icon-wrap{width:100px;height:100px;border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:24px;animation:pulse-border 2s infinite}
-.bridge-title{font-size:28px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px}
-.bridge-badge{display:inline-block;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:4px 12px;letter-spacing:0.1em;margin-bottom:16px}
-.bridge-desc{font-size:12px;color:var(--text-secondary);max-width:360px;line-height:1.7}
+/* NOTIFS */
+.notif{border:1px solid var(--border);padding:11px 13px;margin-bottom:9px;animation:slideUp .2s ease;display:flex;flex-direction:column;gap:4px}
+.notif.ok{border-left:4px solid var(--ok)}.notif.err{border-left:4px solid #CC0000}.notif.info{border-left:4px solid var(--accent)}
+.ntitle{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.notif.ok .ntitle{color:var(--ok)}.notif.err .ntitle{color:#CC0000}.notif.info .ntitle{color:var(--accent)}
+.nmsg{font-size:11px;color:var(--muted)}
+.nlink{color:var(--accent);text-decoration:none;font-size:10px;letter-spacing:.05em;text-transform:uppercase;display:inline-flex;align-items:center;gap:4px;margin-top:3px;font-weight:700}
+.nlink:hover{text-decoration:underline}
 
-/* FEEDBACK TAB */
-.feedback-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-.star-rating{display:flex;gap:4px;margin-top:4px}
-.star-btn{background:none;border:none;cursor:pointer;padding:2px;color:#C8BFA8;transition:color 0.1s}
-.star-btn.active,.star-btn:hover{color:#E8A000}
-.feedback-list{margin-top:0}
-.feedback-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--text-secondary);padding:14px;margin-bottom:10px;animation:fadeIn 0.2s ease}
-.feedback-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.feedback-name{font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
-.feedback-stars{display:flex;gap:2px}
-.feedback-star-filled{color:#E8A000}
-.feedback-star-empty{color:#C8BFA8}
-.feedback-msg{font-size:11px;color:var(--text-secondary);line-height:1.5;margin-bottom:4px}
-.feedback-time{font-size:9px;color:var(--text-secondary);letter-spacing:0.05em}
+/* SKEL */
+.skel{background:linear-gradient(90deg,#EDE8DF 25%,#F5F0E8 50%,#EDE8DF 75%);background-size:600px 100%;animation:shimmer 1.2s infinite linear;border:1px solid var(--border)}
 
-/* SUCCESS RESULT */
-.success-result{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--success);padding:16px;margin-top:16px}
-.success-result-title{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--success);margin-bottom:8px}
-.success-result-addr{font-size:11px;word-break:break-all;margin-bottom:8px;padding:8px;background:var(--bg);border:1px solid var(--border)}
+/* BRIDGE */
+.brcenter{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center}
+.bricon{width:90px;height:90px;border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:18px;animation:pulse 2s infinite}
+.brtitle{font-size:24px;font-weight:700;letter-spacing:.1em;margin-bottom:9px}
+.brbadge{display:inline-block;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 11px;letter-spacing:.09em;margin-bottom:12px}
+.brdesc{font-size:11px;color:var(--muted);max-width:320px;line-height:1.8}
+
+/* FEEDBACK */
+.fbl{display:grid;grid-template-columns:1fr 1fr;gap:13px;align-items:start}
+.srow{display:flex;gap:3px;margin-top:3px}
+.starbtn{background:none;border:none;cursor:pointer;padding:2px;color:#C8BFA8;transition:color .1s;line-height:1}
+.starbtn.active{color:#E8A000}
+.fbcard{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--muted);padding:11px;margin-bottom:7px;animation:slideUp .2s ease}
+.fbhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.fbname{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.fbstars{display:flex;gap:1px}
+.fbmsg{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:3px}
+.fbtime{font-size:9px;color:var(--muted);letter-spacing:.04em}
+
+/* NO WALLET */
+.nowallet{padding:36px;text-align:center;background:var(--card);border:1px solid var(--border)}
+.nowallet p{font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin-top:9px;color:var(--muted)}
 
 /* RESPONSIVE */
-@media(max-width:1024px){
-  .token-grid{grid-template-columns:repeat(2,1fr)}
-  .stat-grid{grid-template-columns:repeat(2,1fr)}
-  .create-layout{grid-template-columns:1fr}
-  .feedback-layout{grid-template-columns:1fr}
-}
+@media(max-width:1024px){.tgrid{grid-template-columns:repeat(2,1fr)}.stat-grid{grid-template-columns:repeat(2,1fr)}.cl{grid-template-columns:1fr}.fbl{grid-template-columns:1fr}.trade-layout{grid-template-columns:1fr}}
 @media(max-width:768px){
-  #sidebar{display:none}
-  #bottom-nav{display:block}
-  #main{margin-left:0;padding:12px;padding-bottom:calc(var(--bottom-nav-h) + 12px)}
-  .token-grid{grid-template-columns:1fr}
-  .stat-grid{grid-template-columns:repeat(2,1fr)}
-  .trade-layout{grid-template-columns:1fr}
-  .trade-panels{grid-template-columns:1fr}
-  .form-row{grid-template-columns:1fr}
-  .balance-box{display:none !important}
-  #connect-btn{padding:6px 10px;font-size:10px}
-  .header-brand-sub{display:none}
-  #wallet-modal.open{align-items:flex-end}
-  .wallet-modal-box{width:100%;border-bottom:none;border-left:none;border-right:none}
+  #sb{display:none}#bnav{display:block}
+  #main{margin-left:0;padding:11px;padding-bottom:calc(var(--bnh) + 11px)}
+  .tgrid{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr 1fr}
+  .trade-layout{grid-template-columns:1fr}.bal-box{display:none!important}
+  .hbs{display:none}
+  #wmodal.open{align-items:flex-end}
+  .wmbox{width:100%;border-left:none;border-right:none;border-bottom:none}
+  .fr{grid-template-columns:1fr}.sai{font-size:16px}
+  #abox{max-width:90px;font-size:9px}
 }
-@media(max-width:480px){
-  .stat-grid{grid-template-columns:1fr 1fr}
-  .stat-value{font-size:18px}
-}
+@media(max-width:480px){.stat-grid{grid-template-columns:1fr 1fr}.sv{font-size:17px}#cbtn{font-size:9px;padding:6px 8px}}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<header id="header">
-  <div id="header-left">
-    <a href="#" id="header-logo">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <rect width="28" height="28" fill="#1A1A1A"/>
-        <path d="M6 20L14 8L22 20H6Z" fill="#E8460A"/>
-        <rect x="11" y="14" width="6" height="6" fill="#F2EDE3"/>
-      </svg>
-      <div class="header-brand">
-        <span class="header-brand-name">ARCLAUNCHPAD</span>
-        <span class="header-brand-sub">ARC://LAUNCHPAD.MAIN</span>
-      </div>
+<header id="hdr">
+  <div id="hdr-l">
+    <a href="#" id="hdr-logo">
+      <svg width="25" height="25" viewBox="0 0 25 25" fill="none"><rect width="25" height="25" fill="#1A1A1A"/><path d="M5 19L12.5 7L20 19H5Z" fill="#E8460A"/><rect x="9" y="13" width="7" height="6" fill="#F2EDE3"/></svg>
+      <div><div class="hbn">ARCLAUNCHPAD</div><div class="hbs">ARC://LAUNCHPAD.MAIN</div></div>
     </a>
   </div>
-  <div id="header-right">
-    <div class="balance-box" id="arc-balance-box">-- ARC</div>
-    <button id="connect-btn" onclick="openWalletModal()">CONNECT WALLET</button>
-    <div id="wallet-addr-box"></div>
+  <div id="hdr-r">
+    <div class="bal-box" id="bal-box">-- ARC</div>
+    <button id="cbtn" onclick="openWM()">CONNECT WALLET</button>
+    <div id="abox"></div>
   </div>
 </header>
 
-<!-- SIDEBAR -->
-<aside id="sidebar">
-  <div class="sidebar-top">
-    <div class="sidebar-brand">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <rect width="20" height="20" fill="#1A1A1A"/>
-        <path d="M4 15L10 5L16 15H4Z" fill="#E8460A"/>
-      </svg>
-      <span class="sidebar-brand-name">ARCLAUNCHPAD</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <span class="sidebar-testnet">ARC://TESTNET</span>
-      <span class="live-badge">LIVE</span>
-    </div>
+<aside id="sb">
+  <div class="sb-top">
+    <div class="sb-bn"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><rect width="17" height="17" fill="#1A1A1A"/><path d="M3 13L8.5 4L14 13H3Z" fill="#E8460A"/></svg>ARCLAUNCHPAD</div>
+    <div class="sb-net">ARC://TESTNET<span class="live">LIVE</span></div>
   </div>
-  <nav id="sidebar-nav">
-    <a class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard');return false" href="#">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L1 6v9h5V10h4v5h5V6L8 1zm0 1.5L14 7v7h-3v-5H5v5H2V7l6-4.5z"/></svg>
-      DASHBOARD
-    </a>
-    <div class="sidebar-divider"></div>
-    <a class="nav-item" data-tab="create" onclick="switchTab('create');return false" href="#">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.5 4.5H14l-3.75 2.7 1.5 4.5L8 10.2 4.25 12.7l1.5-4.5L2 5.5h4.5L8 1z"/></svg>
-      CREATE TOKEN
-    </a>
-    <div class="sidebar-divider"></div>
-    <a class="nav-item" data-tab="trade" onclick="switchTab('trade');return false" href="#">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2 12h12M2 8h9M2 4h6M13 2v12M11 4l2-2 2 2M11 12l2 2 2-2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
-      TRADE
-    </a>
-    <div class="sidebar-divider"></div>
-    <a class="nav-item" data-tab="bridge" onclick="switchTab('bridge');return false" href="#">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 8h14M5 5v6M11 5v6M2 5h12M2 11h12"/></svg>
-      BRIDGE
-    </a>
-    <div class="sidebar-divider"></div>
-    <a class="nav-item" data-tab="feedback" onclick="switchTab('feedback');return false" href="#">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.8 3.6L14 5.5l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1L2 5.5l4.2-.9L8 1z"/></svg>
-      FEEDBACK
-    </a>
+  <nav>
+    <button class="ni active" data-tab="dash" onclick="goTab('dash')"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L1 6v9h5V10h4v5h5V6L8 1z"/></svg>DASHBOARD</button>
+    <div class="sdiv"></div>
+    <button class="ni" data-tab="create" onclick="goTab('create')"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v6M5 8h6"/></svg>CREATE TOKEN</button>
+    <div class="sdiv"></div>
+    <button class="ni" data-tab="trade" onclick="goTab('trade')"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 5h10M3 8h7M3 11h4M12 2v12M10 4l2-2 2 2M10 12l2 2 2-2"/></svg>TRADE</button>
+    <div class="sdiv"></div>
+    <button class="ni" data-tab="bridge" onclick="goTab('bridge')"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 10h14M4 7v5M12 7v5M2 7h12M3 7c0-4 10-4 10 0"/></svg>BRIDGE</button>
+    <div class="sdiv"></div>
+    <button class="ni" data-tab="fb" onclick="goTab('fb')"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.8 3.7 4.2.6-3 3 .7 4.2L8 10.4l-3.7 2 .7-4.2-3-3 4.2-.6z"/></svg>FEEDBACK</button>
   </nav>
-  <div class="sidebar-bottom">V1.0.0</div>
+  <div class="sb-bot">V1.0.0</div>
 </aside>
 
-<!-- MAIN -->
 <main id="main">
 
-  <!-- DASHBOARD TAB -->
-  <div id="tab-dashboard" class="tab-content active">
-    <div class="breadcrumb">ARC://DASHBOARD.MAIN</div>
-    <div class="stat-grid" id="stat-grid">
-      <div class="stat-card"><div class="stat-path">ARC://STATS.TOKENS</div><div class="stat-value" id="stat-total-tokens">--</div><div class="stat-label">TOTAL TOKENS</div></div>
-      <div class="stat-card"><div class="stat-path">ARC://STATS.VOLUME</div><div class="stat-value" id="stat-total-volume">--</div><div class="stat-label">TOTAL VOLUME</div></div>
-      <div class="stat-card"><div class="stat-path">ARC://STATS.TRADERS</div><div class="stat-value" id="stat-traders">--</div><div class="stat-label">ACTIVE TRADERS</div></div>
-      <div class="stat-card" style="border-left-color:var(--success)"><div class="stat-path">ARC://STATS.FEE</div><div class="stat-value" style="color:var(--success)">1%</div><div class="stat-label">PLATFORM FEE</div></div>
-    </div>
-
-    <div class="top-strip">
-      <div class="section-header">TOP TRADED TOKENS</div>
-      <div class="top-strip-scroll" id="top-strip"></div>
-    </div>
-
-    <div class="sort-bar">
-      <span class="sort-label">SORT:</span>
-      <button class="sort-btn active" onclick="setSortOrder('newest')">NEWEST</button>
-      <button class="sort-btn" onclick="setSortOrder('volume')">TOP VOLUME</button>
-      <button class="sort-btn" onclick="setSortOrder('trending')">TRENDING</button>
-    </div>
-
-    <div id="notifications-dash"></div>
-    <div class="token-grid" id="token-grid">
-      <div class="skeleton skeleton-card"></div>
-      <div class="skeleton skeleton-card"></div>
-      <div class="skeleton skeleton-card"></div>
-    </div>
-    <div id="empty-state" style="display:none;padding:40px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;background:var(--card);border:1px solid var(--border)">
-      NO TOKENS FOUND — BE THE FIRST TO LAUNCH
-    </div>
+<!-- DASHBOARD -->
+<div id="tab-dash" class="tc active">
+  <div class="bc">ARC://DASHBOARD.MAIN</div>
+  <div class="stat-grid">
+    <div class="sc"><div class="sp">ARC://STATS.TOKENS</div><div class="sv" id="s-tokens">--</div><div class="sl">TOTAL TOKENS</div></div>
+    <div class="sc"><div class="sp">ARC://STATS.VOLUME</div><div class="sv" id="s-vol">--</div><div class="sl">TOTAL VOLUME (ARC)</div></div>
+    <div class="sc"><div class="sp">ARC://STATS.TRADERS</div><div class="sv" id="s-traders">--</div><div class="sl">ACTIVE TRADERS</div></div>
+    <div class="sc" style="border-left-color:var(--ok)"><div class="sp">ARC://STATS.FEE</div><div class="sv" style="color:var(--ok)">1%</div><div class="sl">PLATFORM FEE</div></div>
   </div>
+  <div class="sec-hdr">TOP TRADED TOKENS</div>
+  <div class="tscroll" id="top-strip">
+    <div class="skel" style="height:50px;min-width:145px"></div>
+    <div class="skel" style="height:50px;min-width:145px"></div>
+    <div class="skel" style="height:50px;min-width:145px"></div>
+  </div>
+  <div class="sort-bar">
+    <span class="slbl">SORT:</span>
+    <button class="sbtn active" onclick="setSort('newest',this)">NEWEST</button>
+    <button class="sbtn" onclick="setSort('volume',this)">TOP VOLUME</button>
+    <button class="sbtn" onclick="setSort('trending',this)">TRENDING</button>
+  </div>
+  <div id="nd"></div>
+  <div class="tgrid" id="tgrid"><div class="skel" style="height:175px"></div><div class="skel" style="height:175px"></div><div class="skel" style="height:175px"></div></div>
+  <div id="empty-d" style="display:none;padding:36px;text-align:center;background:var(--card);border:1px solid var(--border);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)">NO TOKENS YET — BE THE FIRST TO LAUNCH</div>
+</div>
 
-  <!-- CREATE TOKEN TAB -->
-  <div id="tab-create" class="tab-content">
-    <div class="breadcrumb">ARC://CREATE.TOKEN</div>
-    <div id="notifications-create"></div>
-    <div class="create-layout">
-      <div>
-        <div class="form-section">
-          <div class="form-path">ARC://CREATE.FORM</div>
-          <div class="form-title">LAUNCH NEW TOKEN</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">TOKEN NAME <span>*</span></label>
-              <input class="form-input" id="create-name" placeholder="MY AWESOME TOKEN" maxlength="50" oninput="updatePreview()">
-              <div class="char-count"><span id="name-count">0</span>/50</div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">TOKEN SYMBOL <span>*</span></label>
-              <input class="form-input" id="create-symbol" placeholder="MAT" maxlength="10" oninput="this.value=this.value.toUpperCase();updatePreview()">
-              <div class="char-count"><span id="symbol-count">0</span>/10</div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">DESCRIPTION</label>
-            <textarea class="form-textarea" id="create-desc" placeholder="Describe your token..." maxlength="300" oninput="updatePreview()" rows="3"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">TOKEN LOGO</label>
-            <div class="file-upload-area" id="upload-area">
-              <input type="file" accept="image/*" id="logo-file" onchange="handleLogoUpload(event)">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="#C8BFA8" stroke-width="2"><rect x="2" y="8" width="28" height="20" rx="1"/><path d="M20 2l4 6H8l4-6z"/><circle cx="16" cy="18" r="4"/></svg>
-              <div class="file-upload-text">CLICK TO UPLOAD IMAGE</div>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">WEBSITE URL</label>
-              <input class="form-input" id="create-website" placeholder="https://yoursite.com" oninput="updatePreview()">
-            </div>
-            <div class="form-group">
-              <label class="form-label">TWITTER/X URL</label>
-              <input class="form-input" id="create-twitter" placeholder="https://x.com/yourhandle" oninput="updatePreview()">
-            </div>
-          </div>
-          <button id="launch-btn" onclick="launchToken()">LAUNCH TOKEN</button>
+<!-- CREATE TOKEN -->
+<div id="tab-create" class="tc">
+  <div class="bc">ARC://CREATE.TOKEN</div>
+  <div id="nc"></div>
+  <div class="cl">
+    <div class="fw">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px">ARC://CREATE.FORM</div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding-bottom:9px;border-bottom:1px solid var(--border);margin-bottom:13px">LAUNCH NEW TOKEN</div>
+      <div class="fr">
+        <div class="fg"><label class="fl">TOKEN NAME <span>*</span></label><input class="fi" id="cn" placeholder="MY TOKEN" maxlength="50" oninput="uprev();document.getElementById('cnc').textContent=this.value.length"><div class="cc"><span id="cnc">0</span>/50</div></div>
+        <div class="fg"><label class="fl">SYMBOL <span>*</span></label><input class="fi" id="csym" placeholder="MTK" maxlength="10" oninput="this.value=this.value.toUpperCase();uprev();document.getElementById('csc').textContent=this.value.length"><div class="cc"><span id="csc">0</span>/10</div></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">TOTAL SUPPLY <span>*</span></label><input class="fi" id="csup" type="number" placeholder="1000000000" value="1000000000" min="1" oninput="uprev()"><div class="cc">INITIAL TOKEN SUPPLY</div></div>
+        <div class="fg"><label class="fl">DECIMALS</label><input class="fi" id="cdec" type="number" placeholder="18" value="18" min="0" max="18"><div class="cc">STANDARD: 18</div></div>
+      </div>
+      <div class="fg"><label class="fl">DESCRIPTION</label><textarea class="fta" id="cdesc" placeholder="Describe your token..." maxlength="300" oninput="uprev()" rows="3"></textarea></div>
+      <div class="fg">
+        <label class="fl">TOKEN LOGO</label>
+        <div class="upa" id="upa">
+          <input type="file" accept="image/*" id="lfile" onchange="handleLogo(event)">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#C8BFA8" stroke-width="1.5"><rect x="2" y="7" width="22" height="16" rx="1"/><path d="M9 7V5a4 4 0 0 1 8 0v2"/><circle cx="13" cy="15" r="3"/></svg>
+          <div class="uptxt">CLICK TO UPLOAD (MAX 2MB)</div>
         </div>
       </div>
-      <div>
-        <div class="preview-card">
-          <div class="preview-path">ARC://TOKEN.PREVIEW</div>
-          <div class="preview-title">LIVE PREVIEW</div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-            <div id="preview-logo-wrap">
-              <div style="width:64px;height:64px;border:1px solid var(--border);background:#F2EDE3;display:flex;align-items:center;justify-content:center">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" stroke="#C8BFA8" stroke-width="2"/><text x="14" y="18" text-anchor="middle" font-size="12" fill="#C8BFA8" font-family="Space Mono">?</text></svg>
+      <div class="fr">
+        <div class="fg"><label class="fl">WEBSITE URL</label><input class="fi" id="cweb" placeholder="https://yoursite.com" oninput="uprev()"></div>
+        <div class="fg"><label class="fl">TWITTER/X</label><input class="fi" id="ctw" placeholder="https://x.com/handle" oninput="uprev()"></div>
+      </div>
+      <button class="btn-p" id="launch-btn" onclick="launchToken()">LAUNCH TOKEN</button>
+    </div>
+    <div>
+      <div class="pcard">
+        <div class="plbl">ARC://TOKEN.PREVIEW</div>
+        <div class="ptitle">LIVE PREVIEW</div>
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+          <div id="prev-logo">
+            <div style="width:54px;height:54px;border:1px solid var(--border);background:#F2EDE3;display:flex;align-items:center;justify-content:center">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="9" stroke="#C8BFA8" stroke-width="1.5"/></svg>
+            </div>
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:13px;letter-spacing:.04em" id="pn">TOKEN NAME</div>
+            <div style="font-size:10px;color:var(--muted)" id="ps">SYMBOL</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:8px" id="pd">Token description...</div>
+        <div style="border-top:1px solid var(--border);padding-top:7px">
+          <div style="font-size:9px;color:var(--muted);letter-spacing:.04em">SUPPLY: <span id="pp-sup" style="color:var(--text);font-weight:700">1,000,000,000</span></div>
+        </div>
+        <div id="pmeta" style="font-size:9px;color:var(--muted);margin-top:5px;line-height:1.7"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRADE -->
+<div id="tab-trade" class="tc">
+  <div class="bc">ARC://TRADE.MAIN</div>
+  <div id="nt"></div>
+  <div id="t-nowallet" class="nowallet" style="display:none">
+    <svg width="38" height="38" viewBox="0 0 38 38" fill="none" stroke="#C8BFA8" stroke-width="1.5"><rect x="3" y="11" width="32" height="22" rx="1"/><path d="M3 17h32M26 24h4"/></svg>
+    <p>CONNECT WALLET TO TRADE</p>
+    <button class="btn-s" style="width:auto;padding:7px 18px;margin-top:11px" onclick="openWM()">CONNECT WALLET</button>
+  </div>
+  <div id="t-main" class="trade-layout">
+    <div class="tlp">
+      <div class="tlh">ALL TOKENS</div>
+      <input class="tls" id="tls" placeholder="SEARCH TOKEN..." oninput="filterTL()">
+      <div class="tll" id="tll"><div style="padding:13px;text-align:center;color:var(--muted);font-size:11px;text-transform:uppercase">LOADING...</div></div>
+    </div>
+    <div>
+      <div id="t-empty" style="padding:36px;text-align:center;background:var(--card);border:1px solid var(--border);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)">SELECT A TOKEN FROM THE LIST</div>
+      <div id="t-swap" style="display:none">
+        <!-- Token header -->
+        <div class="swap-card" style="margin-bottom:11px">
+          <div class="sw-info">
+            <div id="sw-logo"></div>
+            <div style="flex:1;min-width:0">
+              <div class="sw-tname" id="sw-n">--</div>
+              <div class="sw-tsym" id="sw-s">--</div>
+              <div style="font-size:9px;color:var(--muted);margin-top:2px">CREATOR: <span id="sw-cr">--</span></div>
+            </div>
+            <div class="sw-tprice">
+              <div class="sw-tpv" id="sw-p">--</div>
+              <div class="sw-tpl">PRICE (ARC)</div>
+            </div>
+          </div>
+          <div style="padding:9px 13px">
+            <div class="prog-l">BONDING CURVE — <span id="sw-pct">0</span>%</div>
+            <div class="prog-b"><div class="prog-f" id="sw-pb" style="width:0%"></div></div>
+            <div style="font-size:9px;color:var(--muted);line-height:1.6;margin-top:4px" id="sw-desc"></div>
+          </div>
+        </div>
+        <!-- Swap box -->
+        <div class="swap-card">
+          <div class="stabs">
+            <button class="stab active" id="stab-buy" onclick="setMode('buy')">BUY TOKENS</button>
+            <button class="stab" id="stab-sell" onclick="setMode('sell')">SELL TOKENS</button>
+          </div>
+          <!-- BUY -->
+          <div class="sbody" id="sbuy">
+            <div class="sbox">
+              <div class="sbox-top"><span>YOU PAY</span><span id="arc-bal">BAL: -- ARC</span></div>
+              <div class="sbox-inner">
+                <div class="stbtn">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect width="18" height="18" fill="#1A1A1A"/><path d="M2 14L9 3L16 14H2Z" fill="#E8460A"/></svg>ARC
+                </div>
+                <input class="sai" id="b-arc" type="number" placeholder="0.0" min="0" step="0.001" oninput="updBuy()">
               </div>
             </div>
-            <div>
-              <div class="preview-token-name" id="preview-name">TOKEN NAME</div>
-              <div class="preview-token-symbol" id="preview-symbol">SYMBOL</div>
-            </div>
-          </div>
-          <div class="preview-desc" id="preview-desc">Token description will appear here...</div>
-          <div class="preview-meta" id="preview-meta"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TRADE TAB -->
-  <div id="tab-trade" class="tab-content">
-    <div class="breadcrumb">ARC://TRADE.MAIN</div>
-    <div id="notifications-trade"></div>
-    <div id="trade-no-wallet" style="display:none" class="no-wallet-msg">
-      <div class="icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#C8BFA8" stroke-width="2"><rect x="4" y="12" width="32" height="24" rx="1"/><path d="M4 18h32M28 26h4"/></svg></div>
-      <p>CONNECT WALLET TO TRADE</p>
-      <button style="margin-top:12px" class="trade-btn approve-btn" onclick="openWalletModal()">CONNECT WALLET</button>
-    </div>
-    <div id="trade-main" class="trade-layout">
-      <div class="trade-list-panel">
-        <div class="trade-list-header">ALL TOKENS</div>
-        <input class="trade-search" id="trade-search" placeholder="SEARCH NAME OR SYMBOL..." oninput="filterTradeList()">
-        <div class="trade-token-list" id="trade-token-list">
-          <div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:11px">LOADING...</div>
-        </div>
-      </div>
-      <div>
-        <div id="trade-detail-empty" style="padding:40px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;background:var(--card);border:1px solid var(--border)">
-          SELECT A TOKEN TO TRADE
-        </div>
-        <div class="trade-detail-panel" id="trade-detail" style="display:none">
-          <div class="trade-detail-header">
-            <div id="trade-detail-logo-wrap"></div>
-            <div class="trade-detail-info">
-              <div class="trade-detail-name" id="td-name">--</div>
-              <div class="trade-detail-symbol" id="td-symbol">--</div>
-            </div>
-            <div>
-              <div style="font-size:9px;color:var(--text-secondary);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:2px">CURRENT PRICE</div>
-              <div style="font-size:16px;font-weight:700" id="td-price">-- ARC</div>
-            </div>
-          </div>
-          <div class="trade-detail-body">
-            <div style="margin-bottom:12px">
-              <div class="progress-label">BONDING CURVE — <span id="td-curve-pct">0</span>%</div>
-              <div class="progress-bar"><div class="progress-fill" id="td-curve-bar" style="width:0%"></div></div>
-            </div>
-            <div style="font-size:9px;color:var(--text-secondary);letter-spacing:0.05em;margin-bottom:4px">CREATOR: <span id="td-creator" style="color:var(--text)">--</span></div>
-            <div style="font-size:10px;color:var(--text-secondary);margin-top:8px;line-height:1.6" id="td-desc"></div>
-            <div class="trade-panels">
-              <div class="trade-panel-card">
-                <div class="trade-panel-title buy-title">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 2v10M2 7l5-5 5 5"/></svg>
-                  BUY TOKENS
+            <div class="sarrow"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 2v10M4 9l3 3 3-3"/></svg></div>
+            <div class="sbox">
+              <div class="sbox-top"><span>YOU RECEIVE (ESTIMATE)</span></div>
+              <div class="sbox-inner">
+                <div class="stbtn" id="recv-btn">
+                  <div id="recv-logo" style="width:18px;height:18px;background:#F2EDE3;border:1px solid var(--border);flex-shrink:0"></div>
+                  <span id="recv-sym">TOKEN</span>
                 </div>
-                <div class="trade-input-label">ARC AMOUNT</div>
-                <div class="trade-input-wrap">
-                  <input class="trade-input" id="buy-arc-input" type="number" placeholder="0.0000" min="0" step="0.001" oninput="updateBuyEstimate()">
-                </div>
-                <div class="trade-estimate">
-                  <div class="estimate-label">YOU RECEIVE (ESTIMATE)</div>
-                  <div class="estimate-value" id="buy-estimate">-- TOKENS</div>
-                </div>
-                <button class="trade-btn buy-btn" id="buy-btn" onclick="buyTokens()">BUY TOKENS</button>
-              </div>
-              <div class="trade-panel-card">
-                <div class="trade-panel-title sell-title">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 2v10M2 7l5 5 5-5"/></svg>
-                  SELL TOKENS
-                </div>
-                <div class="trade-input-label">TOKEN AMOUNT</div>
-                <div class="trade-input-wrap">
-                  <input class="trade-input" id="sell-token-input" type="number" placeholder="0.00" min="0" step="1" oninput="updateSellEstimate()">
-                </div>
-                <div class="trade-estimate">
-                  <div class="estimate-label">YOU RECEIVE (ESTIMATE)</div>
-                  <div class="estimate-value" id="sell-estimate">-- ARC</div>
-                </div>
-                <button class="trade-btn approve-btn" id="approve-btn" onclick="approveTokens()" style="margin-bottom:6px">APPROVE TOKENS</button>
-                <button class="trade-btn sell-btn" id="sell-btn" onclick="sellTokens()">SELL TOKENS</button>
+                <div style="flex:1;text-align:right;font-size:20px;font-weight:700;color:var(--muted);padding-right:2px" id="b-out">0.00</div>
               </div>
             </div>
+            <div class="sinfo">
+              <div class="sinfo-row"><span>PRICE IMPACT</span><span style="color:var(--ok)">~0.1%</span></div>
+              <div class="sinfo-row"><span>PLATFORM FEE</span><span>1%</span></div>
+            </div>
+            <button class="btn-ok" id="buy-btn" style="margin-top:10px" onclick="doBuy()">BUY TOKENS</button>
+          </div>
+          <!-- SELL -->
+          <div class="sbody" id="ssell" style="display:none">
+            <div class="sbox">
+              <div class="sbox-top"><span>YOU PAY</span><span id="tok-bal">BAL: -- TOKENS</span></div>
+              <div class="sbox-inner">
+                <div class="stbtn" id="sell-tok-btn">
+                  <div id="sell-logo" style="width:18px;height:18px;background:#F2EDE3;border:1px solid var(--border);flex-shrink:0"></div>
+                  <span id="sell-sym">TOKEN</span>
+                </div>
+                <input class="sai" id="s-tok" type="number" placeholder="0.00" min="0" step="1" oninput="updSell()">
+              </div>
+            </div>
+            <div class="sarrow"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 2v10M4 9l3 3 3-3"/></svg></div>
+            <div class="sbox">
+              <div class="sbox-top"><span>YOU RECEIVE (ESTIMATE)</span></div>
+              <div class="sbox-inner">
+                <div class="stbtn"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect width="18" height="18" fill="#1A1A1A"/><path d="M2 14L9 3L16 14H2Z" fill="#E8460A"/></svg>ARC</div>
+                <div style="flex:1;text-align:right;font-size:20px;font-weight:700;color:var(--muted);padding-right:2px" id="s-out">0.0000</div>
+              </div>
+            </div>
+            <div class="sinfo">
+              <div class="sinfo-row"><span>PRICE IMPACT</span><span style="color:var(--ok)">~0.1%</span></div>
+              <div class="sinfo-row"><span>PLATFORM FEE</span><span>1%</span></div>
+            </div>
+            <button class="btn-s" id="appr-btn" style="margin-top:10px;margin-bottom:7px" onclick="doApprove()">APPROVE TOKENS</button>
+            <button class="btn-err" id="sell-btn" onclick="doSell()">SELL TOKENS</button>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- BRIDGE TAB -->
-  <div id="tab-bridge" class="tab-content">
-    <div class="breadcrumb">ARC://BRIDGE.MAIN</div>
-    <div class="bridge-center">
-      <div class="bridge-icon-wrap">
-        <svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="#E8460A" stroke-width="2.5">
-          <path d="M4 32h44M12 22v14M40 22v14M8 22h36M10 22c0-8 12-12 16-12s16 4 16 12"/>
-        </svg>
+<!-- BRIDGE -->
+<div id="tab-bridge" class="tc">
+  <div class="bc">ARC://BRIDGE.MAIN</div>
+  <div class="brcenter">
+    <div class="bricon"><svg width="46" height="46" viewBox="0 0 46 46" fill="none" stroke="#E8460A" stroke-width="2.5"><path d="M3 30h40M9 22v10M37 22v10M5 22h36M7 22c0-7 11-12 16-12s16 5 16 12"/></svg></div>
+    <div class="brtitle">BRIDGE</div>
+    <div class="brbadge">COMING SOON</div>
+    <div class="brdesc">Cross-chain bridging is under development. Stay tuned for seamless asset transfers across all networks.</div>
+  </div>
+</div>
+
+<!-- FEEDBACK -->
+<div id="tab-fb" class="tc">
+  <div class="bc">ARC://FEEDBACK.MAIN</div>
+  <div id="nf"></div>
+  <div class="fbl">
+    <div class="fw">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px">ARC://FEEDBACK.SUBMIT</div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding-bottom:9px;border-bottom:1px solid var(--border);margin-bottom:13px">SUBMIT FEEDBACK</div>
+      <div class="fg"><label class="fl">YOUR NAME</label><input class="fi" id="fb-n" placeholder="SATOSHI NAKAMOTO"></div>
+      <div class="fg"><label class="fl">FEEDBACK</label><textarea class="fta" id="fb-m" placeholder="Share your experience..." rows="4"></textarea></div>
+      <div class="fg">
+        <label class="fl">RATING</label>
+        <div class="srow" id="srow">
+          <button class="starbtn" data-s="1" onclick="setStars(1)" type="button"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></button>
+          <button class="starbtn" data-s="2" onclick="setStars(2)" type="button"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></button>
+          <button class="starbtn" data-s="3" onclick="setStars(3)" type="button"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></button>
+          <button class="starbtn" data-s="4" onclick="setStars(4)" type="button"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></button>
+          <button class="starbtn" data-s="5" onclick="setStars(5)" type="button"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></button>
+        </div>
       </div>
-      <div class="bridge-title">BRIDGE</div>
-      <div class="bridge-badge">COMING SOON</div>
-      <div class="bridge-desc">Cross-chain bridging is under development. Stay tuned for seamless asset transfers across networks.</div>
+      <button class="btn-s" id="fb-sub" onclick="submitFB()">SUBMIT FEEDBACK</button>
+    </div>
+    <div>
+      <div class="sec-hdr">COMMUNITY FEEDBACK</div>
+      <div id="fb-list"><div style="padding:18px;text-align:center;color:var(--muted);font-size:11px;text-transform:uppercase;background:var(--card);border:1px solid var(--border)">LOADING...</div></div>
     </div>
   </div>
-
-  <!-- FEEDBACK TAB -->
-  <div id="tab-feedback" class="tab-content">
-    <div class="breadcrumb">ARC://FEEDBACK.MAIN</div>
-    <div id="notifications-feedback"></div>
-    <div class="feedback-layout">
-      <div class="form-section">
-        <div class="form-path">ARC://FEEDBACK.SUBMIT</div>
-        <div class="form-title">SUBMIT FEEDBACK</div>
-        <div class="form-group">
-          <label class="form-label">YOUR NAME</label>
-          <input class="form-input" id="fb-name" placeholder="SATOSHI NAKAMOTO">
-        </div>
-        <div class="form-group">
-          <label class="form-label">FEEDBACK</label>
-          <textarea class="form-textarea" id="fb-message" placeholder="Share your thoughts..." rows="4"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">RATING</label>
-          <div class="star-rating" id="star-rating">
-            <button class="star-btn" data-star="1" onclick="setStars(1)" type="button">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor"><path d="M14 2l2.9 8.9H26l-7.4 5.4 2.8 8.9L14 20l-7.4 5.2 2.8-8.9L2 10.9h9.1z"/></svg>
-            </button>
-            <button class="star-btn" data-star="2" onclick="setStars(2)" type="button">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor"><path d="M14 2l2.9 8.9H26l-7.4 5.4 2.8 8.9L14 20l-7.4 5.2 2.8-8.9L2 10.9h9.1z"/></svg>
-            </button>
-            <button class="star-btn" data-star="3" onclick="setStars(3)" type="button">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor"><path d="M14 2l2.9 8.9H26l-7.4 5.4 2.8 8.9L14 20l-7.4 5.2 2.8-8.9L2 10.9h9.1z"/></svg>
-            </button>
-            <button class="star-btn" data-star="4" onclick="setStars(4)" type="button">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor"><path d="M14 2l2.9 8.9H26l-7.4 5.4 2.8 8.9L14 20l-7.4 5.2 2.8-8.9L2 10.9h9.1z"/></svg>
-            </button>
-            <button class="star-btn" data-star="5" onclick="setStars(5)" type="button">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor"><path d="M14 2l2.9 8.9H26l-7.4 5.4 2.8 8.9L14 20l-7.4 5.2 2.8-8.9L2 10.9h9.1z"/></svg>
-            </button>
-          </div>
-        </div>
-        <button class="trade-btn approve-btn" id="fb-submit-btn" onclick="submitFeedback()" style="width:100%;margin-top:8px">SUBMIT FEEDBACK</button>
-      </div>
-      <div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px">
-          COMMUNITY FEEDBACK
-          <span style="height:1px;flex:1;background:var(--border);display:block"></span>
-        </div>
-        <div id="feedback-list">
-          <div style="padding:24px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;background:var(--card);border:1px solid var(--border)">LOADING FEEDBACK...</div>
-        </div>
-      </div>
-    </div>
-  </div>
+</div>
 
 </main>
 
 <!-- BOTTOM NAV -->
-<nav id="bottom-nav">
-  <div class="bottom-nav-inner">
-    <button class="bottom-nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')">
-      <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L1 6v9h5V10h4v5h5V6L8 1zm0 1.5L14 7v7h-3v-5H5v5H2V7l6-4.5z"/></svg>
-      DASH
-    </button>
-    <button class="bottom-nav-item" data-tab="create" onclick="switchTab('create')">
-      <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.5 4.5H14l-3.75 2.7 1.5 4.5L8 10.2 4.25 12.7l1.5-4.5L2 5.5h4.5L8 1z"/></svg>
-      CREATE
-    </button>
-    <button class="bottom-nav-item" data-tab="trade" onclick="switchTab('trade')">
-      <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M2 12h12M2 8h9M2 4h6M13 2v12M11 4l2-2 2 2M11 12l2 2 2-2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
-      TRADE
-    </button>
-    <button class="bottom-nav-item" data-tab="bridge" onclick="switchTab('bridge')">
-      <svg width="20" height="20" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 32h44M12 22v14M40 22v14M8 22h36M10 22c0-8 12-12 16-12s16 4 16 12"/></svg>
-      BRIDGE
-    </button>
-    <button class="bottom-nav-item" data-tab="feedback" onclick="switchTab('feedback')">
-      <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.8 3.6L14 5.5l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1L2 5.5l4.2-.9L8 1z"/></svg>
-      FEEDBACK
-    </button>
+<nav id="bnav">
+  <div class="bni-wrap">
+    <button class="bni active" data-tab="dash" onclick="goTab('dash')"><svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L1 6v9h5V10h4v5h5V6L8 1z"/></svg>DASH</button>
+    <button class="bni" data-tab="create" onclick="goTab('create')"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v6M5 8h6"/></svg>CREATE</button>
+    <button class="bni" data-tab="trade" onclick="goTab('trade')"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 5h10M3 8h7M3 11h4M12 2v12M10 4l2-2 2 2M10 12l2 2 2-2"/></svg>TRADE</button>
+    <button class="bni" data-tab="bridge" onclick="goTab('bridge')"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 10h14M4 7v5M12 7v5M2 7h12M3 7c0-4 10-4 10 0"/></svg>BRIDGE</button>
+    <button class="bni" data-tab="fb" onclick="goTab('fb')"><svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.8 3.7 4.2.6-3 3 .7 4.2L8 10.4l-3.7 2 .7-4.2-3-3 4.2-.6z"/></svg>FEEDBACK</button>
   </div>
 </nav>
 
 <!-- WALLET MODAL -->
-<div id="wallet-modal">
-  <div class="wallet-modal-box">
-    <div class="wallet-modal-header">
-      <span class="wallet-modal-title">SELECT WALLET</span>
-      <button class="wallet-modal-close" onclick="closeWalletModal()">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 2l12 12M14 2L2 14"/></svg>
-      </button>
+<div id="wmodal">
+  <div class="wmbox">
+    <div class="wmhdr"><span class="wmtitle">SELECT WALLET</span><button class="wmclose" onclick="closeWM()"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l11 11M12 1L1 12"/></svg></button></div>
+    <div class="wopt" onclick="connectWallet()">
+      <img class="woptlogo" src="https://i.postimg.cc/nzHmMSBM/images.png" alt="MM" onerror="this.style.background='#F6851B'">
+      <span class="woptname">METAMASK</span>
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6.5h9M8 3l3 3.5-3 3"/></svg>
     </div>
-    <div class="wallet-option" onclick="connectWallet('metamask')">
-      <img class="wallet-option-logo" src="https://i.postimg.cc/nzHmMSBM/images.png" alt="MetaMask" onerror="this.style.background='#F6851B'">
-      <span class="wallet-option-name">METAMASK</span>
-      <span class="wallet-option-arrow"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h8M8 4l3 3-3 3"/></svg></span>
-    </div>
-    <div class="wallet-option" onclick="connectWallet('rabby')">
-      <img class="wallet-option-logo" src="https://i.postimg.cc/XvMq8mTP/download-(1).jpg" alt="Rabby" onerror="this.style.background='#7B68EE'">
-      <span class="wallet-option-name">RABBY WALLET</span>
-      <span class="wallet-option-arrow"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h8M8 4l3 3-3 3"/></svg></span>
+    <div class="wopt" onclick="connectWallet()">
+      <img class="woptlogo" src="https://i.postimg.cc/XvMq8mTP/download-(1).jpg" alt="Rabby" onerror="this.style.background='#7B68EE'">
+      <span class="woptname">RABBY WALLET</span>
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6.5h9M8 3l3 3.5-3 3"/></svg>
     </div>
   </div>
 </div>
 
-<!-- TRANSACTION OVERLAY -->
-<div id="tx-overlay">
-  <div class="tx-card">
-    <div class="tx-card-header">PROCESSING TRANSACTION</div>
-    <div class="tx-steps" id="tx-steps">
-      <div class="tx-step pending" id="tx-step-1">
-        <div class="tx-step-num">1</div>
-        <div class="tx-step-label">UPLOADING METADATA</div>
-        <div class="tx-step-icon" id="tx-icon-1"></div>
-      </div>
-      <div class="tx-step pending" id="tx-step-2">
-        <div class="tx-step-num">2</div>
-        <div class="tx-step-label">DEPLOYING CONTRACT</div>
-        <div class="tx-step-icon" id="tx-icon-2"></div>
-      </div>
-      <div class="tx-step pending" id="tx-step-3">
-        <div class="tx-step-num">3</div>
-        <div class="tx-step-label">CONFIRMING TRANSACTION</div>
-        <div class="tx-step-icon" id="tx-icon-3"></div>
-      </div>
-      <div class="tx-step pending" id="tx-step-4">
-        <div class="tx-step-num">4</div>
-        <div class="tx-step-label">COMPLETE</div>
-        <div class="tx-step-icon" id="tx-icon-4"></div>
-      </div>
+<!-- TX OVERLAY -->
+<div id="txov">
+  <div class="txcard">
+    <div class="txtitle">PROCESSING TRANSACTION</div>
+    <div class="txsteps">
+      <div class="txstep pending" id="ts1"><div class="txsnum">1</div><div class="txslbl">UPLOADING METADATA</div><div id="ti1"></div></div>
+      <div class="txstep pending" id="ts2"><div class="txsnum">2</div><div class="txslbl">DEPLOYING CONTRACT</div><div id="ti2"></div></div>
+      <div class="txstep pending" id="ts3"><div class="txsnum">3</div><div class="txslbl">CONFIRMING ON-CHAIN</div><div id="ti3"></div></div>
+      <div class="txstep pending" id="ts4"><div class="txsnum">4</div><div class="txslbl">COMPLETE</div><div id="ti4"></div></div>
     </div>
-    <div id="tx-result" style="padding:12px 16px;border-top:1px solid var(--border);display:none"></div>
+    <div id="tx-res" style="display:none" class="txres"></div>
   </div>
 </div>
 
 <script>
-// ===================== CONFIG =====================
-const CONTRACT_ADDRESS = '0x21f8568baF84E4DC99C8e6Fd3474C00721ab2A46';
-const CHAIN_ID = 5050122;
-const CHAIN_HEX = '0x4CC57A';
-const EXPLORER = 'https://explorer.arc.io/tx/';
-
-const ABI = [
+const CA='0x21f8568baF84E4DC99C8e6Fd3474C00721ab2A46',CHX='0x4CC57A',EXP='https://explorer.arc.io/tx/';
+const ABI=[
   {"inputs":[{"components":[{"name":"name","type":"string"},{"name":"symbol","type":"string"},{"name":"description","type":"string"},{"name":"logoURI","type":"string"},{"name":"website","type":"string"},{"name":"twitter","type":"string"}],"name":"p","type":"tuple"}],"name":"createToken","outputs":[{"name":"","type":"address"}],"stateMutability":"payable","type":"function"},
   {"inputs":[{"name":"token","type":"address"}],"name":"buyTokens","outputs":[],"stateMutability":"payable","type":"function"},
   {"inputs":[{"name":"token","type":"address"},{"name":"amt","type":"uint256"}],"name":"sellTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},
@@ -763,792 +583,353 @@ const ABI = [
   {"inputs":[{"name":"token","type":"address"}],"name":"isListed","outputs":[{"name":"","type":"bool"}],"stateMutability":"view","type":"function"},
   {"inputs":[{"name":"token","type":"address"}],"name":"poolARC","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
 ];
+const ERC20ABI=[{"inputs":[{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
 
-const ERC20_ABI = [
-  {"inputs":[{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
-];
+firebase.initializeApp({apiKey:"AIzaSyACFXDHuSsD7Uw-TP3AYLs32KqVu6Jes5o",authDomain:"arclaunchpad-10782.firebaseapp.com",projectId:"arclaunchpad-10782",storageBucket:"arclaunchpad-10782.firebasestorage.app",messagingSenderId:"626926030793",appId:"1:626926030793:web:da37484e12986bd3a92218"});
+const db=firebase.firestore();
 
-const FIREBASE_CONFIG = {
-  apiKey:"AIzaSyACFXDHuSsD7Uw-TP3AYLs32KqVu6Jes5o",
-  authDomain:"arclaunchpad-10782.firebaseapp.com",
-  projectId:"arclaunchpad-10782",
-  storageBucket:"arclaunchpad-10782.firebasestorage.app",
-  messagingSenderId:"626926030793",
-  appId:"1:626926030793:web:da37484e12986bd3a92218"
-};
+let prov=null,sign=null,con=null,wa=null,tokens=[],sortO='newest',selTok=null,lb64='',lfile=null,selS=0,swMode='buy';
 
-// ===================== GLOBALS =====================
-let provider = null, signer = null, contract = null;
-let walletAddress = null;
-let allTokens = [];
-let allTokenInfos = [];
-let sortOrder = 'newest';
-let selectedToken = null;
-let logoBase64 = '';
-let selectedStars = 0;
-let autoRefreshInterval = null;
-
-// ===================== FIREBASE =====================
-firebase.initializeApp(FIREBASE_CONFIG);
-const db = firebase.firestore();
-
-// ===================== UTILS =====================
-function shortAddr(addr) {
-  if(!addr) return '--';
-  return addr.slice(0,6)+'...'+addr.slice(-4);
+const sh=a=>a?a.slice(0,6)+'...'+a.slice(-4):'--';
+const fARC=v=>{try{return parseFloat(ethers.utils.formatEther(v)).toFixed(4)+' ARC'}catch{return'--'}};
+const fTok=v=>{try{return parseFloat(ethers.utils.formatEther(v)).toFixed(2)}catch{return'--'}};
+const fN=n=>Number(n).toLocaleString();
+function tAgo(ts){const t=ts&&ts.seconds?ts.seconds*1000:Number(ts)*1000,d=Math.floor((Date.now()-t)/1000);if(d<60)return d+'s ago';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';return Math.floor(d/86400)+'d ago'}
+function cpct(p){try{return Math.min(100,Math.floor(parseFloat(ethers.utils.formatEther(p||'0'))/69*100))}catch{return 0}}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function lhtml(uri,sz=40){
+  if(uri&&uri.length>10)return`<img src="${esc(uri)}" style="width:${sz}px;height:${sz}px;border:1px solid var(--border);object-fit:cover;flex-shrink:0;background:#F2EDE3" onerror="this.style.display='none'">`;
+  return`<div style="width:${sz}px;height:${sz}px;border:1px solid var(--border);background:#F2EDE3;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="${sz*.5}" height="${sz*.5}" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#C8BFA8" stroke-width="1.5"/></svg></div>`;
 }
 
-function fmtARC(val) {
-  if(val === undefined || val === null) return '--';
-  try {
-    const n = parseFloat(ethers.utils.formatEther(val));
-    return n.toFixed(4) + ' ARC';
-  } catch { return '--'; }
+function showN(id,type,title,msg,tx=null){
+  const el=document.getElementById(id);if(!el)return;
+  const lnk=tx?`<a class="nlink" href="${EXP}${tx}" target="_blank" rel="noopener"><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 1H1v9h9V7M6 1h4v4M9 2L5 6"/></svg>VIEW ON EXPLORER</a>`:'';
+  el.innerHTML=`<div class="notif ${type}"><div class="ntitle">${title}</div><div class="nmsg">${esc(msg)}</div>${lnk}</div>`;
+  if(type!=='info')setTimeout(()=>{if(el.firstChild)el.innerHTML=''},9000);
 }
 
-function fmtTokenAmt(val) {
-  if(val === undefined || val === null) return '--';
-  try {
-    const n = parseFloat(ethers.utils.formatEther(val));
-    return n.toFixed(2);
-  } catch { return '--'; }
+function setTS(n,st){
+  const el=document.getElementById('ts'+n),ic=document.getElementById('ti'+n);
+  el.className='txstep '+st;
+  if(st==='active')ic.innerHTML='<div class="txsp"></div>';
+  else if(st==='done')ic.innerHTML=`<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--ok)" stroke-width="2.5" stroke-linecap="round"><path stroke-dasharray="30" stroke-dashoffset="30" d="M3 9l4.5 4.5L15 5" style="animation:checkDraw .35s ease forwards"/></svg>`;
+  else ic.innerHTML='';
+}
+function openTX(){document.getElementById('txov').classList.add('open');document.getElementById('tx-res').style.display='none';[1,2,3,4].forEach(i=>setTS(i,'pending'))}
+function closeTX(ms=0){setTimeout(()=>document.getElementById('txov').classList.remove('open'),ms)}
+
+// WALLET
+function openWM(){document.getElementById('wmodal').classList.add('open')}
+function closeWM(){document.getElementById('wmodal').classList.remove('open')}
+
+async function connectWallet(){
+  closeWM();
+  if(!window.ethereum){alert('No wallet found. Install MetaMask or Rabby.');return}
+  try{
+    await window.ethereum.request({method:'eth_requestAccounts'});
+    prov=new ethers.providers.Web3Provider(window.ethereum);
+    await switchNet();
+    sign=prov.getSigner();wa=await sign.getAddress();
+    con=new ethers.Contract(CA,ABI,sign);
+    localStorage.setItem('alw',wa);
+    updWUI();await refreshData();
+  }catch(e){showN('nd','err','WALLET ERROR',e.message||'Failed')}
 }
 
-function timeAgo(ts) {
-  const now = Date.now();
-  const t = typeof ts === 'object' && ts.seconds ? ts.seconds * 1000 : Number(ts) * 1000;
-  const diff = Math.floor((now - t) / 1000);
-  if(diff < 60) return diff + 's ago';
-  if(diff < 3600) return Math.floor(diff/60) + 'm ago';
-  if(diff < 86400) return Math.floor(diff/3600) + 'h ago';
-  return Math.floor(diff/86400) + 'd ago';
+async function switchNet(){
+  try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:CHX}]})}
+  catch(e){if(e.code===4902)await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:CHX,chainName:'Arc Network Testnet',nativeCurrency:{name:'ARC',symbol:'ARC',decimals:18},rpcUrls:['https://rpc-testnet.arc.io'],blockExplorerUrls:['https://explorer.arc.io']}]})}
 }
 
-function curvePct(poolARC) {
-  // Target: 69 ARC to graduate
-  try {
-    const pool = parseFloat(ethers.utils.formatEther(poolARC || '0'));
-    return Math.min(100, Math.floor((pool / 69) * 100));
-  } catch { return 0; }
+function updWUI(){
+  if(!wa)return;
+  const btn=document.getElementById('cbtn');
+  btn.textContent='CONNECTED';btn.classList.add('conn');
+  const ab=document.getElementById('abox');ab.textContent=sh(wa);ab.style.display='block';
+  document.getElementById('bal-box').style.display='block';
+  updBal();
+  document.getElementById('t-nowallet').style.display='none';
+  document.getElementById('t-main').style.display='grid';
 }
 
-function tokenLogoHTML(logoURI, size=40, cls='token-logo') {
-  if(logoURI && logoURI.length > 10) {
-    return `<img class="${cls}" src="${logoURI}" width="${size}" height="${size}" onerror="this.style.display='none';this.nextSibling.style.display='flex'" style="display:block">
-    <div class="token-logo-placeholder" style="width:${size}px;height:${size}px;display:none">
-      <svg width="${size*0.6}" height="${size*0.6}" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#C8BFA8" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="10" fill="#C8BFA8" font-family="Space Mono">${''}</text></svg>
-    </div>`;
-  }
-  return `<div class="token-logo-placeholder" style="width:${size}px;height:${size}px">
-    <svg width="${size*0.55}" height="${size*0.55}" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#C8BFA8" stroke-width="1.5"/></svg>
-  </div>`;
+async function updBal(){
+  if(!prov||!wa)return;
+  try{const b=await prov.getBalance(wa);const v=parseFloat(ethers.utils.formatEther(b)).toFixed(4);document.getElementById('bal-box').textContent=v+' ARC';document.getElementById('arc-bal').textContent='BAL: '+v+' ARC'}catch{}
 }
 
-function showNotification(containerId, type, title, msg, txHash=null) {
-  const el = document.getElementById(containerId);
-  if(!el) return;
-  const link = txHash ? `<a class="notification-link" href="${EXPLORER}${txHash}" target="_blank">VIEW ON EXPLORER</a>` : '';
-  el.innerHTML = `<div class="notification ${type}">
-    <div class="notification-title">${title}</div>
-    <div class="notification-msg">${msg}</div>
-    ${link}
-  </div>`;
-  setTimeout(()=>{ if(el.firstChild) el.innerHTML=''; }, 8000);
+async function autoRecon(){
+  if(!localStorage.getItem('alw')||!window.ethereum)return;
+  try{const a=await window.ethereum.request({method:'eth_accounts'});if(a&&a.length){prov=new ethers.providers.Web3Provider(window.ethereum);sign=prov.getSigner();wa=await sign.getAddress();con=new ethers.Contract(CA,ABI,sign);updWUI()}}catch{}
 }
 
-// ===================== WALLET =====================
-function openWalletModal() {
-  document.getElementById('wallet-modal').classList.add('open');
-}
-function closeWalletModal() {
-  document.getElementById('wallet-modal').classList.remove('open');
-}
-
-async function connectWallet(type) {
-  closeWalletModal();
-  if(!window.ethereum) {
-    alert('No wallet detected. Please install MetaMask or Rabby Wallet.');
-    return;
-  }
-  try {
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-    await switchToArcNetwork();
-    signer = provider.getSigner();
-    walletAddress = await signer.getAddress();
-    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-    localStorage.setItem('arclaunchpad_wallet', walletAddress);
-    updateWalletUI();
-    await refreshData();
-  } catch(e) {
-    console.error(e);
-    showNotification('notifications-dash','error','WALLET ERROR', e.message || 'Failed to connect wallet');
-  }
-}
-
-async function switchToArcNetwork() {
-  try {
-    await window.ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: CHAIN_HEX }]
-    });
-  } catch(e) {
-    if(e.code === 4902) {
-      await window.ethereum.request({
-        method: 'wallet_addEthereumChain',
-        params: [{
-          chainId: CHAIN_HEX,
-          chainName: 'Arc Network Testnet',
-          nativeCurrency: { name: 'ARC', symbol: 'ARC', decimals: 18 },
-          rpcUrls: ['https://rpc-testnet.arc.io'],
-          blockExplorerUrls: ['https://explorer.arc.io']
-        }]
-      });
-    }
-  }
-}
-
-function updateWalletUI() {
-  const btn = document.getElementById('connect-btn');
-  const addrBox = document.getElementById('wallet-addr-box');
-  const balBox = document.getElementById('arc-balance-box');
-  if(walletAddress) {
-    btn.textContent = 'CONNECTED';
-    btn.style.background = 'var(--success)';
-    btn.style.borderColor = '#1f5c1f';
-    addrBox.textContent = shortAddr(walletAddress);
-    addrBox.style.display = 'block';
-    balBox.style.display = 'block';
-    updateBalance();
-    document.getElementById('trade-no-wallet').style.display = 'none';
-    document.getElementById('trade-main').style.display = 'grid';
-  }
-}
-
-async function updateBalance() {
-  if(!provider || !walletAddress) return;
-  try {
-    const bal = await provider.getBalance(walletAddress);
-    document.getElementById('arc-balance-box').textContent = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ARC';
-  } catch(e) {}
-}
-
-async function tryAutoReconnect() {
-  const saved = localStorage.getItem('arclaunchpad_wallet');
-  if(!saved || !window.ethereum) return;
-  try {
-    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-    if(accounts && accounts.length > 0) {
-      provider = new ethers.providers.Web3Provider(window.ethereum);
-      signer = provider.getSigner();
-      walletAddress = await signer.getAddress();
-      contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-      updateWalletUI();
-    }
-  } catch(e) {}
-}
-
-// ===================== NAVIGATION =====================
-function switchTab(tab) {
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(n=>n.classList.remove('active'));
+// NAV
+function goTab(tab){
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ni,.bni').forEach(n=>n.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.querySelectorAll('[data-tab="'+tab+'"]').forEach(n=>n.classList.add('active'));
-  const breadcrumbs = {
-    dashboard:'ARC://DASHBOARD.MAIN',
-    create:'ARC://CREATE.TOKEN',
-    trade:'ARC://TRADE.MAIN',
-    bridge:'ARC://BRIDGE.MAIN',
-    feedback:'ARC://FEEDBACK.MAIN'
-  };
-  // update breadcrumbs (each tab has its own)
-  if(tab === 'trade') {
-    if(!walletAddress) {
-      document.getElementById('trade-no-wallet').style.display='block';
-      document.getElementById('trade-main').style.display='none';
-    } else {
-      document.getElementById('trade-no-wallet').style.display='none';
-      document.getElementById('trade-main').style.display='grid';
-    }
-    loadTradeList();
+  if(tab==='trade'){
+    if(!wa){document.getElementById('t-nowallet').style.display='block';document.getElementById('t-main').style.display='none'}
+    else{document.getElementById('t-nowallet').style.display='none';document.getElementById('t-main').style.display='grid';renderTL(tokens)}
   }
-  if(tab === 'feedback') loadFeedback();
-  if(tab === 'dashboard') refreshData();
+  if(tab==='fb')loadFB();
+  if(tab==='dash')refreshData();
 }
 
-// ===================== READ CONTRACT =====================
-async function getReadContract() {
-  if(contract) return contract;
-  const rpcProvider = new ethers.providers.JsonRpcProvider('https://rpc-testnet.arc.io');
-  return new ethers.Contract(CONTRACT_ADDRESS, ABI, rpcProvider);
+// DATA
+async function getRpc(){if(con)return con;return new ethers.Contract(CA,ABI,new ethers.providers.JsonRpcProvider('https://rpc-testnet.arc.io'))}
+
+async function refreshData(){
+  try{
+    const c=await getRpc();
+    const[cnt,addrs]=await Promise.all([c.getTokenCount(),c.getAllTokens()]);
+    document.getElementById('s-tokens').textContent=cnt.toString();
+    if(!addrs||!addrs.length){document.getElementById('tgrid').innerHTML='';document.getElementById('empty-d').style.display='block';document.getElementById('s-vol').textContent='0';document.getElementById('s-traders').textContent='0';return}
+    document.getElementById('empty-d').style.display='none';
+    const infos=await Promise.all(addrs.map(async a=>{try{const[i,p,pl]=await Promise.all([c.getTokenInfo(a),c.getCurrentPrice(a),c.poolARC(a)]);return{...i,price:p,pool:pl}}catch{return null}}));
+    tokens=infos.filter(Boolean);
+    let vol=ethers.BigNumber.from(0);const cr=new Set();
+    tokens.forEach(t=>{try{vol=vol.add(t.pool||0)}catch{};if(t.creator)cr.add(t.creator.toLowerCase())});
+    document.getElementById('s-vol').textContent=parseFloat(ethers.utils.formatEther(vol)).toFixed(2);
+    document.getElementById('s-traders').textContent=cr.size;
+    renderGrid();renderStrip();
+    if(document.getElementById('tab-trade').classList.contains('active'))renderTL(tokens);
+  }catch(e){showN('nd','err','DATA ERROR','Failed to load. Check network.')}
 }
 
-async function refreshData() {
-  try {
-    const c = await getReadContract();
-    const [count, addresses] = await Promise.all([
-      c.getTokenCount(),
-      c.getAllTokens()
-    ]);
-
-    document.getElementById('stat-total-tokens').textContent = count.toString();
-
-    if(!addresses || addresses.length === 0) {
-      document.getElementById('token-grid').innerHTML = '';
-      document.getElementById('empty-state').style.display = 'block';
-      document.getElementById('stat-total-volume').textContent = '0.0000';
-      document.getElementById('stat-traders').textContent = '0';
-      return;
-    }
-    document.getElementById('empty-state').style.display = 'none';
-
-    // Fetch info + price + pool for each token
-    const infos = await Promise.all(addresses.map(async addr => {
-      try {
-        const [info, price, pool] = await Promise.all([
-          c.getTokenInfo(addr),
-          c.getCurrentPrice(addr),
-          c.poolARC(addr)
-        ]);
-        return { ...info, price, pool };
-      } catch(e) { return null; }
-    }));
-
-    allTokenInfos = infos.filter(Boolean);
-
-    // Stats
-    let totalVol = ethers.BigNumber.from(0);
-    const creators = new Set();
-    allTokenInfos.forEach(t => {
-      try { totalVol = totalVol.add(t.pool || 0); } catch {}
-      if(t.creator) creators.add(t.creator.toLowerCase());
-    });
-    document.getElementById('stat-total-volume').textContent = parseFloat(ethers.utils.formatEther(totalVol)).toFixed(4);
-    document.getElementById('stat-traders').textContent = creators.size;
-
-    renderTokenGrid();
-    renderTopStrip();
-    if(document.getElementById('tab-trade').classList.contains('active')) loadTradeList();
-  } catch(e) {
-    console.error('refreshData error:', e);
-    showNotification('notifications-dash','error','DATA ERROR','Failed to load token data. Check RPC connection.');
-  }
+function getSorted(){
+  let t=[...tokens];
+  if(sortO==='newest')t.sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));
+  else if(sortO==='volume')t.sort((a,b)=>{try{return b.pool.gt(a.pool)?1:-1}catch{return 0}});
+  else t.sort((a,b)=>{try{return b.price.gt(a.price)?1:-1}catch{return 0}});
+  return t;
 }
+function setSort(o,btn){sortO=o;document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderGrid()}
 
-function getSortedTokens() {
-  let tokens = [...allTokenInfos];
-  if(sortOrder === 'newest') {
-    tokens.sort((a,b) => Number(b.createdAt||0) - Number(a.createdAt||0));
-  } else if(sortOrder === 'volume') {
-    tokens.sort((a,b) => {
-      try { return b.pool.gt(a.pool) ? 1 : -1; } catch { return 0; }
-    });
-  } else if(sortOrder === 'trending') {
-    tokens.sort((a,b) => {
-      try { return b.price.gt(a.price) ? 1 : -1; } catch { return 0; }
-    });
-  }
-  return tokens;
-}
-
-function setSortOrder(order) {
-  sortOrder = order;
-  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
-  event.target.classList.add('active');
-  renderTokenGrid();
-}
-
-function renderTokenGrid() {
-  const grid = document.getElementById('token-grid');
-  const tokens = getSortedTokens();
-  if(!tokens.length) {
-    grid.innerHTML = '';
-    document.getElementById('empty-state').style.display = 'block';
-    return;
-  }
-  grid.innerHTML = tokens.map(t => renderTokenCard(t)).join('');
-}
-
-function renderTokenCard(t) {
-  const pct = curvePct(t.pool);
-  const priceStr = t.price ? parseFloat(ethers.utils.formatEther(t.price)).toFixed(6)+' ARC' : '-- ARC';
-  const addr = t.tokenAddress || t[0];
-  return `<div class="token-card" onclick="goToTrade('${addr}')">
-    <div class="token-card-path">ARC://TOKEN.INFO</div>
-    <div class="token-card-header">
-      ${tokenLogoHTML(t.logoURI, 40)}
-      <div style="min-width:0">
-        <div class="token-name">${escHtml(t.name||'--')}</div>
-        <div class="token-symbol">${escHtml(t.symbol||'--')}</div>
-      </div>
-    </div>
-    <div class="token-price-label">CURRENT PRICE</div>
-    <div class="token-price">${priceStr}</div>
-    <div class="progress-wrap">
-      <div class="progress-label">BONDING CURVE — ${pct}%</div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-    </div>
-    <div class="token-creator">CREATOR: ${shortAddr(t.creator)}</div>
-    <button class="token-trade-btn" onclick="event.stopPropagation();goToTrade('${addr}')">TRADE</button>
-  </div>`;
-}
-
-function renderTopStrip() {
-  const strip = document.getElementById('top-strip');
-  const top10 = [...allTokenInfos]
-    .sort((a,b) => { try { return b.pool.gt(a.pool)?1:-1; } catch { return 0; } })
-    .slice(0,10);
-  if(!top10.length) { strip.innerHTML = '<div style="font-size:10px;color:var(--text-secondary);letter-spacing:0.05em;text-transform:uppercase;padding:8px">NO TOKENS YET</div>'; return; }
-  strip.innerHTML = top10.map(t => {
-    const priceStr = t.price ? parseFloat(ethers.utils.formatEther(t.price)).toFixed(6)+' ARC' : '-- ARC';
-    const addr = t.tokenAddress || t[0];
-    return `<div class="mini-token-card" onclick="goToTrade('${addr}')">
-      <div style="display:flex;align-items:center;gap:8px">
-        ${tokenLogoHTML(t.logoURI,28,'mini-token-logo')}
-        <div class="mini-token-info">
-          <div class="mini-token-name">${escHtml(t.symbol||'--')}</div>
-          <div class="mini-token-price">${priceStr}</div>
-        </div>
-      </div>
+function renderGrid(){
+  const g=document.getElementById('tgrid'),ts=getSorted();
+  if(!ts.length){g.innerHTML='';document.getElementById('empty-d').style.display='block';return}
+  g.innerHTML=ts.map(t=>{
+    const addr=t.tokenAddress||t[0],pct=cpct(t.pool),price=t.price?parseFloat(ethers.utils.formatEther(t.price)).toFixed(6):'--';
+    return`<div class="tkc" onclick="goTrade('${addr}')">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">ARC://TOKEN.INFO</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">${lhtml(t.logoURI,38)}<div style="min-width:0"><div style="font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name||'--')}</div><div style="font-size:10px;color:var(--muted)">${esc(t.symbol||'--')}</div></div></div>
+      <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">PRICE</div>
+      <div style="font-size:15px;font-weight:700;letter-spacing:-.01em;margin:2px 0 7px">${price} ARC</div>
+      <div class="prog-l">BONDING CURVE — ${pct}%</div>
+      <div class="prog-b"><div class="prog-f" style="width:${pct}%"></div></div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:8px">CREATOR: ${sh(t.creator)}</div>
+      <button class="btn-p" style="font-size:10px;padding:7px" onclick="event.stopPropagation();goTrade('${addr}')">TRADE</button>
     </div>`;
   }).join('');
 }
 
-function escHtml(str) {
-  if(!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ===================== CREATE TOKEN =====================
-function updatePreview() {
-  const name = document.getElementById('create-name').value || 'TOKEN NAME';
-  const symbol = document.getElementById('create-symbol').value || 'SYMBOL';
-  const desc = document.getElementById('create-desc').value || 'Token description will appear here...';
-  const website = document.getElementById('create-website').value;
-  const twitter = document.getElementById('create-twitter').value;
-
-  document.getElementById('preview-name').textContent = name.toUpperCase();
-  document.getElementById('preview-symbol').textContent = symbol;
-  document.getElementById('preview-desc').textContent = desc;
-  document.getElementById('name-count').textContent = document.getElementById('create-name').value.length;
-  document.getElementById('symbol-count').textContent = document.getElementById('create-symbol').value.length;
-
-  let meta = '';
-  if(website) meta += `<div>WEBSITE: <a href="${escHtml(website)}" target="_blank" rel="noopener">${escHtml(website)}</a></div>`;
-  if(twitter) meta += `<div>TWITTER: <a href="${escHtml(twitter)}" target="_blank" rel="noopener">${escHtml(twitter)}</a></div>`;
-  document.getElementById('preview-meta').innerHTML = meta;
-}
-
-function handleLogoUpload(event) {
-  const file = event.target.files[0];
-  if(!file) return;
-  if(file.size > 2*1024*1024) { alert('Image must be under 2MB'); return; }
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    logoBase64 = e.target.result;
-    const wrap = document.getElementById('preview-logo-wrap');
-    wrap.innerHTML = `<img src="${logoBase64}" style="width:64px;height:64px;border:1px solid var(--border);object-fit:cover">`;
-    const uploadArea = document.getElementById('upload-area');
-    uploadArea.innerHTML = `<img class="upload-preview" src="${logoBase64}"><div class="file-upload-text">LOGO SELECTED</div><input type="file" accept="image/*" id="logo-file" onchange="handleLogoUpload(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">`;
-  };
-  reader.readAsDataURL(file);
-}
-
-function setTxStep(step, state) {
-  const el = document.getElementById('tx-step-'+step);
-  const icon = document.getElementById('tx-icon-'+step);
-  el.className = 'tx-step '+state;
-  if(state==='active') {
-    icon.innerHTML = `<svg class="spinner" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="7" stroke-dasharray="30 10"/></svg>`;
-  } else if(state==='done') {
-    icon.innerHTML = `<svg class="check-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--success)" stroke-width="2.5"><path d="M3 9l4.5 4.5L15 5"/></svg>`;
-  } else {
-    icon.innerHTML = '';
-  }
-}
-
-async function launchToken() {
-  if(!walletAddress) { openWalletModal(); return; }
-  const name = document.getElementById('create-name').value.trim();
-  const symbol = document.getElementById('create-symbol').value.trim();
-  if(!name || !symbol) {
-    showNotification('notifications-create','error','VALIDATION ERROR','Token name and symbol are required.');
-    return;
-  }
-
-  const overlay = document.getElementById('tx-overlay');
-  const resultDiv = document.getElementById('tx-result');
-  overlay.classList.add('open');
-  resultDiv.style.display='none';
-  [1,2,3,4].forEach(i=>setTxStep(i,'pending'));
-
-  try {
-    // Step 1: Upload metadata (Firestore)
-    setTxStep(1,'active');
-    const desc = document.getElementById('create-desc').value.trim();
-    const website = document.getElementById('create-website').value.trim();
-    const twitter = document.getElementById('create-twitter').value.trim();
-    const logoURI = logoBase64 || '';
-    await new Promise(r=>setTimeout(r,600));
-    setTxStep(1,'done');
-
-    // Step 2: Deploy contract
-    setTxStep(2,'active');
-    const tx = await contract.createToken({
-      name, symbol, description: desc,
-      logoURI, website, twitter
-    }, { value: ethers.utils.parseEther('0.01') });
-    setTxStep(2,'done');
-
-    // Step 3: Confirm
-    setTxStep(3,'active');
-    const receipt = await tx.wait();
-    setTxStep(3,'done');
-
-    // Step 4: Complete
-    setTxStep(4,'active');
-    // Save to Firestore
-    try {
-      const tokenAddr = receipt.events && receipt.events[0] ? receipt.events[0].address : receipt.contractAddress || '';
-      await db.collection('tokens').add({
-        tokenAddress: tokenAddr,
-        name, symbol, description: desc,
-        logoURI, website, twitter,
-        creator: walletAddress,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        chainId: CHAIN_ID
-      });
-    } catch(fe) { console.warn('Firestore save failed:', fe); }
-    setTxStep(4,'done');
-
-    resultDiv.style.display='block';
-    resultDiv.innerHTML = `<div class="notification success">
-      <div class="notification-title">TOKEN LAUNCHED SUCCESSFULLY</div>
-      <div class="notification-msg">TX: ${shortAddr(receipt.transactionHash)}</div>
-      <a class="notification-link" href="${EXPLORER}${receipt.transactionHash}" target="_blank">VIEW ON EXPLORER</a>
-    </div>`;
-
-    setTimeout(()=>{
-      overlay.classList.remove('open');
-      // Reset form
-      ['create-name','create-symbol','create-desc','create-website','create-twitter'].forEach(id=>{
-        const el=document.getElementById(id); if(el) el.value='';
-      });
-      logoBase64='';
-      updatePreview();
-      refreshData();
-    }, 3000);
-
-  } catch(e) {
-    setTxStep(2,'pending');setTxStep(3,'pending');setTxStep(4,'pending');
-    resultDiv.style.display='block';
-    resultDiv.innerHTML = `<div class="notification error">
-      <div class="notification-title">TRANSACTION FAILED</div>
-      <div class="notification-msg">${escHtml(e.reason||e.message||'Unknown error')}</div>
-    </div>`;
-    setTimeout(()=>overlay.classList.remove('open'), 3000);
-  }
-}
-
-// ===================== TRADE =====================
-function goToTrade(addr) {
-  switchTab('trade');
-  selectTradeToken(addr);
-}
-
-function loadTradeList() {
-  const list = document.getElementById('trade-token-list');
-  if(!allTokenInfos.length) {
-    list.innerHTML='<div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.05em;text-transform:uppercase">NO TOKENS</div>';
-    return;
-  }
-  renderTradeList(allTokenInfos);
-}
-
-function renderTradeList(tokens) {
-  const list = document.getElementById('trade-token-list');
-  if(!tokens.length) {
-    list.innerHTML='<div style="padding:16px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.05em;text-transform:uppercase">NO RESULTS</div>';
-    return;
-  }
-  list.innerHTML = tokens.map(t => {
-    const addr = t.tokenAddress||t[0];
-    const priceStr = t.price ? parseFloat(ethers.utils.formatEther(t.price)).toFixed(6) : '--';
-    const active = selectedToken && selectedToken.tokenAddress === addr ? 'active' : '';
-    return `<div class="trade-token-row ${active}" onclick="selectTradeToken('${addr}')">
-      ${tokenLogoHTML(t.logoURI,32,'trade-token-row-logo')}
-      <div style="min-width:0;flex:1">
-        <div class="trade-token-row-name">${escHtml(t.symbol||'--')}</div>
-        <div class="trade-token-row-price">${priceStr} ARC</div>
-      </div>
-    </div>`;
+function renderStrip(){
+  const s=document.getElementById('top-strip');
+  const top=[...tokens].sort((a,b)=>{try{return b.pool.gt(a.pool)?1:-1}catch{return 0}}).slice(0,10);
+  if(!top.length){s.innerHTML='<div style="font-size:9px;color:var(--muted);padding:8px;text-transform:uppercase">NO TOKENS YET</div>';return}
+  s.innerHTML=top.map(t=>{const addr=t.tokenAddress||t[0],price=t.price?parseFloat(ethers.utils.formatEther(t.price)).toFixed(6):'--';
+    return`<div class="mc" onclick="goTrade('${addr}')"><div style="display:flex;align-items:center;gap:7px">${lhtml(t.logoURI,26)}<div><div style="font-size:11px;font-weight:700;letter-spacing:.04em">${esc(t.symbol||'--')}</div><div style="font-size:9px;color:var(--muted)">${price} ARC</div></div></div></div>`;
   }).join('');
 }
 
-function filterTradeList() {
-  const q = document.getElementById('trade-search').value.toLowerCase();
-  const filtered = allTokenInfos.filter(t =>
-    (t.name||'').toLowerCase().includes(q) ||
-    (t.symbol||'').toLowerCase().includes(q)
-  );
-  renderTradeList(filtered);
+// CREATE
+function uprev(){
+  document.getElementById('pn').textContent=(document.getElementById('cn').value||'TOKEN NAME').toUpperCase();
+  document.getElementById('ps').textContent=document.getElementById('csym').value||'SYMBOL';
+  document.getElementById('pd').textContent=document.getElementById('cdesc').value||'Token description...';
+  document.getElementById('pp-sup').textContent=fN(document.getElementById('csup').value||'1000000000');
+  const w=document.getElementById('cweb').value,tw=document.getElementById('ctw').value;
+  let m='';if(w)m+=`<div>WEB: <a href="${esc(w)}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(w)}</a></div>`;if(tw)m+=`<div>X: <a href="${esc(tw)}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(tw)}</a></div>`;
+  document.getElementById('pmeta').innerHTML=m;
 }
 
-async function selectTradeToken(addr) {
-  const token = allTokenInfos.find(t => (t.tokenAddress||t[0]).toLowerCase() === addr.toLowerCase());
-  if(!token) return;
-  selectedToken = token;
-
-  // Mark active
-  document.querySelectorAll('.trade-token-row').forEach(r=>r.classList.remove('active'));
-  const rows = document.querySelectorAll('.trade-token-row');
-  rows.forEach(r => {
-    if(r.getAttribute('onclick') && r.getAttribute('onclick').includes(addr)) r.classList.add('active');
-  });
-
-  document.getElementById('trade-detail').style.display='block';
-  document.getElementById('trade-detail-empty').style.display='none';
-
-  const pct = curvePct(token.pool);
-  const priceStr = token.price ? parseFloat(ethers.utils.formatEther(token.price)).toFixed(6)+' ARC' : '-- ARC';
-
-  document.getElementById('td-name').textContent = (token.name||'--').toUpperCase();
-  document.getElementById('td-symbol').textContent = token.symbol||'--';
-  document.getElementById('td-price').textContent = priceStr;
-  document.getElementById('td-curve-pct').textContent = pct;
-  document.getElementById('td-curve-bar').style.width = pct+'%';
-  document.getElementById('td-creator').textContent = shortAddr(token.creator);
-  document.getElementById('td-desc').textContent = token.description||'';
-
-  const logoWrap = document.getElementById('trade-detail-logo-wrap');
-  logoWrap.innerHTML = tokenLogoHTML(token.logoURI, 48, 'trade-detail-logo');
-
-  // Clear inputs
-  document.getElementById('buy-arc-input').value='';
-  document.getElementById('sell-token-input').value='';
-  document.getElementById('buy-estimate').textContent='-- TOKENS';
-  document.getElementById('sell-estimate').textContent='-- ARC';
+function handleLogo(e){
+  const f=e.target.files[0];if(!f)return;if(f.size>2*1024*1024){alert('Max 2MB');return}
+  lfile=f;const r=new FileReader();
+  r.onload=ev=>{lb64=ev.target.result;document.getElementById('prev-logo').innerHTML=`<img src="${lb64}" style="width:54px;height:54px;border:1px solid var(--border);object-fit:cover">`;document.getElementById('upa').innerHTML=`<img src="${lb64}" style="height:46px;object-fit:contain"><div class="uptxt">LOGO SELECTED</div><input type="file" accept="image/*" id="lfile" onchange="handleLogo(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">`};
+  r.readAsDataURL(f);
 }
 
-async function updateBuyEstimate() {
-  if(!selectedToken) return;
-  const val = document.getElementById('buy-arc-input').value;
-  if(!val || isNaN(val) || parseFloat(val)<=0) {
-    document.getElementById('buy-estimate').textContent='-- TOKENS';
-    return;
-  }
-  try {
-    const c = await getReadContract();
-    const arcIn = ethers.utils.parseEther(val);
-    const out = await c.getBuyQuote(selectedToken.tokenAddress, arcIn);
-    document.getElementById('buy-estimate').textContent = fmtTokenAmt(out)+' '+selectedToken.symbol;
-  } catch(e) {
-    document.getElementById('buy-estimate').textContent='-- TOKENS';
-  }
-}
-
-async function updateSellEstimate() {
-  if(!selectedToken) return;
-  const val = document.getElementById('sell-token-input').value;
-  if(!val || isNaN(val) || parseFloat(val)<=0) {
-    document.getElementById('sell-estimate').textContent='-- ARC';
-    return;
-  }
-  try {
-    const c = await getReadContract();
-    const amt = ethers.utils.parseEther(val);
-    const out = await c.getSellQuote(selectedToken.tokenAddress, amt);
-    document.getElementById('sell-estimate').textContent = fmtARC(out);
-  } catch(e) {
-    document.getElementById('sell-estimate').textContent='-- ARC';
-  }
-}
-
-async function buyTokens() {
-  if(!walletAddress) { openWalletModal(); return; }
-  if(!selectedToken) return;
-  const val = document.getElementById('buy-arc-input').value;
-  if(!val || isNaN(val) || parseFloat(val)<=0) {
-    showNotification('notifications-trade','error','INPUT ERROR','Enter a valid ARC amount');
-    return;
-  }
-  const btn = document.getElementById('buy-btn');
-  btn.disabled=true;btn.textContent='PROCESSING...';
-  try {
-    const arcIn = ethers.utils.parseEther(val);
-    const tx = await contract.buyTokens(selectedToken.tokenAddress, { value: arcIn });
-    showNotification('notifications-trade','success','TRANSACTION SENT','Waiting for confirmation...');
-    const receipt = await tx.wait();
-    showNotification('notifications-trade','success','TRANSACTION CONFIRMED','Tokens purchased successfully.', receipt.transactionHash);
-    document.getElementById('buy-arc-input').value='';
-    document.getElementById('buy-estimate').textContent='-- TOKENS';
+async function launchToken(){
+  if(!wa){openWM();return}
+  const name=document.getElementById('cn').value.trim(),symbol=document.getElementById('csym').value.trim();
+  if(!name||!symbol){showN('nc','err','VALIDATION ERROR','Name and symbol are required.');return}
+  openTX();
+  const res=document.getElementById('tx-res');
+  try{
+    setTS(1,'active');
+    const desc=document.getElementById('cdesc').value.trim(),website=document.getElementById('cweb').value.trim(),twitter=document.getElementById('ctw').value.trim(),logoURI=lb64||'';
+    await new Promise(r=>setTimeout(r,500));setTS(1,'done');setTS(2,'active');
+    const tx=await con.createToken({name,symbol,description:desc,logoURI,website,twitter},{value:ethers.utils.parseEther('0.01')});
+    setTS(2,'done');setTS(3,'active');
+    const receipt=await tx.wait();
+    setTS(3,'done');setTS(4,'active');
+    try{await db.collection('tokens').add({tokenAddress:receipt.events&&receipt.events[0]?receipt.events[0].address:'',name,symbol,description:desc,logoURI,website,twitter,creator:wa,createdAt:firebase.firestore.FieldValue.serverTimestamp(),chainId:5050122})}catch{}
+    setTS(4,'done');
+    res.style.display='block';
+    res.innerHTML=`<div class="notif ok"><div class="ntitle">TOKEN LAUNCHED SUCCESSFULLY</div><div class="nmsg">TX: ${sh(receipt.transactionHash)}</div><a class="nlink" href="${EXP}${receipt.transactionHash}" target="_blank" rel="noopener"><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 1H1v9h9V7M6 1h4v4M9 2L5 6"/></svg>VIEW ON EXPLORER</a></div>`;
     await refreshData();
-    selectTradeToken(selectedToken.tokenAddress);
-    updateBalance();
-  } catch(e) {
-    showNotification('notifications-trade','error','TRANSACTION FAILED', e.reason||e.message||'Unknown error');
+    // Go to Trade tab after success
+    setTimeout(()=>{
+      closeTX();
+      ['cn','csym','cdesc','cweb','ctw'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+      lb64='';lfile=null;uprev();
+      goTab('trade');
+    },2500);
+  }catch(e){
+    [2,3,4].forEach(i=>setTS(i,'pending'));
+    res.style.display='block';
+    res.innerHTML=`<div class="notif err"><div class="ntitle">TRANSACTION FAILED</div><div class="nmsg">${esc(e.reason||e.message||'Unknown error')}</div></div>`;
+    closeTX(3500);
   }
+}
+
+// TRADE
+function setMode(m){
+  swMode=m;
+  document.getElementById('stab-buy').classList.toggle('active',m==='buy');
+  document.getElementById('stab-sell').classList.toggle('active',m==='sell');
+  document.getElementById('sbuy').style.display=m==='buy'?'block':'none';
+  document.getElementById('ssell').style.display=m==='sell'?'block':'none';
+}
+
+function goTrade(addr){goTab('trade');setTimeout(()=>selToken(addr),80)}
+
+function renderTL(toks){
+  const l=document.getElementById('tll');
+  if(!toks.length){l.innerHTML='<div style="padding:13px;text-align:center;color:var(--muted);font-size:11px;text-transform:uppercase">NO TOKENS</div>';return}
+  l.innerHTML=toks.map(t=>{
+    const addr=t.tokenAddress||t[0],price=t.price?parseFloat(ethers.utils.formatEther(t.price)).toFixed(6):'--';
+    const act=selTok&&(selTok.tokenAddress||selTok[0])===addr?'active':'';
+    return`<div class="tlr ${act}" onclick="selToken('${addr}')">${lhtml(t.logoURI,30)}<div style="min-width:0;flex:1"><div style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">${esc(t.symbol||'--')}</div><div style="font-size:9px;color:var(--muted)">${esc(t.name||'--')}</div></div><div style="font-size:9px;color:var(--muted);text-align:right;white-space:nowrap">${price}</div></div>`;
+  }).join('');
+}
+
+function filterTL(){const q=document.getElementById('tls').value.toLowerCase();renderTL(tokens.filter(t=>(t.name||'').toLowerCase().includes(q)||(t.symbol||'').toLowerCase().includes(q)))}
+
+async function selToken(addr){
+  const t=tokens.find(x=>(x.tokenAddress||x[0]).toLowerCase()===addr.toLowerCase());
+  if(!t)return;selTok=t;renderTL(tokens);
+  document.getElementById('t-empty').style.display='none';
+  document.getElementById('t-swap').style.display='block';
+  const price=t.price?parseFloat(ethers.utils.formatEther(t.price)).toFixed(6):'--',pct=cpct(t.pool);
+  document.getElementById('sw-n').textContent=(t.name||'--').toUpperCase();
+  document.getElementById('sw-s').textContent=t.symbol||'--';
+  document.getElementById('sw-p').textContent=price+' ARC';
+  document.getElementById('sw-cr').textContent=sh(t.creator);
+  document.getElementById('sw-pct').textContent=pct;
+  document.getElementById('sw-pb').style.width=pct+'%';
+  document.getElementById('sw-desc').textContent=t.description||'';
+  document.getElementById('sw-logo').innerHTML=lhtml(t.logoURI,42);
+  const sym=esc(t.symbol||'TOKEN');
+  document.getElementById('recv-sym').textContent=sym;
+  document.getElementById('sell-sym').textContent=sym;
+  const logoSmall=t.logoURI&&t.logoURI.length>10?`<img src="${esc(t.logoURI)}" style="width:18px;height:18px;border:1px solid var(--border);border-radius:50%;object-fit:cover" onerror="this.style.display='none'">`:'<div style="width:18px;height:18px;background:#F2EDE3;border:1px solid var(--border);flex-shrink:0"></div>';
+  document.getElementById('recv-logo').outerHTML=logoSmall+' <!-- rl -->';
+  // Reset
+  document.getElementById('b-arc').value='';document.getElementById('s-tok').value='';
+  document.getElementById('b-out').textContent='0.00';document.getElementById('s-out').textContent='0.0000';
+  if(wa){try{const tc=new ethers.Contract(addr,ERC20ABI,prov);const b=await tc.balanceOf(wa);document.getElementById('tok-bal').textContent='BAL: '+parseFloat(ethers.utils.formatEther(b)).toFixed(2)+' '+sym}catch{}}
+  updBal();
+}
+
+async function updBuy(){
+  if(!selTok)return;const v=document.getElementById('b-arc').value;
+  if(!v||isNaN(v)||parseFloat(v)<=0){document.getElementById('b-out').textContent='0.00';return}
+  try{const c=await getRpc();const o=await c.getBuyQuote(selTok.tokenAddress,ethers.utils.parseEther(v));document.getElementById('b-out').textContent=fTok(o)}catch{document.getElementById('b-out').textContent='--'}
+}
+async function updSell(){
+  if(!selTok)return;const v=document.getElementById('s-tok').value;
+  if(!v||isNaN(v)||parseFloat(v)<=0){document.getElementById('s-out').textContent='0.0000';return}
+  try{const c=await getRpc();const o=await c.getSellQuote(selTok.tokenAddress,ethers.utils.parseEther(v));document.getElementById('s-out').textContent=parseFloat(ethers.utils.formatEther(o)).toFixed(4)}catch{document.getElementById('s-out').textContent='--'}
+}
+
+function dotsHTML(){return'<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>'}
+
+async function doBuy(){
+  if(!wa){openWM();return}if(!selTok)return;
+  const v=document.getElementById('b-arc').value;
+  if(!v||parseFloat(v)<=0){showN('nt','err','INPUT ERROR','Enter ARC amount');return}
+  const btn=document.getElementById('buy-btn');btn.disabled=true;btn.innerHTML=dotsHTML();
+  try{
+    const tx=await con.buyTokens(selTok.tokenAddress,{value:ethers.utils.parseEther(v)});
+    showN('nt','info','TRANSACTION SENT','Waiting for confirmation...');
+    const r=await tx.wait();
+    showN('nt','ok','TRANSACTION CONFIRMED','Tokens purchased!',r.transactionHash);
+    document.getElementById('b-arc').value='';document.getElementById('b-out').textContent='0.00';
+    await refreshData();selToken(selTok.tokenAddress);updBal();
+  }catch(e){showN('nt','err','FAILED',e.reason||e.message||'Error')}
   btn.disabled=false;btn.textContent='BUY TOKENS';
 }
 
-async function approveTokens() {
-  if(!walletAddress) { openWalletModal(); return; }
-  if(!selectedToken) return;
-  const val = document.getElementById('sell-token-input').value;
-  if(!val || isNaN(val) || parseFloat(val)<=0) {
-    showNotification('notifications-trade','error','INPUT ERROR','Enter token amount first');
-    return;
-  }
-  const btn = document.getElementById('approve-btn');
-  btn.disabled=true;btn.textContent='APPROVING...';
-  try {
-    const tokenContract = new ethers.Contract(selectedToken.tokenAddress, ERC20_ABI, signer);
-    const amt = ethers.utils.parseEther(val);
-    const tx = await tokenContract.approve(CONTRACT_ADDRESS, amt);
-    await tx.wait();
-    showNotification('notifications-trade','success','APPROVED','Tokens approved. You can now sell.');
-  } catch(e) {
-    showNotification('notifications-trade','error','APPROVAL FAILED', e.reason||e.message||'Unknown error');
-  }
+async function doApprove(){
+  if(!wa){openWM();return}if(!selTok)return;
+  const v=document.getElementById('s-tok').value;
+  if(!v||parseFloat(v)<=0){showN('nt','err','INPUT ERROR','Enter token amount first');return}
+  const btn=document.getElementById('appr-btn');btn.disabled=true;btn.innerHTML=dotsHTML();
+  try{const tc=new ethers.Contract(selTok.tokenAddress,ERC20ABI,sign);const tx=await tc.approve(CA,ethers.utils.parseEther(v));await tx.wait();showN('nt','ok','APPROVED','You can now sell your tokens.')}
+  catch(e){showN('nt','err','APPROVAL FAILED',e.reason||e.message||'Error')}
   btn.disabled=false;btn.textContent='APPROVE TOKENS';
 }
 
-async function sellTokens() {
-  if(!walletAddress) { openWalletModal(); return; }
-  if(!selectedToken) return;
-  const val = document.getElementById('sell-token-input').value;
-  if(!val || isNaN(val) || parseFloat(val)<=0) {
-    showNotification('notifications-trade','error','INPUT ERROR','Enter a valid token amount');
-    return;
-  }
-  const btn = document.getElementById('sell-btn');
-  btn.disabled=true;btn.textContent='PROCESSING...';
-  try {
-    const amt = ethers.utils.parseEther(val);
-    const tx = await contract.sellTokens(selectedToken.tokenAddress, amt);
-    showNotification('notifications-trade','success','TRANSACTION SENT','Waiting for confirmation...');
-    const receipt = await tx.wait();
-    showNotification('notifications-trade','success','TRANSACTION CONFIRMED','Tokens sold successfully.', receipt.transactionHash);
-    document.getElementById('sell-token-input').value='';
-    document.getElementById('sell-estimate').textContent='-- ARC';
-    await refreshData();
-    selectTradeToken(selectedToken.tokenAddress);
-    updateBalance();
-  } catch(e) {
-    showNotification('notifications-trade','error','TRANSACTION FAILED', e.reason||e.message||'Unknown error');
-  }
+async function doSell(){
+  if(!wa){openWM();return}if(!selTok)return;
+  const v=document.getElementById('s-tok').value;
+  if(!v||parseFloat(v)<=0){showN('nt','err','INPUT ERROR','Enter token amount');return}
+  const btn=document.getElementById('sell-btn');btn.disabled=true;btn.innerHTML=dotsHTML();
+  try{
+    const tx=await con.sellTokens(selTok.tokenAddress,ethers.utils.parseEther(v));
+    showN('nt','info','TRANSACTION SENT','Waiting for confirmation...');
+    const r=await tx.wait();
+    showN('nt','ok','TRANSACTION CONFIRMED','Tokens sold!',r.transactionHash);
+    document.getElementById('s-tok').value='';document.getElementById('s-out').textContent='0.0000';
+    await refreshData();selToken(selTok.tokenAddress);updBal();
+  }catch(e){showN('nt','err','FAILED',e.reason||e.message||'Error')}
   btn.disabled=false;btn.textContent='SELL TOKENS';
 }
 
-// ===================== FEEDBACK =====================
-function setStars(n) {
-  selectedStars = n;
-  document.querySelectorAll('.star-btn').forEach(btn => {
-    const s = parseInt(btn.getAttribute('data-star'));
-    btn.classList.toggle('active', s <= n);
-  });
-}
+// FEEDBACK
+function setStars(n){selS=n;document.querySelectorAll('.starbtn').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.s)<=n))}
 
-async function submitFeedback() {
-  const name = document.getElementById('fb-name').value.trim();
-  const msg = document.getElementById('fb-message').value.trim();
-  if(!name || !msg) {
-    showNotification('notifications-feedback','error','VALIDATION ERROR','Name and message are required.');
-    return;
-  }
-  if(!selectedStars) {
-    showNotification('notifications-feedback','error','VALIDATION ERROR','Please select a star rating.');
-    return;
-  }
-  const btn = document.getElementById('fb-submit-btn');
-  btn.disabled=true;btn.textContent='SUBMITTING...';
-  try {
-    await db.collection('feedback').add({
-      name, message: msg, stars: selectedStars,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showNotification('notifications-feedback','success','FEEDBACK SUBMITTED','Thank you for your feedback!');
-    document.getElementById('fb-name').value='';
-    document.getElementById('fb-message').value='';
-    setStars(0);
-    selectedStars=0;
-    loadFeedback();
-  } catch(e) {
-    showNotification('notifications-feedback','error','SUBMIT FAILED', e.message||'Unknown error');
-  }
+async function submitFB(){
+  const name=document.getElementById('fb-n').value.trim(),msg=document.getElementById('fb-m').value.trim();
+  if(!name||!msg){showN('nf','err','VALIDATION ERROR','Name and message required.');return}
+  if(!selS){showN('nf','err','VALIDATION ERROR','Select a rating.');return}
+  const btn=document.getElementById('fb-sub');btn.disabled=true;btn.innerHTML=dotsHTML();
+  try{
+    await db.collection('feedback').add({name,message:msg,stars:selS,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    showN('nf','ok','SUBMITTED','Thank you for your feedback!');
+    document.getElementById('fb-n').value='';document.getElementById('fb-m').value='';setStars(0);selS=0;loadFB();
+  }catch(e){showN('nf','err','FAILED',e.message||'Error')}
   btn.disabled=false;btn.textContent='SUBMIT FEEDBACK';
 }
 
-async function loadFeedback() {
-  const list = document.getElementById('feedback-list');
-  try {
-    const snap = await db.collection('feedback').orderBy('createdAt','desc').limit(20).get();
-    if(snap.empty) {
-      list.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;background:var(--card);border:1px solid var(--border)">NO FEEDBACK YET — BE THE FIRST</div>';
-      return;
-    }
-    list.innerHTML = snap.docs.map(doc => {
-      const d = doc.data();
-      const stars = d.stars||0;
-      const starsHtml = [1,2,3,4,5].map(i=>
-        `<span class="${i<=stars?'feedback-star-filled':'feedback-star-empty'}">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.5 3.9H13l-3.3 2.4 1.3 3.9L7 9.1 3 11.2l1.3-3.9L1 4.9h4.5L7 1z"/></svg>
-        </span>`
-      ).join('');
-      const ts = d.createdAt ? timeAgo(d.createdAt) : 'recently';
-      return `<div class="feedback-card">
-        <div class="feedback-card-header">
-          <span class="feedback-name">${escHtml(d.name||'ANON')}</span>
-          <div class="feedback-stars">${starsHtml}</div>
-        </div>
-        <div class="feedback-msg">${escHtml(d.message||'')}</div>
-        <div class="feedback-time">${ts}</div>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    list.innerHTML='<div style="padding:16px;color:#CC0000;font-size:11px;letter-spacing:0.05em;text-transform:uppercase">FAILED TO LOAD FEEDBACK</div>';
-  }
+async function loadFB(){
+  const l=document.getElementById('fb-list');
+  try{
+    const snap=await db.collection('feedback').orderBy('createdAt','desc').limit(20).get();
+    if(snap.empty){l.innerHTML='<div style="padding:18px;text-align:center;color:var(--muted);font-size:11px;text-transform:uppercase;background:var(--card);border:1px solid var(--border)">NO FEEDBACK YET</div>';return}
+    l.innerHTML=snap.docs.map(d=>{const fd=d.data();const stars=[1,2,3,4,5].map(i=>`<span style="color:${i<=fd.stars?'#E8A000':'#C8BFA8'}"><svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><path d="M5.5 1l1.1 3.4H10l-2.9 2.1 1.1 3.4L5.5 7.8 2.9 9.9 4 6.5 1 4.5h3.4z"/></svg></span>`).join('');return`<div class="fbcard"><div class="fbhdr"><span class="fbname">${esc(fd.name||'ANON')}</span><div class="fbstars">${stars}</div></div><div class="fbmsg">${esc(fd.message||'')}</div><div class="fbtime">${fd.createdAt?tAgo(fd.createdAt):'recently'}</div></div>`}).join('');
+  }catch{l.innerHTML='<div style="padding:11px;color:#CC0000;font-size:11px;text-transform:uppercase">FAILED TO LOAD</div>'}
 }
 
-// ===================== INIT =====================
-async function init() {
-  await tryAutoReconnect();
+// INIT
+async function init(){
+  await autoRecon();
+  if(!wa){document.getElementById('t-nowallet').style.display='block';document.getElementById('t-main').style.display='none'}
   await refreshData();
-  autoRefreshInterval = setInterval(refreshData, 30000);
-
-  // Trade tab wallet check
-  if(!walletAddress) {
-    document.getElementById('trade-no-wallet').style.display='block';
-    document.getElementById('trade-main').style.display='none';
-  }
-
-  // Listen for account/chain changes
-  if(window.ethereum) {
-    window.ethereum.on('accountsChanged', async (accounts) => {
-      if(accounts.length === 0) {
-        walletAddress=null;signer=null;contract=null;
-        document.getElementById('connect-btn').textContent='CONNECT WALLET';
-        document.getElementById('connect-btn').style.background='var(--accent)';
-        document.getElementById('connect-btn').style.borderColor='var(--accent-dark)';
-        document.getElementById('wallet-addr-box').style.display='none';
-        document.getElementById('arc-balance-box').style.display='none';
-        localStorage.removeItem('arclaunchpad_wallet');
-        document.getElementById('trade-no-wallet').style.display='block';
-        document.getElementById('trade-main').style.display='none';
-      } else {
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        signer = provider.getSigner();
-        walletAddress = await signer.getAddress();
-        contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-        updateWalletUI();
-      }
+  setInterval(refreshData,30000);
+  if(window.ethereum){
+    window.ethereum.on('accountsChanged',async a=>{
+      if(!a.length){wa=null;sign=null;con=null;const btn=document.getElementById('cbtn');btn.textContent='CONNECT WALLET';btn.classList.remove('conn');document.getElementById('abox').style.display='none';document.getElementById('bal-box').style.display='none';localStorage.removeItem('alw');document.getElementById('t-nowallet').style.display='block';document.getElementById('t-main').style.display='none'}
+      else{prov=new ethers.providers.Web3Provider(window.ethereum);sign=prov.getSigner();wa=await sign.getAddress();con=new ethers.Contract(CA,ABI,sign);updWUI()}
     });
-    window.ethereum.on('chainChanged', () => window.location.reload());
+    window.ethereum.on('chainChanged',()=>location.reload());
   }
 }
-
-window.addEventListener('DOMContentLoaded', init);
+window.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
