@@ -1344,7 +1344,7 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
         <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
           <div style="flex:1;height:1px;background:rgba(255,255,255,0.06);"></div>
           <span style="font-size:11px;color:#334155;font-family:var(--font-mono);
-                       letter-spacing:0.05em;">Arc Testnet · Chain 5042</span>
+                       letter-spacing:0.05em;">Arc Testnet · Chain 5042002</span>
           <div style="flex:1;height:1px;background:rgba(255,255,255,0.06);"></div>
         </div>
       </div>
@@ -1908,7 +1908,7 @@ const STATE = {
 const CONTRACT_ADDRESS = '0x8AF2a8818994DDC5AF45dD67A41259e895558a43';
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
 const USDC_DECIMALS = 6;
-const ARC_CHAIN_ID = 5042;
+const ARC_CHAIN_ID = 5042002;
 const ARC_RPC = 'https://rpc.testnet.arc.network';
 
 const CONTRACT_ABI = [
@@ -2059,7 +2059,7 @@ async function ensureNetworkWithProvider(provider) {
         chainId: '0x' + ARC_CHAIN_ID.toString(16),
         chainName: 'Arc Testnet',
         rpcUrls: ['https://rpc.testnet.arc.network'],
-        nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
+        nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
         blockExplorerUrls: ['https://testnet.arcscan.app']
       }]
     });
