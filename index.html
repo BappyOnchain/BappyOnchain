@@ -1909,7 +1909,7 @@ const CONTRACT_ADDRESS = '0x8AF2a8818994DDC5AF45dD67A41259e895558a43';
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
 const USDC_DECIMALS = 6;
 const ARC_CHAIN_ID = 5042;
-const ARC_RPC = 'https://rpc.arc.fun';
+const ARC_RPC = 'https://rpc.testnet.arc.network';
 
 const CONTRACT_ABI = [
   "function createJob(address freelancer, uint256 amount, uint256 deadline, string description) returns (uint256)",
@@ -2058,7 +2058,7 @@ async function ensureNetworkWithProvider(provider) {
       params: [{
         chainId: '0x' + ARC_CHAIN_ID.toString(16),
         chainName: 'Arc Testnet',
-        rpcUrls: ['https://rpc.arc.fun'],
+        rpcUrls: ['https://rpc.testnet.arc.network'],
         nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 6 },
         blockExplorerUrls: ['https://testnet.arcscan.app']
       }]
