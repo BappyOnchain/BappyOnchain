@@ -2667,3 +2667,613 @@ async function doApprove(jobId) {
     hideSpinner();
     handleTxError(e);
   }
+}
+
+async function doCancelJob(jobId) {
+  if (!confirm('Cancel this job? Funds will be returned.')) return;
+  showSpinner('Cancelling job...');
+  try {
+    const job = STATE.jobs.find(j => j.id === jobId);
+    if (job && job.chainJobId) {
+      const tx = await STATE.contract.cancelJob(job.chainJobId);
+      await tx.wait();
+    }
+    await fbUpdate('jobs', jobId, { status: 'cancelled' });
+    await loadJobs();
+    await loadUSDCBalance();
+    hideSpinner();
+    showToast('success', 'Job Cancelled', 'Funds returned to your wallet');
+    if (STATE.currentPage === 'jobs') loadJobsPage();
+    if (STATE.currentPage === 'home') loadHomePage();
+  } catch(e) {
+    hideSpinner();
+    handleTxError(e);
+  }
+}
+
+/* ============================================================
+   WALLET PAGE
+   ============================================================ */
+async function loadWalletPage() {
+  await loadUSDCBalance();
+  
+  const addr = STATE.wallet || '';
+  document.getElementById('wallet-addr-short').textContent = addr ? (addr.slice(0,6) + '...' + addr.slice(-4)) : '—';
+  document.getElementById('receive-addr').textContent = addr || '—';
+
+  loadTxHistory();
+}
+
+async function loadTxHistory() {
+  const el = document.getElementById('tx-history');
+  if (!STATE.wallet) { el.innerHTML = '<p class="text-muted" style="font-size:13px;padding:12px">Connect wallet to view history</p>'; return; }
+  
+  try {
+    const txs = await fbQuery('transactions', 'wallet', STATE.wallet.toLowerCase());
+    if (!txs.length) {
+      el.innerHTML = `<div class="empty-state" style="padding:24px">
+        <p class="empty-sub">No transactions yet</p>
+      </div>`;
+      return;
+    }
+    el.innerHTML = txs.slice(0,10).map(tx => renderTxItem(tx)).join('');
+  } catch(e) {
+    el.innerHTML = `<p class="text-muted" style="font-size:13px;padding:12px">Could not load history</p>`;
+  }
+}
+
+function renderTxItem(tx) {
+  const isIn = !tx.amount?.toString().startsWith('-');
+  const color = isIn ? 'tx-in' : 'tx-out';
+  const iconBg = isIn ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+  const iconColor = isIn ? '#10b981' : '#ef4444';
+  const icon = tx.type === 'lock'
+    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
+    : isIn
+    ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><path d="M12 2v20M2 12l10 10 10-10"/></svg>`
+    : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
+
+  return `<div class="tx-item">
+    <div class="tx-icon" style="background:${iconBg}">${icon}</div>
+    <div class="tx-body">
+      <p class="tx-label">${escHtml(tx.label || 'Transaction')}</p>
+      <p class="tx-hash">${tx.txHash ? tx.txHash.slice(0,14) + '...' : 'Pending'}</p>
+    </div>
+    <span class="tx-amount ${color}">${isIn ? '+' : ''}${tx.amount || 0} USDC</span>
+  </div>`;
+}
+
+async function doSendUSDC() {
+  const to = document.getElementById('send-to').value.trim();
+  const amount = document.getElementById('send-amount').value.trim();
+  if (!ethers.isAddress(to)) { showToast('error', 'Invalid Address', 'Enter a valid recipient address'); return; }
+  if (!amount || parseFloat(amount) <= 0) { showToast('error', 'Invalid Amount', 'Enter an amount greater than 0'); return; }
+  
+  closeModal('send-modal');
+  showSpinner('Sending USDC...');
+  try {
+    const parsedAmount = ethers.parseUnits(amount, USDC_DECIMALS);
+    const tx = await STATE.usdcContract.transfer(to, parsedAmount);
+    const receipt = await tx.wait();
+    
+    await fbAdd('transactions', {
+      wallet: STATE.wallet.toLowerCase(),
+      label: 'Sent USDC',
+      amount: '-' + amount,
+      type: 'out',
+      txHash: receipt.hash,
+      date: new Date().toISOString()
+    });
+
+    await loadUSDCBalance();
+    hideSpinner();
+    showToast('success', 'USDC Sent', receipt.hash.slice(0,18) + '...');
+    loadTxHistory();
+  } catch(e) {
+    hideSpinner();
+    handleTxError(e);
+  }
+}
+
+function openFaucet() {
+  window.open('https://faucet.arc.fun', '_blank');
+}
+
+/* ============================================================
+   DISPUTES PAGE
+   ============================================================ */
+async function loadDisputesPage() {
+  await loadJobs();
+  const disputed = STATE.jobs.filter(j => j.status === 'disputed');
+  const resolved = STATE.jobs.filter(j => j.status === 'resolved');
+  
+  document.getElementById('dispute-count').textContent = disputed.length + ' active';
+  
+  const list = document.getElementById('disputes-list');
+  if (!disputed.length) {
+    list.innerHTML = `<div class="empty-state">
+      <svg class="empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <p class="empty-title">No open disputes</p>
+      <p class="empty-sub">All jobs are running smoothly</p>
+    </div>`;
+  } else {
+    list.innerHTML = disputed.map(j => renderDisputeCard(j)).join('');
+    startDisputeTimers();
+  }
+  
+  const resolvedList = document.getElementById('resolved-list');
+  if (!resolved.length) {
+    resolvedList.innerHTML = `<div class="empty-state">
+      <p class="empty-sub">No resolved disputes yet</p>
+    </div>`;
+  } else {
+    resolvedList.innerHTML = resolved.map(j => renderDisputeCard(j, true)).join('');
+  }
+}
+
+function renderDisputeCard(job, isResolved) {
+  const pct = 50;
+  return `<div class="dispute-card ${isResolved ? 'resolved' : ''}">
+    <div class="flex items-center justify-between mb-12">
+      <h3 class="font-head" style="font-size:15px;font-weight:600">${escHtml(job.title || 'Untitled')}</h3>
+      <span class="job-budget text-red">$${parseFloat(job.amount || 0).toFixed(0)}</span>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">${escHtml(job.disputeReason || 'No reason provided')}</p>
+    <div class="vote-labels">
+      <span style="color:var(--accent-green);font-size:12px">Freelancer ${pct}%</span>
+      <span style="color:var(--accent-red);font-size:12px">${100-pct}% Client</span>
+    </div>
+    <div class="vote-bar">
+      <div class="vote-bar-green" style="width:${pct}%"></div>
+      <div class="vote-bar-red"></div>
+    </div>
+    ${!isResolved ? `
+    <div class="flex items-center justify-between mt-12">
+      <span class="countdown" id="dispute-timer-${job.id}">—</span>
+      <button class="btn btn-primary btn-sm" onclick="openVote('${job.id}')">Vote</button>
+    </div>` : `
+    <div class="mt-12"><span class="badge badge-resolved">Resolved</span></div>`}
+  </div>`;
+}
+
+function startDisputeTimers() {
+  STATE.jobs.filter(j => j.status === 'disputed').forEach(j => {
+    const el = document.getElementById('dispute-timer-' + j.id);
+    if (el) {
+      const end = j.disputedAt ? new Date(j.disputedAt).getTime() + 3 * 24 * 60 * 60 * 1000 : Date.now() + 60000;
+      updateTimer(el, end);
+    }
+  });
+}
+
+function updateTimer(el, end) {
+  const update = () => {
+    const left = end - Date.now();
+    if (left <= 0) { el.textContent = 'Voting ended'; return; }
+    const h = Math.floor(left / 3600000);
+    const m = Math.floor((left % 3600000) / 60000);
+    const s = Math.floor((left % 60000) / 1000);
+    el.textContent = `${h}h ${m}m ${s}s`;
+    setTimeout(update, 1000);
+  };
+  update();
+}
+
+function openVote(jobId) {
+  STATE.currentJobId = jobId;
+  document.getElementById('vote-job-id').value = jobId;
+  openModal('vote-modal');
+}
+
+async function doVote(voteForFreelancer) {
+  closeModal('vote-modal');
+  showSpinner('Recording your vote...');
+  try {
+    const job = STATE.jobs.find(j => j.id === STATE.currentJobId);
+    if (job && job.chainJobId) {
+      const tx = await STATE.contract.castVote(job.chainJobId, voteForFreelancer);
+      await tx.wait();
+    }
+    hideSpinner();
+    showToast('success', 'Vote Recorded', 'Your vote is on-chain');
+    loadDisputesPage();
+  } catch(e) {
+    hideSpinner();
+    handleTxError(e);
+  }
+}
+
+/* ============================================================
+   PROFILE PAGE
+   ============================================================ */
+async function loadProfilePage() {
+  const addr = STATE.wallet || '';
+  document.getElementById('profile-avatar').textContent = addr ? addr.slice(2,3).toUpperCase() : '?';
+  document.getElementById('profile-name').textContent = addr ? shortAddr(addr) : 'Anonymous';
+  document.getElementById('profile-addr').textContent = addr || 'Not connected';
+  
+  const completed = STATE.jobs.filter(j => j.status === 'completed');
+  const earned = completed.filter(j => j.freelancer?.toLowerCase() === addr.toLowerCase())
+    .reduce((s, j) => s + parseFloat(j.amount || 0), 0);
+  const total = STATE.jobs.length;
+  const rate = total > 0 ? Math.round((completed.length / total) * 100) : 0;
+  
+  document.getElementById('profile-earned').textContent = '$' + earned.toFixed(0);
+  document.getElementById('profile-jobs').textContent = completed.length;
+  document.getElementById('profile-rate').textContent = rate + '%';
+  document.getElementById('profile-disputes-won').textContent = 0;
+  
+  loadSkillsFromFirebase();
+  renderEarningsChart();
+}
+
+async function loadSkillsFromFirebase() {
+  if (!STATE.wallet) return;
+  try {
+    const { doc, getDoc } = window._fs_firebase;
+    const snap = await getDoc(doc(window._fs_db, 'users', STATE.wallet.toLowerCase()));
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data.skills && Array.isArray(data.skills)) {
+        const wrap = document.getElementById('profile-skills');
+        wrap.innerHTML = data.skills.map(s =>
+          `<span class="skill-tag removable" onclick="removeSkill(this)">${escHtml(s)}</span>`
+        ).join('');
+      }
+    }
+  } catch(e) {}
+}
+
+function removeSkill(el) {
+  el.remove();
+  saveSkills();
+}
+
+function addSkillPrompt() {
+  document.getElementById('new-skill-input').value = '';
+  openModal('add-skill-modal');
+}
+
+function confirmAddSkill() {
+  const val = document.getElementById('new-skill-input').value.trim();
+  if (!val) return;
+  const wrap = document.getElementById('profile-skills');
+  const span = document.createElement('span');
+  span.className = 'skill-tag removable';
+  span.textContent = val;
+  span.onclick = () => { span.remove(); saveSkills(); };
+  wrap.appendChild(span);
+  closeModal('add-skill-modal');
+  saveSkills();
+}
+
+async function saveSkills() {
+  const skills = [...document.querySelectorAll('#profile-skills .skill-tag')].map(el => el.textContent.replace(' ×','').trim());
+  if (STATE.wallet) await fbSet('users', STATE.wallet.toLowerCase(), { skills });
+}
+
+function renderEarningsChart() {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun'];
+  const data = [0,0,0,0,0,0];
+  
+  STATE.jobs.filter(j => j.status === 'completed').forEach(j => {
+    const d = j.updatedAt ? new Date(j.updatedAt.seconds * 1000) : new Date();
+    const m = d.getMonth();
+    const now = new Date().getMonth();
+    const idx = m - (now - 5);
+    if (idx >= 0 && idx < 6) data[idx] += parseFloat(j.amount || 0);
+  });
+  
+  const max = Math.max(...data, 100);
+  const w = 300; const h = 100; const barW = 36; const gap = 10;
+  const totalW = months.length * (barW + gap) - gap;
+  const startX = (w - totalW) / 2;
+  
+  let bars = '';
+  months.forEach((m, i) => {
+    const x = startX + i * (barW + gap);
+    const barH = Math.round((data[i] / max) * 70);
+    const y = h - 24 - barH;
+    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="url(#barGrad)" class="chart-bar"/>`;
+    bars += `<text x="${x + barW/2}" y="${h - 6}" text-anchor="middle" font-size="10" fill="#64748b" font-family="Inter">${m}</text>`;
+    if (data[i] > 0) {
+      bars += `<text x="${x + barW/2}" y="${y - 4}" text-anchor="middle" font-size="9" fill="#10b981" font-family="Space Mono">$${Math.round(data[i])}</text>`;
+    }
+  });
+  
+  document.getElementById('earnings-chart').innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+      <defs>
+        <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#3b82f6"/>
+          <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.5"/>
+        </linearGradient>
+      </defs>
+      ${bars}
+    </svg>`;
+}
+
+/* ============================================================
+   EXPLORE PAGE
+   ============================================================ */
+async function loadExplorePage() {
+  const grid = document.getElementById('freelancer-grid');
+  grid.innerHTML = `<div class="skeleton" style="height:160px;border-radius:14px"></div>
+                    <div class="skeleton" style="height:160px;border-radius:14px"></div>
+                    <div class="skeleton" style="height:160px;border-radius:14px"></div>
+                    <div class="skeleton" style="height:160px;border-radius:14px"></div>`;
+  try {
+    STATE.freelancers = await fbGetAll('users');
+    renderFreelancers();
+  } catch(e) {
+    renderFreelancers();
+  }
+}
+
+function renderFreelancers() {
+  const search = document.getElementById('explore-search')?.value.toLowerCase() || '';
+  let list = STATE.freelancers.filter(u => u.address && u.address.toLowerCase() !== (STATE.wallet || '').toLowerCase());
+  
+  if (STATE.exploreFilter) {
+    list = list.filter(u => u.skills && u.skills.some(s => s === STATE.exploreFilter));
+  }
+  if (search) {
+    list = list.filter(u =>
+      u.address?.toLowerCase().includes(search) ||
+      u.name?.toLowerCase().includes(search) ||
+      (u.skills || []).some(s => s.toLowerCase().includes(search))
+    );
+  }
+
+  const grid = document.getElementById('freelancer-grid');
+  if (!list.length) {
+    grid.style.gridTemplateColumns = '1fr';
+    grid.innerHTML = `<div class="empty-state">
+      <svg class="empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <p class="empty-title">No freelancers found</p>
+      <p class="empty-sub">Try different search terms</p>
+    </div>`;
+    return;
+  }
+  grid.style.gridTemplateColumns = '';
+  grid.innerHTML = list.map(u => renderFreelancerCard(u)).join('');
+}
+
+function renderFreelancerCard(u) {
+  const addr = u.address || '';
+  const letter = addr.slice(2,3).toUpperCase() || '?';
+  const skills = (u.skills || []).slice(0,3);
+  const stars = renderStars(u.rating || 4.5);
+  return `<div class="fl-card">
+    <div class="fl-avatar">${letter}</div>
+    <div class="fl-name">${u.name || shortAddr(addr)}</div>
+    <div class="fl-addr">${shortAddr(addr)}</div>
+    <div class="fl-skills">
+      ${skills.map(s => `<span class="fl-skill">${escHtml(s)}</span>`).join('')}
+    </div>
+    <div class="flex items-center justify-between mt-8">
+      <div class="stars">${stars}</div>
+      <span style="font-size:11px;color:var(--text-muted)">${u.jobsDone || 0} jobs</span>
+    </div>
+    <button class="btn btn-primary btn-sm btn-full mt-8" onclick="hireFreelancer('${addr}')">Hire</button>
+  </div>`;
+}
+
+function renderStars(rating) {
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    const filled = i <= Math.round(rating);
+    html += `<svg class="star-icon ${filled ? 'star-filled' : 'star-empty'}" viewBox="0 0 24 24" fill="${filled ? '#f59e0b' : 'none'}" stroke="${filled ? '#f59e0b' : '#1e2d42'}" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+  }
+  return html;
+}
+
+function hireFreelancer(addr) {
+  localStorage.setItem('fs_prefill_addr', addr);
+  navigate('post');
+}
+
+function searchFreelancers() {
+  renderFreelancers();
+}
+
+function setExploreFilter(cat, el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  STATE.exploreFilter = cat;
+  renderFreelancers();
+}
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  if (!e.target.closest('#dropdown-menu') && !e.target.closest('#menu-toggle-btn')) {
+    closeDropdown();
+  }
+});
+
+/* ============================================================
+   TOASTS
+   ============================================================ */
+let toastId = 0;
+function showToast(type, title, msg) {
+  const id = 'toast-' + (++toastId);
+  const icons = {
+    success: `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
+    error: `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+    loading: `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/></svg>`,
+    warning: `<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>`
+  };
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.id = id;
+  el.innerHTML = `${icons[type] || icons.loading}
+    <div class="toast-body">
+      <p class="toast-title">${escHtml(title)}</p>
+      ${msg ? `<p class="toast-msg">${escHtml(msg)}</p>` : ''}
+    </div>`;
+  document.getElementById('toast-container').prepend(el);
+  setTimeout(() => {
+    el.classList.add('toast-out');
+    setTimeout(() => el.remove(), 300);
+  }, 4000);
+}
+
+/* ============================================================
+   SPINNER
+   ============================================================ */
+function showSpinner(text) {
+  document.getElementById('spinner-text').textContent = text || 'Processing...';
+  document.getElementById('spinner-overlay').classList.add('open');
+}
+function hideSpinner() {
+  document.getElementById('spinner-overlay').classList.remove('open');
+}
+
+/* ============================================================
+   CONNECTING STATE
+   ============================================================ */
+function showConnecting(sub) {
+  document.getElementById('auth-buttons').style.display = 'none';
+  document.getElementById('connecting-state').style.display = 'flex';
+  document.getElementById('connecting-sub').textContent = sub || '';
+}
+function hideConnecting() {
+  document.getElementById('auth-buttons').style.display = 'flex';
+  document.getElementById('connecting-state').style.display = 'none';
+}
+
+/* ============================================================
+   DROPDOWN
+   ============================================================ */
+function toggleMenu() {
+  document.getElementById('dropdown-menu').classList.toggle('open');
+}
+function closeDropdown() {
+  document.getElementById('dropdown-menu').classList.remove('open');
+}
+
+/* ============================================================
+   PARTICLES
+   ============================================================ */
+function generateParticles() {
+  const container = document.getElementById('auth-particles');
+  if (!container) return;
+  const colors = ['#3b82f6','#06b6d4','#8b5cf6','#10b981'];
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 6 + 2;
+    p.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${Math.random()*12+8}s;
+      animation-delay:${Math.random()*8}s;
+      opacity:0;
+    `;
+    container.appendChild(p);
+  }
+}
+
+/* ============================================================
+   UTILS
+   ============================================================ */
+function shortAddr(addr) {
+  if (!addr) return '—';
+  return addr.slice(0,6) + '...' + addr.slice(-4);
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function capFirst(str) {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+}
+
+function badgeClass(status) {
+  const m = { open:'badge badge-open', submitted:'badge badge-submitted', completed:'badge badge-completed', disputed:'badge badge-disputed', resolved:'badge badge-resolved', cancelled:'badge badge-cancelled' };
+  return m[status] || 'badge badge-open';
+}
+
+function daysLeft(deadline) {
+  const d = new Date(deadline) - new Date();
+  if (d < 0) return 'Overdue';
+  const days = Math.ceil(d / 86400000);
+  return days === 0 ? 'Due today' : days + 'd left';
+}
+
+function timeAgo(ms) {
+  const diff = Date.now() - ms;
+  if (diff < 60000) return 'just now';
+  if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+  return Math.floor(diff/86400000) + 'd ago';
+}
+
+function copyAddress() {
+  const addr = STATE.wallet || '';
+  if (!addr) return;
+  navigator.clipboard.writeText(addr).then(() => showToast('success', 'Copied', addr.slice(0,12) + '...'));
+}
+
+function handleTxError(e) {
+  if (e.code === 4001 || (e.message && e.message.includes('rejected'))) {
+    showToast('error', 'Rejected', 'Transaction was rejected');
+  } else if (e.message && e.message.includes('insufficient')) {
+    showToast('error', 'Insufficient Funds', 'Not enough balance');
+  } else {
+    showToast('error', 'Transaction Failed', e.shortMessage || e.message?.slice(0,60) || 'Unknown error');
+  }
+}
+
+/* ============================================================
+   INIT ON LOAD
+   ============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+  initApp();
+});
+
+window.ethereum?.on('accountsChanged', async (accounts) => {
+  if (accounts.length) {
+    // Re-setup with existing provider
+    if (STATE.provider) {
+      STATE.wallet = accounts[0];
+      STATE.signer = await STATE.provider.getSigner();
+      STATE.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, STATE.signer);
+      STATE.usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, STATE.signer);
+      localStorage.setItem('fs_wallet', accounts[0]);
+      STATE.user = { address: accounts[0], name: shortAddr(accounts[0]) };
+      await loadUSDCBalance();
+      await loadAllData();
+      showToast('success', 'Account Changed', shortAddr(accounts[0]));
+    } else {
+      await connectMetaMask();
+    }
+  } else {
+    signOut();
+  }
+});
+
+window.ethereum?.on('chainChanged', () => {
+  window.location.reload();
+});
+</script>
+</body>
+</html>
