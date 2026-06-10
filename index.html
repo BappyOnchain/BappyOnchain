@@ -13,6 +13,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+
 const firebaseConfig = {
   apiKey: "AIzaSyD7Cx6JJi2IZHc22r0MnpTL2GeVQW5jqyc",
   authDomain: "hiui-fd6db.firebaseapp.com",
@@ -24,7 +25,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
 window._fs_db = db;
 window._fs_firebase = { collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp };
 window._fs_firebase_ready = true;
@@ -33,6 +33,8 @@ window.dispatchEvent(new Event('firebase_ready'));
 
 <!-- Ethers.js v6 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+
+
 
 <style>
 /* ============================
@@ -1280,82 +1282,77 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
 
   <!-- ===== PAGE: AUTH ===== -->
   <div id="auth-page" class="page active">
-    <!-- Animated particles -->
-    <div class="auth-particles" id="auth-particles"></div>
+    <!-- subtle radial glow bg -->
+    <div style="position:fixed;inset:0;pointer-events:none;z-index:0;
+                background:radial-gradient(ellipse 80% 60% at 50% 0%,
+                rgba(204,255,0,0.07) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 50% 100%,
+                rgba(59,130,246,0.06) 0%, transparent 70%);"></div>
 
-    <div class="auth-content">
-      <div class="auth-logo">
-        <div class="auth-logo-icon">
-          <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
-            <path d="M16 2L4 8v8c0 6.6 5.1 12.8 12 14 6.9-1.2 12-7.4 12-14V8L16 2z" fill="url(#authShieldGrad)"/>
-            <path d="M11 16l3.5 3.5L21 12" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <defs>
-              <linearGradient id="authShieldGrad" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#3b82f6"/>
-                <stop offset="1" stop-color="#06b6d4"/>
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-        <span class="auth-logo-name">FreelanceShield</span>
-      </div>
+    <div class="auth-content" style="position:relative;z-index:1;
+         justify-content:center;min-height:100vh;padding:60px 28px 48px;">
 
-      <h1 class="auth-headline">Work done.<br/>Payment guaranteed.</h1>
-      <p class="auth-sub">On-chain escrow for freelancers and clients. No intermediaries. No fees. Just trust enforced by code.</p>
-
-      <div class="auth-network-badge">
-        <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#10b981"/></svg>
-        Arc Testnet · Chain 5042
-      </div>
-
-      <div class="auth-buttons" id="auth-buttons">
-        <button class="auth-btn" onclick="loginWith('google')">
-          <span class="auth-btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-          </span>
-          Continue with Google
-        </button>
-        <button class="auth-btn" onclick="loginWith('twitter')">
-          <span class="auth-btn-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          </span>
-          Continue with X (Twitter)
-        </button>
-        <button class="auth-btn" onclick="loginWith('github')">
-          <span class="auth-btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-          </span>
-          Continue with GitHub
-        </button>
-        <button class="auth-btn" onclick="loginWith('email')">
-          <span class="auth-btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-          </span>
-          Continue with Email
-        </button>
-
-        <div style="margin-top:8px">
-          <button class="auth-btn" style="border-color:rgba(59,130,246,0.4);background:rgba(59,130,246,0.08);" onclick="connectMetaMask()">
-            <span class="auth-btn-icon">
-              <svg width="20" height="20" viewBox="0 0 35 33" fill="none">
-                <polygon points="32.9582,0.84 19.9099,10.2366 22.3297,4.7466" fill="#E17726" stroke="#E17726" stroke-width="0.25"/>
-                <polygon points="2.0418,0.84 14.9741,10.3305 12.6703,4.7466" fill="#E27625" stroke="#E27625" stroke-width="0.25"/>
-                <polygon points="28.2293,23.5335 24.6711,29.1063 32.3113,31.2138 34.4826,23.6576" fill="#E27625" stroke="#E27625" stroke-width="0.25"/>
-                <polygon points="0.5174,23.6576 2.6888,31.2138 10.3289,29.1063 6.7707,23.5335" fill="#E27625" stroke="#E27625" stroke-width="0.25"/>
-                <polygon points="9.9015,14.5354 7.7302,17.8095 15.3064,18.1527 15.0435,9.9591" fill="#E27625" stroke="#E27625" stroke-width="0.25"/>
-                <polygon points="25.0985,14.5354 19.8563,9.86 19.6934,18.1527 27.2697,17.8095" fill="#E27625" stroke="#E27625" stroke-width="0.25"/>
-                <polygon points="10.3289,29.1063 14.8401,26.8938 10.9492,23.7095" fill="#E27625" stroke="#E27625" stroke-width="0.25"/>
-                <polygon points="20.1599,26.8938 24.6711,29.1063 24.0508,23.7095" fill="#E27625" stroke="#E27625" stroke-width="0.25"/>
-              </svg>
-            </span>
-            Connect MetaMask
-          </button>
+      <!-- Logo — clean, no border radius clipping -->
+      <div style="margin-bottom:28px;text-align:center;">
+        <div style="display:inline-flex;align-items:center;justify-content:center;
+                    width:100px;height:100px;border-radius:28px;
+                    background:#CCFF00;
+                    box-shadow:0 0 40px rgba(204,255,0,0.25),
+                               0 8px 32px rgba(0,0,0,0.4);">
+          <img src="https://i.postimg.cc/GmBcp4CD/1781061851354.png"
+               width="72" height="72"
+               style="object-fit:contain;"
+               alt="FreelanceShield Logo"/>
         </div>
       </div>
 
+      <!-- Brand name -->
+      <h1 style="font-family:var(--font-head);font-size:32px;font-weight:800;
+                 color:#f0f4f8;text-align:center;margin-bottom:8px;letter-spacing:-0.5px;">
+        Freelance<span style="color:#CCFF00;">Shield</span>
+      </h1>
+
+      <!-- Tagline -->
+      <p style="color:#475569;font-size:14px;text-align:center;
+                margin-bottom:48px;line-height:1.6;max-width:260px;">
+        On-chain escrow powered by Arc Network
+      </p>
+
+      <!-- Buttons -->
+      <div id="auth-buttons" style="width:100%;max-width:320px;
+           display:flex;flex-direction:column;gap:12px;">
+
+        <button onclick="openWalletModal('signup')"
+          style="width:100%;padding:17px;border-radius:14px;
+                 background:#CCFF00;border:none;cursor:pointer;
+                 font-family:var(--font-head);font-size:16px;font-weight:700;
+                 color:#0a0a0a;letter-spacing:0.01em;transition:all 0.2s;
+                 box-shadow:0 4px 24px rgba(204,255,0,0.25);">
+          Sign Up
+        </button>
+
+        <button onclick="openWalletModal('login')"
+          style="width:100%;padding:15px;border-radius:14px;
+                 background:rgba(204,255,0,0.06);
+                 border:1.5px solid rgba(204,255,0,0.35);
+                 cursor:pointer;font-family:var(--font-head);
+                 font-size:16px;font-weight:600;color:#CCFF00;
+                 letter-spacing:0.01em;transition:all 0.2s;">
+          Log In
+        </button>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+          <div style="flex:1;height:1px;background:rgba(255,255,255,0.06);"></div>
+          <span style="font-size:11px;color:#334155;font-family:var(--font-mono);
+                       letter-spacing:0.05em;">Arc Testnet · Chain 5042</span>
+          <div style="flex:1;height:1px;background:rgba(255,255,255,0.06);"></div>
+        </div>
+      </div>
+
+      <!-- Connecting state -->
       <div id="connecting-state" class="connecting-wrap" style="display:none;">
-        <div class="connecting-spinner"></div>
-        <p style="color:var(--text-secondary);font-size:14px;">Connecting wallet...</p>
+        <div class="connecting-spinner" style="border-top-color:#CCFF00;"></div>
+        <p style="color:#CCFF00;font-size:14px;font-weight:600;margin-top:4px;">Connecting wallet...</p>
         <p style="color:var(--text-muted);font-size:12px;" id="connecting-sub">Waiting for confirmation</p>
       </div>
     </div>
@@ -1832,6 +1829,45 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
   </div>
 </div>
 
+<!-- Wallet Connect Modal -->
+<div class="modal-overlay" id="wallet-modal">
+  <div class="modal-sheet">
+    <div class="sheet-handle"></div>
+    <h2 class="sheet-title" id="wallet-modal-title">Sign Up</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;">
+      Choose your wallet to continue
+    </p>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <button onclick="closeModal('wallet-modal');connectMetaMask();"
+        style="display:flex;align-items:center;gap:14px;width:100%;
+               padding:16px 18px;border-radius:12px;
+               background:var(--bg-elevated);border:1px solid var(--border);
+               cursor:pointer;transition:all 0.2s;color:var(--text-primary);
+               font-family:var(--font-head);font-size:15px;font-weight:600;">
+        <img src="https://i.postimg.cc/MGD1K3xn/download.png"
+             width="32" height="32" style="border-radius:8px;object-fit:contain;flex-shrink:0;"/>
+        MetaMask
+      </button>
+      <button onclick="closeModal('wallet-modal');connectRabby();"
+        style="display:flex;align-items:center;gap:14px;width:100%;
+               padding:16px 18px;border-radius:12px;
+               background:var(--bg-elevated);border:1px solid var(--border);
+               cursor:pointer;transition:all 0.2s;color:var(--text-primary);
+               font-family:var(--font-head);font-size:15px;font-weight:600;">
+        <img src="https://i.postimg.cc/SKrcN1qM/download-(1).jpg"
+             width="32" height="32" style="border-radius:8px;object-fit:contain;flex-shrink:0;"/>
+        Rabby Wallet
+      </button>
+    </div>
+    <button onclick="closeModal('wallet-modal')"
+      style="width:100%;margin-top:16px;padding:12px;border-radius:10px;
+             background:none;border:none;color:var(--text-muted);
+             font-size:14px;cursor:pointer;">
+      Cancel
+    </button>
+  </div>
+</div>
+
 <!-- Add Skill Modal -->
 <div class="modal-overlay" id="add-skill-modal">
   <div class="modal-sheet">
@@ -1923,9 +1959,20 @@ function setDefaultDeadline() {
 async function tryReconnect(addr) {
   if (window.ethereum) {
     try {
-      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      let provider = window.ethereum;
+      if (window.ethereum.providers) {
+        // Try previously used provider
+        const method = localStorage.getItem('fs_wallet_type') || 'metamask';
+        if (method === 'rabby') {
+          provider = window.ethereum.providers.find(p => p.isRabby) || provider;
+        } else {
+          provider = window.ethereum.providers.find(p => p.isMetaMask && !p.isRabby) || provider;
+        }
+      }
+      const accounts = await provider.request({ method: 'eth_accounts' });
       if (accounts.length && accounts[0].toLowerCase() === addr.toLowerCase()) {
-        await setupWallet(accounts[0]);
+        await ensureNetworkWithProvider(provider);
+        await setupWalletWithProvider(accounts[0], provider);
         return;
       }
     } catch(e) {}
@@ -1953,53 +2000,66 @@ function showApp() {
 /* ============================================================
    AUTH / LOGIN
    ============================================================ */
-function loginWith(method) {
-  showConnecting(`Connecting with ${method}...`);
-  setTimeout(() => {
-    connectMetaMask();
-  }, 800);
+function openWalletModal(type) {
+  document.getElementById('wallet-modal-title').textContent =
+    type === 'signup' ? 'Create Account' : 'Welcome Back';
+  openModal('wallet-modal');
 }
 
-async function connectMetaMask() {
+async function connectRabby() {
+  // Rabby injects as window.ethereum with isRabby flag
+  // Both MetaMask and Rabby use the same EIP-1193 API
   if (!window.ethereum) {
-    showToast('error', 'No Wallet Found', 'Install MetaMask to continue');
+    showToast('error', 'No Wallet Found', 'Install Rabby Wallet and try again');
     return;
   }
-  showConnecting('Requesting wallet access...');
+  // Check if Rabby is the active provider
+  const isRabby = window.ethereum.isRabby || 
+    (window.ethereum.providers && window.ethereum.providers.some(p => p.isRabby));
+  if (!isRabby) {
+    showToast('warning', 'Rabby Not Detected', 'Make sure Rabby is your default wallet, or use MetaMask');
+  }
+  showConnecting('Connecting Rabby Wallet...');
   try {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    if (!accounts.length) throw new Error('No accounts');
-    
-    await ensureNetwork();
-    await setupWallet(accounts[0]);
+    // If multiple providers, pick Rabby
+    let provider = window.ethereum;
+    if (window.ethereum.providers) {
+      const rabbyProvider = window.ethereum.providers.find(p => p.isRabby);
+      if (rabbyProvider) provider = rabbyProvider;
+    }
+    const accounts = await provider.request({ method: 'eth_requestAccounts' });
+    if (!accounts.length) throw new Error('No accounts returned');
+    await ensureNetworkWithProvider(provider);
+    await setupWalletWithProvider(accounts[0], provider);
   } catch(e) {
     hideConnecting();
     if (e.code === 4001) {
-      showToast('error', 'Rejected', 'Connection request was rejected');
+      showToast('error', 'Rejected', 'Connection was rejected');
     } else {
-      showToast('error', 'Connection Failed', e.message || 'Could not connect wallet');
+      showToast('error', 'Connection Failed', e.message || 'Could not connect Rabby');
     }
   }
 }
 
-async function ensureNetwork() {
-  const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
+async function ensureNetworkWithProvider(provider) {
+  const chainIdHex = await provider.request({ method: 'eth_chainId' });
   const chainId = parseInt(chainIdHex, 16);
   if (chainId !== ARC_CHAIN_ID) {
     try {
-      await window.ethereum.request({
+      await provider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: '0x' + ARC_CHAIN_ID.toString(16) }]
       });
     } catch(e) {
       if (e.code === 4902) {
-        await window.ethereum.request({
+        await provider.request({
           method: 'wallet_addEthereumChain',
           params: [{
             chainId: '0x' + ARC_CHAIN_ID.toString(16),
             chainName: 'Arc Testnet',
             rpcUrls: [ARC_RPC],
-            nativeCurrency: { name: 'ARC', symbol: 'ARC', decimals: 18 }
+            nativeCurrency: { name: 'ARC', symbol: 'ARC', decimals: 18 },
+            blockExplorerUrls: ['https://testnet.arcscan.app']
           }]
         });
       } else throw e;
@@ -2007,20 +2067,47 @@ async function ensureNetwork() {
   }
 }
 
-async function setupWallet(address) {
+async function setupWalletWithProvider(address, rawProvider) {
   STATE.wallet = address;
-  STATE.provider = new ethers.BrowserProvider(window.ethereum);
+  STATE.provider = new ethers.BrowserProvider(rawProvider);
   STATE.signer = await STATE.provider.getSigner();
   STATE.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, STATE.signer);
   STATE.usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, STATE.signer);
-  
+  const isRabby = rawProvider && (rawProvider.isRabby || false);
   localStorage.setItem('fs_wallet', address);
+  localStorage.setItem('fs_wallet_type', isRabby ? 'rabby' : 'metamask');
   STATE.user = { address, name: shortAddr(address) };
-  
   hideConnecting();
   showApp();
   await loadUSDCBalance();
   await saveUserToFirebase();
+}
+
+async function connectMetaMask() {
+  if (!window.ethereum) {
+    showToast('error', 'No Wallet Found', 'Install MetaMask or Rabby Wallet');
+    return;
+  }
+  showConnecting('Connecting MetaMask...');
+  try {
+    // If multiple providers (e.g. Rabby + MetaMask), pick MetaMask
+    let provider = window.ethereum;
+    if (window.ethereum.providers) {
+      const mmProvider = window.ethereum.providers.find(p => p.isMetaMask && !p.isRabby);
+      if (mmProvider) provider = mmProvider;
+    }
+    const accounts = await provider.request({ method: 'eth_requestAccounts' });
+    if (!accounts.length) throw new Error('No accounts returned');
+    await ensureNetworkWithProvider(provider);
+    await setupWalletWithProvider(accounts[0], provider);
+  } catch(e) {
+    hideConnecting();
+    if (e.code === 4001) {
+      showToast('error', 'Rejected', 'Connection was rejected');
+    } else {
+      showToast('error', 'Connection Failed', e.message || 'Could not connect wallet');
+    }
+  }
 }
 
 async function signOut() {
