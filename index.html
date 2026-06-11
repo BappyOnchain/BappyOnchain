@@ -41,26 +41,28 @@ window.dispatchEvent(new Event('firebase_ready'));
    CSS VARIABLES & RESET
    ============================ */
 :root {
-  --bg-base: #07090f;
-  --bg-surface: #0d1117;
-  --bg-card: #111827;
-  --bg-elevated: #1a2235;
-  --border: #1e2d42;
-  --border-light: #243350;
+  --bg-base: #0a0a0a;
+  --bg-surface: #111111;
+  --bg-card: #161616;
+  --bg-elevated: #1e1e1e;
+  --border: #2a2a2a;
+  --border-light: #333333;
+  --accent: #CCFF00;
+  --accent-dim: rgba(204,255,0,0.12);
   --accent-blue: #3b82f6;
   --accent-cyan: #06b6d4;
   --accent-green: #10b981;
   --accent-amber: #f59e0b;
   --accent-red: #ef4444;
-  --text-primary: #f0f4f8;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted: #555555;
   --font-head: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
   --font-mono: 'Space Mono', monospace;
-  --radius-card: 14px;
-  --radius-btn: 10px;
-  --radius-sm: 6px;
+  --radius-card: 16px;
+  --radius-btn: 12px;
+  --radius-sm: 8px;
   --nav-height: 72px;
   --topbar-height: 60px;
 }
@@ -123,7 +125,7 @@ a { color: inherit; text-decoration: none; }
   background: rgba(7,9,15,0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid #1e1e1e;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -153,19 +155,19 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(16,185,129,0.1);
-  border: 1px solid rgba(16,185,129,0.25);
+  background: rgba(204,255,0,0.1);
+  border: 1px solid rgba(204,255,0,0.25);
   border-radius: 20px;
   padding: 5px 12px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--accent-green);
+  color: #CCFF00;
   font-family: var(--font-mono);
 }
 
 .balance-dot {
   width: 6px; height: 6px;
-  background: var(--accent-green);
+  background: #CCFF00;
   border-radius: 50%;
   animation: pulse-dot 2s infinite;
 }
@@ -245,7 +247,7 @@ a { color: inherit; text-decoration: none; }
   position: relative;
 }
 
-.nav-tab.active { color: var(--accent-blue); }
+.nav-tab.active { color: #CCFF00; }
 .nav-tab-label { font-size: 10px; font-weight: 500; letter-spacing: 0.02em; }
 
 .nav-post-btn {
@@ -344,7 +346,7 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   gap: 6px;
   background: rgba(59,130,246,0.08);
-  border: 1px solid rgba(59,130,246,0.2);
+  border: 1px solid rgba(204,255,0,0.15);
   border-radius: 20px;
   padding: 4px 12px;
   font-size: 12px;
@@ -405,7 +407,7 @@ a { color: inherit; text-decoration: none; }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
-  padding: 16px;
+  padding: 18px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -436,11 +438,12 @@ a { color: inherit; text-decoration: none; }
 .btn:active { transform: scale(0.97); }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-blue), #2563eb);
-  color: white;
-  box-shadow: 0 4px 16px rgba(59,130,246,0.25);
+  background: #CCFF00;
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(204,255,0,0.2);
 }
-.btn-primary:hover { box-shadow: 0 6px 24px rgba(59,130,246,0.4); transform: translateY(-1px); }
+.btn-primary:hover { box-shadow: 0 6px 24px rgba(204,255,0,0.35); transform: translateY(-1px); }
 
 .btn-success {
   background: linear-gradient(135deg, var(--accent-green), #059669);
@@ -504,8 +507,8 @@ a { color: inherit; text-decoration: none; }
   width: 100%;
 }
 .form-input:focus {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  border-color: #CCFF00;
+  box-shadow: 0 0 0 3px rgba(204,255,0,0.1);
 }
 .form-input::placeholder { color: var(--text-muted); }
 
@@ -710,9 +713,19 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
-  padding: 16px;
-  margin-bottom: 10px;
+  padding: 18px;
+  margin-bottom: 12px;
   transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.job-card::before {
+  content:'';
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:3px;
+  background:#CCFF00;
+  border-radius:3px 0 0 3px;
 }
 .job-card:active { opacity: 0.85; }
 
@@ -720,9 +733,9 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
 .job-title { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: var(--text-primary); flex: 1; }
 .job-budget {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  color: var(--accent-green);
+  color: #CCFF00;
   white-space: nowrap;
 }
 
@@ -740,7 +753,7 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
 .progress-fill {
   height: 100%;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+  background: linear-gradient(90deg, #CCFF00, #a3e635);
   transition: width 0.4s ease;
 }
 
@@ -790,7 +803,7 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
   flex-shrink: 0;
   font-family: var(--font-head);
 }
-.step-dot.active { border-color: var(--accent-blue); background: var(--accent-blue); color: white; }
+.step-dot.active { border-color: #CCFF00; background: #CCFF00; color: #000; font-weight:700; }
 .step-dot.done { border-color: var(--accent-green); background: var(--accent-green); color: white; }
 
 .step-line {
@@ -800,7 +813,7 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
   transition: background 0.3s;
   max-width: 40px;
 }
-.step-line.done { background: var(--accent-green); }
+.step-line.done { background: #CCFF00; }
 
 .step-panel { display: none; }
 .step-panel.active { display: block; animation: fade-in 0.2s ease; }
@@ -808,12 +821,13 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
 
 .step-label {
   font-family: var(--font-head);
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
   color: var(--text-primary);
   margin-bottom: 6px;
+  letter-spacing: -0.3px;
 }
-.step-sublabel { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+.step-sublabel { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height:1.5; }
 
 .budget-display {
   font-family: var(--font-mono);
@@ -866,8 +880,8 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
    WALLET PAGE
    ============================ */
 .wallet-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f2937 100%);
-  border: 1px solid rgba(59,130,246,0.2);
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1f0a 50%, #111111 100%);
+  border: 1px solid rgba(204,255,0,0.15);
   border-radius: 18px;
   padding: 24px;
   margin-bottom: 16px;
@@ -977,7 +991,7 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
   padding: 5px 12px;
   border-radius: 20px;
   background: rgba(59,130,246,0.08);
-  border: 1px solid rgba(59,130,246,0.2);
+  border: 1px solid rgba(204,255,0,0.15);
   font-size: 12px;
   font-weight: 500;
   color: var(--accent-cyan);
@@ -1079,7 +1093,7 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
   cursor: pointer;
   white-space: nowrap;
 }
-.tab-btn.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.tab-btn.active { background: #CCFF00; color: #000; font-weight: 700; box-shadow: 0 2px 8px rgba(204,255,0,0.2); }
 
 /* ============================
    EMPTY STATE
@@ -1231,8 +1245,8 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
       <path d="M11 16l3.5 3.5L21 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <defs>
         <linearGradient id="shieldGrad" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
-          <stop stop-color="#3b82f6"/>
-          <stop offset="1" stop-color="#06b6d4"/>
+          <stop stop-color="#CCFF00"/>
+          <stop offset="1" stop-color="#a3e635"/>
         </linearGradient>
       </defs>
     </svg>
@@ -1430,11 +1444,26 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
         <div class="flex flex-col gap-16">
           <div class="form-group">
             <label class="form-label">Job Title</label>
-            <input type="text" class="form-input" id="job-title" placeholder="e.g. Build Uniswap V3 clone UI" maxlength="100"/>
+            <input type="text" class="form-input" id="job-title" placeholder="e.g. Build Uniswap V3 clone UI" maxlength="100" oninput="autoFillOnTitle(this.value)"/>
           </div>
           <div class="form-group">
-            <label class="form-label">Description</label>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <label class="form-label" style="margin-bottom:0">Description</label>
+              <button type="button" onclick="aiGenerateDesc()"
+                style="display:flex;align-items:center;gap:5px;padding:4px 10px;
+                       border-radius:6px;background:rgba(204,255,0,0.1);
+                       border:1px solid rgba(204,255,0,0.3);cursor:pointer;
+                       font-size:11px;font-weight:600;color:#CCFF00;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                </svg>
+                AI Write
+              </button>
+            </div>
             <textarea class="form-input" id="job-desc" placeholder="Describe the scope of work, deliverables, and any technical requirements..." rows="5"></textarea>
+            <div id="ai-gen-status" style="font-size:12px;color:#CCFF00;margin-top:4px;display:none;">
+              AI is writing...
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label">Category</label>
@@ -1457,7 +1486,20 @@ textarea.form-input { resize: vertical; min-height: 100px; line-height: 1.6; }
         <p class="step-sublabel">Set payment and assign a freelancer</p>
         <div class="flex flex-col gap-16">
           <div class="form-group">
-            <label class="form-label">Budget (USDC)</label>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <label class="form-label" style="margin-bottom:0">Budget (USDC)</label>
+              <button type="button" onclick="aiSuggestPrice()"
+                style="display:flex;align-items:center;gap:5px;padding:4px 10px;
+                       border-radius:6px;background:rgba(204,255,0,0.1);
+                       border:1px solid rgba(204,255,0,0.3);cursor:pointer;
+                       font-size:11px;font-weight:600;color:#CCFF00;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+                </svg>
+                AI Suggest
+              </button>
+            </div>
+            <label class="form-label" style="display:none">Budget (USDC)</label>
             <div class="budget-display" id="budget-display">$500</div>
             <input type="range" class="range-input" id="budget-range" min="1" max="10000" value="500" step="1" oninput="updateBudget(this.value)"/>
             <div class="flex justify-between" style="font-size:11px;color:var(--text-muted)"><span>$1</span><span>$10,000</span></div>
@@ -2296,7 +2338,7 @@ function animateCount(id, target) {
 
 function renderHomeJobs() {
   const list = document.getElementById('home-jobs-list');
-  const active = STATE.jobs.filter(j => ['open','submitted'].includes(j.status));
+  const active = STATE.jobs.filter(j => ['open','submitted','disputed'].includes(j.status));
   if (!active.length) {
     list.innerHTML = `<div class="empty-state">
       <svg class="empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
@@ -2313,7 +2355,48 @@ function renderJobCard(job) {
   const isClient = job.client && job.client.toLowerCase() === STATE.wallet.toLowerCase();
   const progress = jobProgress(job.status);
   const deadlineTxt = job.deadline ? daysLeft(job.deadline) : '—';
-  
+
+  // Work link section — visible to client when work is submitted
+  let workLinkHtml = '';
+  if (job.workLink && isClient && job.status === 'submitted') {
+    workLinkHtml = `
+    <div style="background:rgba(204,255,0,0.06);border:1px solid rgba(204,255,0,0.2);
+                border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+      <div style="font-size:11px;color:#64748b;text-transform:uppercase;
+                  letter-spacing:0.06em;margin-bottom:6px;font-weight:600;">
+        Submitted Work
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CCFF00" stroke-width="2">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+        <span style="font-size:13px;color:#f0f4f8;flex:1;overflow:hidden;
+                     text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);">
+          ${escHtml(job.workLink)}
+        </span>
+        <a href="${escHtml(job.workLink)}" target="_blank"
+           style="flex-shrink:0;padding:5px 12px;border-radius:6px;
+                  background:#CCFF00;color:#000;font-size:12px;
+                  font-weight:700;text-decoration:none;">
+          Open
+        </a>
+      </div>
+      ${job.workNotes ? `<p style="font-size:12px;color:#94a3b8;margin-top:8px;line-height:1.5;">${escHtml(job.workNotes)}</p>` : ''}
+    </div>`;
+  }
+
+  // Freelancer sees their own submitted link
+  let myWorkHtml = '';
+  if (job.workLink && !isClient && job.status === 'submitted') {
+    myWorkHtml = `
+    <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);
+                border-radius:10px;padding:10px 14px;margin-bottom:12px;
+                font-size:12px;color:#10b981;">
+      Work submitted — awaiting client review
+    </div>`;
+  }
+
   let actions = '';
   if (job.status === 'open' && !isClient) {
     actions += `<button class="btn btn-primary btn-sm" onclick="openSubmitWork('${job.id}')">Submit Work</button>`;
@@ -2338,6 +2421,8 @@ function renderJobCard(job) {
       <span>${isClient ? 'Client' : 'Freelancer'}</span>
     </div>
     <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+    ${workLinkHtml}
+    ${myWorkHtml}
     ${actions ? `<div class="job-actions">${actions}</div>` : ''}
   </div>`;
 }
@@ -2407,7 +2492,9 @@ function filterJobs(filter, btn) {
     document.querySelectorAll('#jobs-tabs .tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   }
-  const filtered = filter === 'all' ? STATE.jobs : STATE.jobs.filter(j => j.status === filter);
+  const filtered = filter === 'all' 
+    ? STATE.jobs.filter(j => j.status !== 'completed' && j.status !== 'cancelled')
+    : STATE.jobs.filter(j => j.status === filter);
   const list = document.getElementById('jobs-list');
   if (!filtered.length) {
     list.innerHTML = `<div class="empty-state">
@@ -2543,6 +2630,34 @@ async function submitJob() {
     const receipt = await tx.wait();
     const txHash = receipt.hash;
 
+    // Get chainJobId from receipt logs using multiple strategies
+    let chainJobId = null;
+    try {
+      // Strategy 1: parse return value if contract returns jobId
+      // Strategy 2: scan all logs for a uint256 topic
+      if (receipt.logs && receipt.logs.length > 0) {
+        for (const log of receipt.logs) {
+          // Skip logs not from our contract
+          if (log.address.toLowerCase() !== CONTRACT_ADDRESS.toLowerCase()) continue;
+          // topic[0] = event sig, topic[1] = first indexed param (jobId)
+          if (log.topics && log.topics.length >= 2) {
+            const parsed = parseInt(log.topics[1], 16);
+            if (!isNaN(parsed) && parsed >= 0 && parsed < 1000000) {
+              chainJobId = parsed.toString();
+              break;
+            }
+          }
+        }
+      }
+      // Strategy 3: if still null, get from getClientJobs
+      if (chainJobId === null) {
+        const ids = await STATE.contract.getClientJobs(STATE.wallet);
+        if (ids.length > 0) {
+          chainJobId = ids[ids.length - 1].toString();
+        }
+      }
+    } catch(_) {}
+
     // Save to Firebase
     const fbId = await fbAdd('jobs', {
       title: STATE.postData.title,
@@ -2554,7 +2669,7 @@ async function submitJob() {
       deadline: STATE.postData.deadline,
       status: 'open',
       txHash,
-      chainJobId: null
+      chainJobId
     });
 
     // Add to local activity
@@ -2590,23 +2705,50 @@ function openSubmitWork(jobId) {
 
 async function doSubmitWork() {
   const link = document.getElementById('work-link').value.trim();
+  const notes = document.getElementById('work-notes').value.trim();
   if (!link) { showToast('error', 'Missing Link', 'Enter a work link'); return; }
   closeModal('submit-work-modal');
   showSpinner('Submitting work...');
   try {
     const jobFirebaseId = STATE.currentJobId;
     const job = STATE.jobs.find(j => j.id === jobFirebaseId);
-    if (!job || !job.chainJobId) {
-      await fbUpdate('jobs', jobFirebaseId, { status: 'submitted', workLink: link });
-    } else {
-      const tx = await STATE.contract.submitWork(job.chainJobId, link);
-      await tx.wait();
-      await fbUpdate('jobs', jobFirebaseId, { status: 'submitted', workLink: link });
+    const updateData = { status: 'submitted', workLink: link, workNotes: notes };
+    let resolvedChainId = job?.chainJobId;
+
+    // If no chainJobId, try to find from blockchain
+    if (!resolvedChainId && STATE.contract && STATE.wallet) {
+      try {
+        const ids = await STATE.contract.getFreelancerJobs(STATE.wallet);
+        if (ids.length > 0) {
+          // Match by client address
+          for (let i = ids.length - 1; i >= 0; i--) {
+            try {
+              const onChainJob = await STATE.contract.getJob(ids[i]);
+              if (job && onChainJob.client &&
+                  onChainJob.client.toLowerCase() === job.client?.toLowerCase()) {
+                resolvedChainId = ids[i].toString();
+                await fbUpdate('jobs', jobFirebaseId, { chainJobId: resolvedChainId });
+                break;
+              }
+            } catch(_) {}
+          }
+          if (!resolvedChainId) resolvedChainId = ids[ids.length - 1].toString();
+        }
+      } catch(_) {}
     }
+
+    if (resolvedChainId && STATE.contract) {
+      showToast('loading', 'Submitting On-chain', 'Confirm in your wallet');
+      const tx = await STATE.contract.submitWork(resolvedChainId, link);
+      await tx.wait();
+      updateData.chainJobId = resolvedChainId;
+    }
+    await fbUpdate('jobs', jobFirebaseId, updateData);
     await loadJobs();
     hideSpinner();
     showToast('success', 'Work Submitted', 'Client will review your submission');
     if (STATE.currentPage === 'jobs') loadJobsPage();
+    if (STATE.currentPage === 'home') loadHomePage();
   } catch(e) {
     hideSpinner();
     handleTxError(e);
@@ -2650,17 +2792,58 @@ async function doApprove(jobId) {
   showSpinner('Releasing payment...');
   try {
     const job = STATE.jobs.find(j => j.id === jobId);
-    if (job && job.chainJobId) {
+    if (!STATE.contract) {
+      showToast('error', 'Not Connected', 'Connect wallet to approve');
+      hideSpinner();
+      return;
+    }
+    if (job && job.chainJobId !== null && job.chainJobId !== undefined) {
+      // On-chain approval
+      showToast('loading', 'Approving', 'Confirm in your wallet');
       const tx = await STATE.contract.approveAndRelease(job.chainJobId);
       const receipt = await tx.wait();
       await fbUpdate('jobs', jobId, { status: 'completed', txHash: receipt.hash });
+      showToast('success', 'Payment Released', receipt.hash.slice(0,16) + '...');
     } else {
-      await fbUpdate('jobs', jobId, { status: 'completed' });
+      // No chainJobId — find correct on-chain job by matching freelancer
+      try {
+        const job = STATE.jobs.find(j => j.id === jobId);
+        const jobIds = await STATE.contract.getClientJobs(STATE.wallet);
+        let matchedId = null;
+        // Try to match by checking each on-chain job's freelancer address
+        for (let i = jobIds.length - 1; i >= 0; i--) {
+          try {
+            const onChainJob = await STATE.contract.getJob(jobIds[i]);
+            const freelancerMatch = job && onChainJob.freelancer &&
+              onChainJob.freelancer.toLowerCase() === job.freelancer?.toLowerCase();
+            const statusOpen = onChainJob.status === 0 || onChainJob.status === 1; // 0=open,1=submitted
+            if (freelancerMatch && statusOpen) {
+              matchedId = jobIds[i];
+              break;
+            }
+          } catch(_) {}
+        }
+        // Use matched or last job
+        const targetId = matchedId || (jobIds.length > 0 ? jobIds[jobIds.length - 1] : null);
+        if (targetId !== null) {
+          showToast('loading', 'Releasing Payment', 'Confirm in your wallet');
+          const tx = await STATE.contract.approveAndRelease(targetId);
+          const receipt = await tx.wait();
+          await fbUpdate('jobs', jobId, { status: 'completed', chainJobId: targetId.toString(), txHash: receipt.hash });
+          showToast('success', 'Payment Released', receipt.hash.slice(0,16) + '...');
+        } else {
+          await fbUpdate('jobs', jobId, { status: 'completed' });
+          showToast('warning', 'Status Updated', 'No on-chain job found — marked complete');
+        }
+      } catch(err) {
+        await fbUpdate('jobs', jobId, { status: 'completed' });
+        showToast('warning', 'Status Updated', 'Marked as completed');
+      }
     }
     await loadJobs();
     await loadUSDCBalance();
     hideSpinner();
-    showToast('success', 'Payment Released', 'Freelancer has been paid');
+    STATE.jobs = STATE.jobs.map(j => j.id === jobId ? {...j, status:'completed'} : j);
     if (STATE.currentPage === 'jobs') loadJobsPage();
     if (STATE.currentPage === 'home') loadHomePage();
   } catch(e) {
@@ -3246,6 +3429,111 @@ function handleTxError(e) {
 /* ============================================================
    INIT ON LOAD
    ============================================================ */
+// ── Template-based auto-generation (no API needed) ──
+const JOB_TEMPLATES = {
+  development: {
+    keywords: ['build','develop','create','code','app','website','dapp','smart contract','frontend','backend','api','web','mobile','solidity','react','node'],
+    prices: [500, 800, 1200, 2000, 3000],
+    templates: [
+      "We are looking for an experienced {cat} professional to {title}. The project requires strong technical skills and attention to detail. Deliverables include fully functional, tested, and documented code. The ideal candidate should have prior experience with similar projects and be available for regular check-ins.",
+      "This project involves {title} with a focus on quality and performance. You will be responsible for planning, implementation, and delivery of all agreed requirements. All source code must be provided upon completion along with deployment instructions.",
+      "We need a skilled developer to {title}. The scope includes initial setup, core feature development, testing, and final deployment. Communication and milestone updates are expected throughout the project timeline."
+    ]
+  },
+  design: {
+    keywords: ['design','logo','ui','ux','graphic','brand','illustration','figma','banner','poster','visual','icon','mockup'],
+    prices: [150, 300, 500, 800, 1500],
+    templates: [
+      "We are seeking a talented designer to {title}. The project requires a creative approach aligned with our brand identity. Deliverables include source files in editable format along with final exports in required sizes. Revisions are expected until full satisfaction.",
+      "Looking for a professional designer to {title}. You will deliver high-quality visual assets that are modern, clean, and on-brand. All files must be provided in vector and raster formats. The timeline for initial concepts is expected within the first few days.",
+      "This design project requires {title}. We expect original creative work with at least two initial concepts for review. Final files should include all working source files and exported assets ready for production use."
+    ]
+  },
+  writing: {
+    keywords: ['write','content','copy','blog','article','whitepaper','documentation','translate','seo','text','script'],
+    prices: [50, 100, 200, 400, 800],
+    templates: [
+      "We need a skilled writer to {title}. The content must be original, well-researched, and written in a professional tone. Deliverables include final drafts with unlimited revisions until approval. SEO optimization and proper formatting are expected.",
+      "Looking for an experienced content creator to {title}. You will produce high-quality written content that engages the target audience and meets our editorial standards. All work must pass plagiarism checks and be delivered in agreed formats.",
+      "This writing project involves {title}. We require clear, concise, and compelling content tailored to our audience. The writer should be available for feedback rounds and willing to incorporate editorial changes."
+    ]
+  },
+  smartcontracts: {
+    keywords: ['solidity','contract','audit','defi','nft','token','erc','dao','escrow','staking','yield','protocol','blockchain'],
+    prices: [1000, 2000, 3500, 5000, 8000],
+    templates: [
+      "We are looking for a Solidity expert to {title}. The contract must be secure, gas-optimized, and fully tested using a standard testing framework. Deliverables include the contract source code, test suite, deployment scripts, and documentation.",
+      "This smart contract project requires {title}. The developer must follow best security practices and provide a thorough code review before delivery. All contracts should be verified on the block explorer and include NatSpec documentation.",
+      "Seeking an experienced blockchain developer to {title}. The scope includes contract architecture, implementation, unit tests, and audit-ready code. Prior experience with similar DeFi or NFT protocols is highly preferred."
+    ]
+  },
+  marketing: {
+    keywords: ['market','promote','social','campaign','growth','community','twitter','discord','telegram','seo','ads','influencer'],
+    prices: [200, 400, 700, 1200, 2500],
+    templates: [
+      "We need a marketing professional to {title}. The campaign should target the right audience and deliver measurable results. Deliverables include a strategy document, execution plan, and performance report at the end of the engagement.",
+      "Looking for an experienced marketer to {title}. You will develop and execute a comprehensive plan to increase visibility and engagement. Regular reporting and transparent communication are required throughout the project.",
+      "This marketing project involves {title}. We expect creative strategies backed by data and a clear understanding of our target market. All assets and reports should be delivered in agreed formats with full transparency."
+    ]
+  }
+};
+
+function detectCategory(title) {
+  const t = title.toLowerCase();
+  for (const [cat, data] of Object.entries(JOB_TEMPLATES)) {
+    if (data.keywords.some(k => t.includes(k))) return cat;
+  }
+  return 'development';
+}
+
+function autoGenerateDesc() {
+  const title = document.getElementById('job-title').value.trim();
+  if (!title) { showToast('error', 'Title First', 'Enter a job title first'); return; }
+
+  const cat = detectCategory(title);
+  const data = JOB_TEMPLATES[cat];
+  const template = data.templates[Math.floor(Math.random() * data.templates.length)];
+  const desc = template
+    .replace(/{title}/g, title.toLowerCase())
+    .replace(/{cat}/g, document.querySelector('.cat-chip.selected')?.dataset.val || 'Development');
+
+  document.getElementById('job-desc').value = desc;
+
+  // Auto-select matching category chip
+  const catMap = { development:'Development', design:'Design', writing:'Writing', smartcontracts:'Smart Contracts', marketing:'Marketing' };
+  document.querySelectorAll('.cat-chip').forEach(c => {
+    c.classList.toggle('selected', c.dataset.val === (catMap[cat] || 'Development'));
+  });
+
+  showToast('success', 'Description Ready', 'Generated from your title');
+}
+
+function autoSuggestPrice() {
+  const title = document.getElementById('job-title').value.trim();
+  if (!title) return;
+  const cat = detectCategory(title);
+  const prices = JOB_TEMPLATES[cat].prices;
+  const suggested = prices[Math.floor(prices.length / 2)];
+  document.getElementById('budget-range').value = suggested;
+  document.getElementById('budget-exact').value = suggested;
+  updateBudget(suggested);
+  showToast('success', 'Price Suggested', '$' + suggested + ' USDC recommended');
+}
+
+// Keep these as aliases so buttons still work
+function aiGenerateDesc() { autoGenerateDesc(); }
+function aiSuggestPrice() { autoSuggestPrice(); }
+
+let _titleTimer = null;
+function autoFillOnTitle(val) {
+  clearTimeout(_titleTimer);
+  if (val.length < 5) return;
+  _titleTimer = setTimeout(() => {
+    autoGenerateDesc();
+    autoSuggestPrice();
+  }, 800);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   initApp();
 });
