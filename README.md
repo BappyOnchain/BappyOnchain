@@ -69,8 +69,7 @@ runs entirely on browser-based tools: Remix IDE, Replit, and Vercel.
 
 ### GitHub Stats
 
-<img src="https://github-readme-stats.vercel.app/api?username=BappyOnchain&show_icons=true&theme=dark&hide_border=true&bg_color=0A0A0B&title_color=CCFF00&icon_color=CCFF00&text_color=EDEDEC" width="48%" />
-<img src="https://streak-stats.demolab.com?user=BappyOnchain&theme=dark&hide_border=true&background=0A0A0B&ring=CCFF00&fire=CCFF00&currStreakLabel=CCFF00" width="48%" />
+<img src="https://streak-stats.demolab.com?user=BappyOnchain&theme=dark&hide_border=true&background=0A0A0B&ring=CCFF00&fire=CCFF00&currStreakLabel=CCFF00" />
 
 ---
 
