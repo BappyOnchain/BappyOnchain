@@ -20,6 +20,12 @@ runs entirely on browser-based tools: Remix IDE, Replit, and Vercel.
 
 ---
 
+### Contribution Snake
+
+<img src="https://raw.githubusercontent.com/BappyOnchain/BappyOnchain/output/github-contribution-grid-snake-dark.svg" width="100%" />
+
+---
+
 ### Language and Tools
 
 <table>
