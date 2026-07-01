@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="https://raw.githubusercontent.com/BappyOnchain/BappyOnchain/main/avatar.png" width="280" />
+
 <img src="https://readme-typing-svg.demolab.com?font=Space+Grotesk&size=32&duration=3000&pause=1000&color=CCFF00&center=true&vCenter=true&width=600&lines=Md+Bappy+%E2%80%94+BappyOnchain;Blockchain+%2F+Web3+Developer;Building+on+Arc+Network+%26+Ethereum" />
 
 </div>
