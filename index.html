@@ -197,7 +197,15 @@
 <p class="note">প্রসেসিং সম্পূর্ণ আপনার ব্রাউজারে হয় (AI মডেল একবার ডাউনলোড হয়ে ক্যাশে থাকে)।<br>প্রথমবার একটু সময় লাগতে পারে, পরেরবার থেকে দ্রুত হবে।</p>
 
 <script type="module">
-  import { removeBackground } from "https://esm.sh/@imgly/background-removal@1.5.5";
+  let removeBackground = null;
+  let loadError = null;
+  try {
+    const mod = await import("https://esm.sh/@imgly/background-removal@1.7.0");
+    removeBackground = mod.removeBackground || mod.default;
+  } catch (e) {
+    loadError = e;
+    console.error('Failed to load background-removal library:', e);
+  }
 
   const dropzone = document.getElementById('dropzone');
   const fileInput = document.getElementById('fileInput');
@@ -247,6 +255,14 @@
     if (!file.type.startsWith('image/')) return;
     currentFileName = file.name || 'image';
 
+    if (!removeBackground) {
+      previewWrap.classList.add('show');
+      statusRow.style.display = 'flex';
+      progressBar.style.display = 'none';
+      statusText.textContent = 'লাইব্রেরি লোড হয়নি: ' + (loadError ? (loadError.message || loadError.toString()) : 'অজানা কারণ');
+      return;
+    }
+
     previewWrap.classList.add('show');
     srcImg.style.display = 'block';
     resultImg.style.display = 'none';
@@ -260,7 +276,6 @@
 
     try {
       const blob = await removeBackground(file, {
-        model: 'medium',
         output: { format: 'image/png', quality: 1 },
         progress: (key, current, total) => {
           const pct = total ? Math.round((current / total) * 100) : 0;
@@ -284,9 +299,10 @@
       progressBar.style.display = 'none';
       downloadBtn.disabled = false;
     } catch (err) {
-      statusText.textContent = 'এরর হয়েছে: ' + err.message;
+      console.error('BG removal failed:', err);
+      const detail = (err && (err.message || err.toString())) || 'অজানা এরর (কনসোল চেক করুন)';
+      statusText.textContent = 'এরর হয়েছে: ' + detail;
       progressBar.style.display = 'none';
-      console.error(err);
     }
   }
 </script>
