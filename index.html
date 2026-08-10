@@ -359,26 +359,28 @@
     <div class="field">
       <label for="fmtSelect">ফরম্যাট</label>
       <select id="fmtSelect">
-        <option value="png">PNG (লসলেস)</option>
-        <option value="jpeg">JPEG (ছোট সাইজ)</option>
+        <option value="jpeg" selected>JPEG — দ্রুত</option>
+        <option value="png">PNG (লসলেস, ধীর)</option>
       </select>
     </div>
     <div class="field">
       <label for="scaleSelect">রেজোলিউশন</label>
       <select id="scaleSelect">
-        <option value="1.5">1.5x — দ্রুত</option>
-        <option value="2" selected>2x — স্ট্যান্ডার্ড</option>
-        <option value="3">3x — হাই কোয়ালিটি</option>
-        <option value="4">4x — প্রিন্ট গ্রেড</option>
+        <option value="1.2" selected>1.2x — সবচেয়ে ফাস্ট</option>
+        <option value="1.5">1.5x — ফাস্ট + ভালো মান</option>
+        <option value="2">2x — স্ট্যান্ডার্ড</option>
+        <option value="3">3x — হাই কোয়ালিটি (ধীর)</option>
+        <option value="4">4x — প্রিন্ট গ্রেড (সবচেয়ে ধীর)</option>
       </select>
     </div>
-    <div class="field" id="qualityField" style="display:none;">
+    <div class="field" id="qualityField" style="display:flex;">
       <label for="qualitySelect">JPEG কোয়ালিটি</label>
       <select id="qualitySelect">
-        <option value="0.7">70%</option>
-        <option value="0.85" selected>85%</option>
-        <option value="0.95">95%</option>
-        <option value="1">100%</option>
+        <option value="0.35">35% — সবচেয়ে ছোট সাইজ</option>
+        <option value="0.5" selected>50% — ছোট + দ্রুত (রিকমেন্ডেড)</option>
+        <option value="0.6">60%</option>
+        <option value="0.75">75%</option>
+        <option value="0.85">85%</option>
       </select>
     </div>
   </div>
@@ -439,7 +441,12 @@ const downloadAllBtn = document.getElementById('downloadAllBtn');
 const grid = document.getElementById('grid');
 
 let currentFile = null;
-let pageResults = []; // {blob, url, index, ext}
+let pdfDoc = null;       // loaded pdf.js document, kept for on-demand full-res render
+let totalPages = 0;
+let fullResCache = {};   // idx -> {blob, url, ext}  (filled lazily, only when actually downloaded)
+const THUMB_WIDTH = 140; // px — preview only, kept tiny so the first pass is instant
+const MAX_LONG_EDGE = 1400; // px — hard cap on the export's longer side, keeps file size predictable
+                             // even for oversized PDF pages, regardless of the scale picked
 
 function fmtBytes(b){
   if(b < 1024) return b + ' B';
@@ -447,12 +454,20 @@ function fmtBytes(b){
   return (b/(1024*1024)).toFixed(2) + ' MB';
 }
 
+// yield one frame so the mobile UI thread doesn't lock up during long loops
+function nextFrame(){
+  return new Promise(r => requestAnimationFrame(r));
+}
+
 function resetResults(){
-  pageResults = [];
+  pdfDoc = null;
+  totalPages = 0;
+  fullResCache = {};
   grid.innerHTML = '';
   grid.classList.remove('show');
   resultsHead.classList.remove('show');
   progressWrap.classList.remove('show');
+  progressFill.style.background = 'linear-gradient(90deg, var(--amber-dim), var(--amber))';
 }
 
 function handleFile(file){
@@ -504,6 +519,19 @@ function canvasToBlob(canvas, type, quality){
   return new Promise(resolve => canvas.toBlob(resolve, type, quality));
 }
 
+function currentSettings(){
+  const scale = parseFloat(scaleSelect.value);
+  const format = fmtSelect.value;
+  const quality = parseFloat(qualitySelect.value);
+  const mime = format === 'png' ? 'image/png' : 'image/jpeg';
+  const ext = format === 'png' ? 'png' : 'jpg';
+  return { scale, format, quality, mime, ext };
+}
+
+// STEP 1 — fast pass: load the PDF and paint small thumbnails only.
+// Full-resolution rendering is deferred to download time (see renderFullRes)
+// so opening a 35+ page file stays quick and doesn't hold dozens of
+// full-size canvases/PNGs in memory at once.
 async function convertPdf(){
   if(!currentFile) return;
   convertBtn.disabled = true;
@@ -513,26 +541,19 @@ async function convertPdf(){
   progressPct.textContent = '0%';
   progressFill.style.width = '0%';
 
-  const scale = parseFloat(scaleSelect.value);
-  const format = fmtSelect.value;
-  const quality = parseFloat(qualitySelect.value);
-  const mime = format === 'png' ? 'image/png' : 'image/jpeg';
-  const ext = format === 'png' ? 'png' : 'jpg';
-
   try{
     if(typeof pdfjsLib === 'undefined'){
       throw new Error('PDF ইঞ্জিন লোড হয়নি — ইন্টারনেট সংযোগ চেক করুন এবং পেজ রিলোড করুন');
     }
     const arrayBuffer = await currentFile.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const total = pdf.numPages;
+    pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    totalPages = pdfDoc.numPages;
 
     grid.classList.add('show');
     resultsHead.classList.add('show');
-    pageCountEl.textContent = '0 / ' + total;
+    pageCountEl.textContent = '0 / ' + totalPages;
 
-    // pre-build placeholder cards
-    for(let i = 1; i <= total; i++){
+    for(let i = 1; i <= totalPages; i++){
       const card = document.createElement('div');
       card.className = 'card';
       card.id = 'card-' + i;
@@ -545,38 +566,43 @@ async function convertPdf(){
           </button>
         </div>`;
       grid.appendChild(card);
+      const dlBtn = card.querySelector('.dl-single');
+      dlBtn.disabled = false;
+      dlBtn.addEventListener('click', () => downloadSingle(i, dlBtn));
     }
 
-    for(let i = 1; i <= total; i++){
-      progressStatus.textContent = `পেজ ${i}/${total} রেন্ডার হচ্ছে...`;
-      const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale });
+    for(let i = 1; i <= totalPages; i++){
+      progressStatus.textContent = `প্রিভিউ তৈরি হচ্ছে — পেজ ${i}/${totalPages}`;
+      const page = await pdfDoc.getPage(i);
+      const base = page.getViewport({ scale: 1 });
+      const thumbScale = THUMB_WIDTH / base.width;
+      const viewport = page.getViewport({ scale: thumbScale });
       const canvas = document.createElement('canvas');
       canvas.width = viewport.width;
       canvas.height = viewport.height;
-      const ctx = canvas.getContext('2d');
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.objectFit = 'contain';
+      canvas.setAttribute('aria-label', `Page ${i} preview`);
+      const ctx = canvas.getContext('2d', { alpha: false });
+      ctx.imageSmoothingEnabled = false; // skip smoothing — this is a tiny preview, not the export
       await page.render({ canvasContext: ctx, viewport }).promise;
 
-      const blob = await canvasToBlob(canvas, mime, format === 'jpeg' ? quality : undefined);
-      const url = URL.createObjectURL(blob);
-      pageResults.push({ blob, url, index: i, ext });
-
+      // paint the canvas straight into the DOM — no JPEG encode / blob / object-URL
+      // round trip for a preview this small, that step alone was most of the wait
       const thumb = document.getElementById('thumb-' + i);
-      thumb.innerHTML = `<img src="${url}" alt="Page ${i} preview" loading="lazy">`;
-      const dlBtn = document.querySelector(`.dl-single[data-idx="${i}"]`);
-      dlBtn.disabled = false;
-      dlBtn.addEventListener('click', () => downloadSingle(i));
+      if(thumb){ thumb.innerHTML = ''; thumb.appendChild(canvas); }
 
-      const pct = Math.round((i/total)*100);
+      const pct = Math.round((i/totalPages)*100);
       progressFill.style.width = pct + '%';
       progressPct.textContent = pct + '%';
-      pageCountEl.textContent = `${i} / ${total}`;
+      pageCountEl.textContent = `${i} / ${totalPages}`;
 
-      canvas.width = 0; canvas.height = 0; // free memory
+      await nextFrame(); // let the browser paint this page before starting the next
     }
 
-    progressStatus.textContent = `সম্পন্ন — ${total}টি পেজ কনভার্ট হয়েছে`;
-    pageCountEl.textContent = total;
+    progressStatus.textContent = `প্রিভিউ প্রস্তুত — ডাউনলোড করলে আসল রেজোলিউশনে রেন্ডার হবে`;
+    pageCountEl.textContent = totalPages;
   }catch(err){
     progressStatus.textContent = 'ত্রুটি: PDF প্রসেস করা যায়নি — ' + (err.message || err);
     progressFill.style.background = 'var(--danger)';
@@ -586,43 +612,101 @@ async function convertPdf(){
   }
 }
 
+// STEP 2 — full-resolution render, done on demand at the scale/format
+// currently selected, and cached per page so re-downloading is instant.
+async function renderFullRes(idx){
+  const cached = fullResCache[idx];
+  const { scale, format, quality, mime, ext } = currentSettings();
+  if(cached && cached.scale === scale && cached.format === format && cached.quality === quality){
+    return cached;
+  }
+  const page = await pdfDoc.getPage(idx);
+  const base = page.getViewport({ scale: 1 });
+  const longEdgeAtScale = Math.max(base.width, base.height) * scale;
+  const effectiveScale = longEdgeAtScale > MAX_LONG_EDGE
+    ? scale * (MAX_LONG_EDGE / longEdgeAtScale)
+    : scale;
+  const viewport = page.getViewport({ scale: effectiveScale });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  const ctx = canvas.getContext('2d', { alpha: format !== 'jpeg' });
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  const blob = await canvasToBlob(canvas, mime, format === 'jpeg' ? quality : undefined);
+  canvas.width = 0; canvas.height = 0;
+
+  if(cached && cached.url) URL.revokeObjectURL(cached.url);
+  const result = { blob, url: URL.createObjectURL(blob), ext, scale, format, quality };
+  fullResCache[idx] = result;
+  return result;
+}
+
 function baseName(){
   return (currentFile ? currentFile.name.replace(/\.pdf$/i, '') : 'pdf-page');
 }
 
-function downloadSingle(idx){
-  const item = pageResults.find(p => p.index === idx);
-  if(!item) return;
-  const a = document.createElement('a');
-  a.href = item.url;
-  a.download = `${baseName()}-page-${String(idx).padStart(3,'0')}.${item.ext}`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+async function downloadSingle(idx, btnEl){
+  if(!pdfDoc) return;
+  const original = btnEl.innerHTML;
+  btnEl.disabled = true;
+  btnEl.innerHTML = '<div class="spinner" style="width:14px;height:14px;"></div>';
+  try{
+    const item = await renderFullRes(idx);
+    const a = document.createElement('a');
+    a.href = item.url;
+    a.download = `${baseName()}-page-${String(idx).padStart(3,'0')}.${item.ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }catch(err){
+    console.error(err);
+    alert('পেজ ' + idx + ' রেন্ডার করা যায়নি');
+  }finally{
+    btnEl.disabled = false;
+    btnEl.innerHTML = original;
+  }
 }
 
 async function downloadAll(){
-  if(pageResults.length === 0) return;
+  if(!pdfDoc || totalPages === 0) return;
   downloadAllBtn.disabled = true;
   const originalHtml = downloadAllBtn.innerHTML;
-  downloadAllBtn.innerHTML = 'জিপ তৈরি হচ্ছে...';
+  progressWrap.classList.add('show');
+  progressFill.style.background = 'linear-gradient(90deg, var(--amber-dim), var(--amber))';
 
-  const zip = new JSZip();
-  for(const item of pageResults){
-    zip.file(`${baseName()}-page-${String(item.index).padStart(3,'0')}.${item.ext}`, item.blob);
+  try{
+    const zip = new JSZip();
+    for(let i = 1; i <= totalPages; i++){
+      downloadAllBtn.innerHTML = `রেন্ডার হচ্ছে ${i}/${totalPages}...`;
+      progressStatus.textContent = `ZIP-এর জন্য পেজ ${i}/${totalPages} রেন্ডার হচ্ছে...`;
+      const item = await renderFullRes(i);
+      zip.file(`${baseName()}-page-${String(i).padStart(3,'0')}.${item.ext}`, item.blob);
+      const pct = Math.round((i/totalPages)*100);
+      progressFill.style.width = pct + '%';
+      progressPct.textContent = pct + '%';
+      if(i % 3 === 0) await nextFrame();
+    }
+
+    progressStatus.textContent = 'জিপ ফাইল তৈরি হচ্ছে...';
+    downloadAllBtn.innerHTML = 'জিপ তৈরি হচ্ছে...';
+    const content = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(content);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${baseName()}-images.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    progressStatus.textContent = `সম্পন্ন — ${totalPages}টি পেজ জিপ করা হয়েছে`;
+  }catch(err){
+    console.error(err);
+    progressStatus.textContent = 'ত্রুটি: ZIP তৈরি করা যায়নি';
+    progressFill.style.background = 'var(--danger)';
+  }finally{
+    downloadAllBtn.innerHTML = originalHtml;
+    downloadAllBtn.disabled = false;
   }
-  const content = await zip.generateAsync({ type: 'blob' });
-  const url = URL.createObjectURL(content);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${baseName()}-images.zip`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-
-  downloadAllBtn.innerHTML = originalHtml;
-  downloadAllBtn.disabled = false;
 }
 
 convertBtn.addEventListener('click', convertPdf);
